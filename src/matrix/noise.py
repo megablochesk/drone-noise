@@ -115,10 +115,11 @@ class DensityMatrix:
                 noises = []
                 for drone in drones:
                     lat_dist, lon_dist, line_dist = distance(cell.centroid, drone.location)
-                    if line_dist == 0:
-                        noise = drone.NOISE
-                    else:
-                        noise = calculate_noise_coord(x_dist=lon_dist, y_dist=lat_dist, central_noise=drone.NOISE)
+                    #if line_dist == 0:
+                    #    noise = drone.NOISE
+                    #else:
+                    #    noise = calculate_noise_coord(x_dist=lon_dist, y_dist=lat_dist, central_noise=drone.NOISE)
+                    noise = calculate_noise_coord(x_dist=lon_dist, y_dist=lat_dist, central_noise=drone.NOISE)
                     noises.append(noise)
                 mixed_noise = multi_source_sound_level(noises)
                 cell.receive_noise(mixed_noise)

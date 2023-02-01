@@ -4,9 +4,10 @@ from commons.my_util import nearest_free_drone, difference
 from commons.util import Queue
 from commons.configuration import CENTER_PER_SLICE_TIME, PLOT_SIMULATION
 from commons.configuration import USE_DENSITY_MATRIX, USE_LOCAL_ORDER
-from commons.configuration import ORDERS, DRONES, NOISE_CELL_WIDTH, NOISE_CELL_LENGTH, PRIORITIZE_K
+from commons.configuration import ORDERS, DRONES, NOISE_CELL_WIDTH, NOISE_CELL_LENGTH, COST_FUNCTION, PRIORITIZE_K, PRIORITIZE_P
 from commons.configuration import RESULT_BASE_PATH
 from commons.configuration import MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM
+from commons.constants import DRONE_ALTITUTE
 from cityMap.citymap import Coordinate, CityMap
 from drones.dronegenerator import DroneGenerator
 from orders.ordergenerator import OrderGenerator
@@ -55,6 +56,7 @@ class Center:
         Plan path for drones using 'PathPlanner'
         """
         for drone in self.waiting_planning_drones:
+            # NOTE: paths are re-planned at each iteration (to adapt to noise matrix accumulated so far)
             path = self.planner.plan(start=drone.location,
                                      end=drone.destination,
                                      time_count=self.iteration_count)
@@ -110,8 +112,12 @@ class Center:
                     break
     
     def save(self):
-        t = datetime.now().strftime("%m-%d_%H:%M:%S")
-        path = RESULT_BASE_PATH + '/' + t
+        #t = datetime.now().strftime("%m-%d_%H:%M:%S")
+        #path = RESULT_BASE_PATH + '/' + t
+        if COST_FUNCTION == 'first':
+            path = RESULT_BASE_PATH + '/' + ("v2_o%d_d%d_k%d_z%d" % (ORDERS, DRONES, PRIORITIZE_K, DRONE_ALTITUTE))
+        else:
+            path = RESULT_BASE_PATH + '/' + ("v2_o%d_d%d_p%d_z%d" % (ORDERS, DRONES, PRIORITIZE_P, DRONE_ALTITUTE))
         if not os.path.exists(path):
             os.makedirs(path)
             
@@ -187,6 +193,8 @@ class Center:
         Create a number of orders and add them to the queue of waiting orders
         """
         print("Start initializing orders...")
+        #orders = self.order_generator.save_orders(num=num, bias=True)
+        #exit()
         orders = self.order_generator.get_orders(num=num, bias=True)
         for order in orders:
             self.waiting_orders.push(order)

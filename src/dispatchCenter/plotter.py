@@ -8,6 +8,7 @@ from commons.configuration import BACKGROUND_IMAGE_PATH
 
 class Plotter:
     def __init__(self, warehouses: List[Coordinate], city_map: CityMap):
+        self.interactive = True
         self.img = plt.imread(BACKGROUND_IMAGE_PATH)
         self.figure, self.ax = plt.subplots()
         self.warehouses_x = [x.longitude for x in warehouses]
@@ -18,14 +19,17 @@ class Plotter:
         self.order_y = []
         la_diff = city_map.right - city_map.left
         lo_diff = city_map.top - city_map.bottom
-        self.mapLeft = city_map.left - 0.1 * lo_diff
-        self.mapRight = city_map.right + 0.1 * lo_diff
-        self.mapBottom = city_map.bottom - 0.1 * la_diff
-        self.mapTop = city_map.top + 0.1 * la_diff
+        self.mapLeft = city_map.left     #+ 0.004  #- 0.1 * lo_diff
+        self.mapRight = city_map.right   #+ 0.020  #+ 0.1 * lo_diff
+        self.mapBottom = city_map.bottom #+ 0.003  #- 0.1 * la_diff
+        self.mapTop = city_map.top       #- 0.005  #+ 0.1 * la_diff
+        self.ax.xaxis.set_visible(False)
+        self.ax.yaxis.set_visible(False)
         plt.sca(self.ax)
         plt.xlim(self.mapLeft, self.mapRight)
         plt.ylim(self.mapBottom, self.mapTop)
-        plt.ion()
+        if self.interactive:
+            plt.ion()
         
     def plot(self, drones: List[Drone]):
         """
@@ -60,4 +64,13 @@ class Plotter:
         plt.scatter(self.order_x, self.order_y, color='green', marker='v', linewidths=1)
         self.clearData()
         plt.title("Drone Delivery Simulation")
-        plt.pause(0.0001)
+        if self.interactive:
+            plt.pause(0.0001)
+        else:
+            plt.show()
+            self.figure, self.ax = plt.subplots()
+            self.ax.xaxis.set_visible(False)
+            self.ax.yaxis.set_visible(False)
+            plt.sca(self.ax)
+            plt.xlim(self.mapLeft, self.mapRight)
+            plt.ylim(self.mapBottom, self.mapTop)

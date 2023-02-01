@@ -5,6 +5,15 @@ import pandas as pd
 import geopandas as gpd
 import numpy as np
 from typing import List
+from shapely.geometry import Point
+
+
+def random_point_in_polygon(polygon):
+    min_x, min_y, max_x, max_y = polygon.bounds
+    while True:
+        point = Point(random.uniform(min_x, max_x), random.uniform(min_y, max_y))
+        if polygon.contains(point):
+            return Coordinate(latitude=point.y, longitude=point.x)
 
 
 class Coordinate:
@@ -79,11 +88,13 @@ class CityMap:
             for tract in tracts:
                 geo = self.geo[self.geo['id2'] == tract]
                 if geo.empty is False:
-                    centroid = geo.to_crs(CRS).centroid.to_crs(self.geo.crs).values[0]
-                    centroid_lo = centroid.x + random.uniform(-RANDOM_LO_COORD_OFFSET, RANDOM_LO_COORD_OFFSET)
-                    centroid_la = centroid.y + random.uniform(-RANDOM_LA_COORD_OFFSET, RANDOM_LA_COORD_OFFSET)
-                    pop_coords.append(Coordinate(latitude=centroid_la, longitude=centroid_lo))
+                    #centroid = geo.to_crs(CRS).centroid.to_crs(self.geo.crs).values[0]
+                    #centroid_lo = centroid.x + random.uniform(-RANDOM_LO_COORD_OFFSET, RANDOM_LO_COORD_OFFSET)
+                    #centroid_la = centroid.y + random.uniform(-RANDOM_LA_COORD_OFFSET, RANDOM_LA_COORD_OFFSET)
+                    #pop_coords.append(Coordinate(latitude=centroid_la, longitude=centroid_lo))
+                    pop_coords.append(random_point_in_polygon(geo.unary_union))
                     count += 1
+                    print('Order %d' % count)
         return pop_coords
         
 

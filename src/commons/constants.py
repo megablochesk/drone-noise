@@ -8,6 +8,9 @@ M_2_LONGITUDE = 0.00001139387
 # The central sound level of a flying drone (db)
 DRONE_NOISE = 90
 
+# Drone altitude in meters
+DRONE_ALTITUTE = 100
+
 
 
 

@@ -1,8 +1,16 @@
-# About 
-This project is a King's College London MSc Individual Project (7CCSMPRJ). The name of the project is 'Modeling and Reducing Noise in Drone Delivery
-Fleets'. The software is developed to simulate a drone food delivery system. 
+# Noise and Environmental Justice in Drone Fleet Delivery Paths (ICRA2023)
 
-There is similar simulation software written in Julia: https://github.com/sisl/MultiAgentAllocationTransit.jl
+By Zewei Zhou and Martim Brandao
+
+This project's objective was to estimate issues of noise and environmental justice in drone delivery fleets.
+The work is based on Zewei Zhou's MSc Project, and was published in ICRA2023.
+
+# Citation
+
+If you use this software in your research, please cite:
+```
+Zewei Zhou, Martim Brandao, "Noise and Environmental Justice in Drone Fleet Delivery Paths: A Simulation-Based Audit and Algorithm for Fairer Impact Distribution", ICRA 2023.
+```
 
 # How to run
 

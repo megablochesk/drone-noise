@@ -3,7 +3,7 @@ from cityMap.citymap import Coordinate
 import numpy as np
 from typing import List
 import random
-from commons.constants import M_2_LATITUDE, M_2_LONGITUDE, DRONE_NOISE
+from commons.constants import M_2_LATITUDE, M_2_LONGITUDE, DRONE_NOISE, DRONE_ALTITUTE
 from matplotlib import pyplot as plt
 import seaborn as sns
 
@@ -126,8 +126,15 @@ def calculate_noise_coord(x_dist, y_dist, central_noise):
     :param central_noise: the center matrix level
     :return: the matrix at (center_x + x_dist, center_y + y_dist)
     """
-    return central_noise - math.fabs(10 * math.log10(math.pow(x_dist / M_2_LONGITUDE, 2) +
-                                                     math.pow(y_dist / M_2_LATITUDE, 2)))
+    if math.fabs(x_dist) + math.fabs(y_dist) == 0:
+        if DRONE_ALTITUTE <= 0:
+            return central_noise
+        else:
+            return central_noise - math.fabs(10 * math.log10(math.pow(DRONE_ALTITUTE, 2)))
+    else:
+        return central_noise - math.fabs(10 * math.log10(math.pow(x_dist / M_2_LONGITUDE, 2) +
+                                                         math.pow(y_dist / M_2_LATITUDE, 2) +
+                                                         math.pow(DRONE_ALTITUTE, 2)))
 
 
 def multi_source_sound_level(sources):
@@ -271,12 +278,14 @@ def plot_matrix(X, Y, Z, title, path, color_min, color_max):
     plt.pcolormesh(X, Y, Z)
     plt.colorbar()
     plt.clim(vmin=color_min, vmax=color_max)
+    ax.xaxis.set_visible(False)
+    ax.yaxis.set_visible(False)
     plt.title(title)
     plt.savefig(path, bbox_inches='tight')
     plt.close()
     
 
-def plot_histogram(data, title, path, y_bottom, y_top):
+def plot_histogram(data, title, path, y_bottom, y_top, x_bottom=0, x_top=None):
     """
     Plot a histogram.
     
@@ -289,6 +298,8 @@ def plot_histogram(data, title, path, y_bottom, y_top):
     """
     fig, ax = plt.subplots()
     plt.ylim(y_bottom, y_top)
+    if x_top != None:
+      plt.xlim(x_bottom, x_top)
     plt.title(title)
     sns.histplot(data=data, kde=True)
     plt.savefig(path, bbox_inches='tight')

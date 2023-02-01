@@ -21,9 +21,9 @@ WAREHOUSES = [[37.805858377440266, -122.41276123169143],
               [37.76077744044274, -122.390011845567],
               [37.7426674419608, -122.39981393102507]]
 # Total number of orders (5000 predefined orders)
-ORDERS = 400
+ORDERS = 800
 # Total number of drones
-DRONES = 50
+DRONES = 400
 # Noise matrix cell size (in meter)
 NOISE_CELL_LENGTH = 100
 NOISE_CELL_WIDTH = 100
@@ -39,7 +39,7 @@ CENTER_PER_SLICE_TIME = 0.5
 
 # Paths
 # Base path for saving/loading orders to/from the local
-ORDER_BASE_PATH = 'recourses/data/order/orders.csv'
+ORDER_BASE_PATH = 'recourses/data/order/orders_v2.csv'
 # Base path for saving/loading matrix tracking data
 NOISE_BASE_PATH = 'recourses/results/matrix/trajectory'
 # Base path for saving heatmap/density map
@@ -62,10 +62,10 @@ RESULT_BASE_PATH = 'recourses/results/experiments'
 # Map
 CRS = 'epsg:3857'
 # Map boundary
-MAP_LEFT = -122.520
-MAP_RIGHT = -122.375
-MAP_TOP = 37.820
-MAP_BOTTOM = 37.700
+MAP_LEFT   = -122.520 + 0.004
+MAP_RIGHT  = -122.375 + 0.020
+MAP_TOP    =   37.820 - 0.005
+MAP_BOTTOM =   37.700 + 0.003
 # offset range 0-200m (latitude) to a random generated coordinate
 # Notice this is calculated at around 37 latitude
 RANDOM_LA_COORD_OFFSET = 0.001802
