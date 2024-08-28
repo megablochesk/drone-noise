@@ -3,53 +3,59 @@ import math
 import timeit
 from parameterized import parameterized
 
+from cityMap.citymap import Coordinate
 from common.constants import DRONE_ALTITUTE, M_2_LATITUDE, M_2_LONGITUDE, DRONE_NOISE
-from common.math_utils import calculate_noise_coord
+from common.math_utils import calculate_noise_coord, calculate_noise_at_distance, calculate_distance
 
 
 class TestCalculateNoiseCoord(unittest.TestCase):
 
     @parameterized.expand([
-        (0, 0),
-        (1000, 1000),
-        (0.1, 0.1),
-        (-1000, -1000),
-        (-0.1, -0.1)
+        (Coordinate(0, 0), Coordinate(0, 0)),
+        (Coordinate(0, 0), Coordinate(1000, 1000)),
+        (Coordinate(0, 0), Coordinate(0.1, 0.1)),
+        (Coordinate(0, 0), Coordinate(-1000, -1000)),
+        (Coordinate(0, 0), Coordinate(-0.1, -0.1))
     ])
-    def test_calculate_noise_coord(self, x_dist, y_dist):
-        result = calculate_noise_coord(x_dist, y_dist, DRONE_NOISE)
-        expected = TestCalculateNoiseCoord.calculate_expected_noise_coord(x_dist, y_dist, DRONE_NOISE)
+    def test_calculate_noise_coord_line_dist(self, coordinates1, coordinates2):
+        la_distance, lo_distance = coordinates2 - coordinates1
+        line_distance = calculate_distance(coordinates1, coordinates2)
 
+        expected = TestCalculateNoiseCoord.calculate_expected_noise_coord(lo_distance, la_distance, DRONE_NOISE)
+
+        result = calculate_noise_at_distance(line_distance, DRONE_NOISE)
+
+        # print(result, expected)
         self.assertEqual(result, expected)
 
-    """
+
     @parameterized.expand([
-        (0, 0),
-        (1000, 1000),
-        (0.1, 0.1),
-        (-1000, -1000),
-        (-0.1, -0.1)
+        (Coordinate(0, 0), Coordinate(0, 0)),
+        (Coordinate(0, 0), Coordinate(1000, 1000)),
+        (Coordinate(0, 0), Coordinate(0.1, 0.1)),
+        (Coordinate(0, 0), Coordinate(-1000, -1000)),
+        (Coordinate(0, 0), Coordinate(-0.1, -0.1))
     ])
-    def test_performance_comparison(self, x_dist, y_dist):
-        # Measure time for the original function
+    def test_performance_comparison(self, coordinates1, coordinates2):
+        la_distance, lo_distance = coordinates2 - coordinates1
+        line_distance = calculate_distance(coordinates1, coordinates2)
+
         time_original = timeit.timeit(
-            lambda: calculate_expected_noise_coord(x_dist, y_dist, DRONE_NOISE),
+            lambda: TestCalculateNoiseCoord.calculate_expected_noise_coord(lo_distance, la_distance, DRONE_NOISE),
             number=1000
         )
 
-        # Measure time for the optimized function
         time_optimized = timeit.timeit(
-            lambda: calculate_noise_coord(x_dist, y_dist, DRONE_NOISE),
+            lambda: calculate_noise_at_distance(line_distance, DRONE_NOISE),
             number=1000
         )
 
-        print(f"Performance for x_dist={x_dist}, y_dist={y_dist}:")
+        print(f"Performance for x_dist={lo_distance}, y_dist={la_distance}:")
         print(f"Original function time: {time_original:.6f} seconds")
         print(f"Optimized function time: {time_optimized:.6f} seconds")
 
-        # Assert that the optimized version is faster (you can adjust the factor based on expected speedup)
         # self.assertLess(time_optimized, time_original)
-    """
+
 
     @staticmethod
     def calculate_expected_noise_coord(x_dist, y_dist, central_noise):

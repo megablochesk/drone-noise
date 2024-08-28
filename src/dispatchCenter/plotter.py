@@ -7,7 +7,7 @@ from typing import List
 from cityMap.citymap import Coordinate
 from drones.drone import Drone
 from cityMap.citymap import CityMap
-from commons.configuration import BACKGROUND_IMAGE_PATH
+from common.configuration import BACKGROUND_IMAGE_PATH
 
 
 class Plotter:

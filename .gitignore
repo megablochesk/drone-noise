@@ -54,4 +54,3 @@ src/recourses/results/experiments/v2_o5_d400_p5_z100/config.csv
 src/recourses/results/experiments/v2_o5_d400_p5_z100/drone.csv
 src/recourses/results/experiments/v2_o5_d400_p5_z100/matrix.csv
 src/commons/configuration.py
-src/commons/configuration.py
