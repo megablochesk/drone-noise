@@ -72,6 +72,39 @@ class DensityMatrix:
                         cell.population_density = line['Population_Density_in_2010']
                         break
 
+    def track_noise(self, drones):
+        """
+        The matrix tracks all drones' matrix and record them to the matrix.
+
+        :param drones: a list of delivering drones
+        :return:
+        """
+        for i in range(self.rows):
+            for j in range(self.cols):
+                cell = self.matrix[i][j]
+                noises = []
+                for drone in drones:
+                    lat_dist, lon_dist, line_dist = distance(cell.centroid, drone.location)
+                    # if line_dist == 0:
+                    #    noise = drone.NOISE
+                    # else:
+                    #    noise = calculate_noise_coord(x_dist=lon_dist, y_dist=lat_dist, central_noise=drone.NOISE)
+                    noise = calculate_noise_coord(x_dist=lon_dist, y_dist=lat_dist, central_noise=drone.NOISE)
+                    noises.append(noise)
+                mixed_noise = multi_source_sound_level(noises)
+                cell.receive_noise(mixed_noise)
+
+    def get_cell(self, coordinate: Coordinate):
+        lon = coordinate.longitude
+        lat = coordinate.latitude
+        if self.is_valid(lon, lat) is False:
+            print(f"WARNING: No cell is found at (lon:{lon}, lat:{lat})")
+            return None
+        else:
+            row = math.floor(abs(lat - self.top) / (self.cell_width_m * M_2_LATITUDE))
+            col = math.floor(abs(lon - self.left) / (self.cell_length_m * M_2_LONGITUDE))
+            return self.matrix[row][col]
+
     def is_valid(self, longitude, latitude):
         if longitude >= self.right or longitude < self.left:
             return False
@@ -90,39 +123,6 @@ class DensityMatrix:
     def get_pd_matrix(self):
         return np.array([[self.matrix[i][j].population_density for j in range(self.cols)]
                          for i in range(self.rows)])
-    
-    def get_cell(self, coordinate: Coordinate):
-        lon = coordinate.longitude
-        lat = coordinate.latitude
-        if self.is_valid(lon, lat) is False:
-            print(f"WARNING: No cell is found at (lon:{lon}, lat:{lat})")
-            return None
-        else:
-            row = math.floor(abs(lat - self.top) / (self.cell_width_m * M_2_LATITUDE))
-            col = math.floor(abs(lon - self.left) / (self.cell_length_m * M_2_LONGITUDE))
-            return self.matrix[row][col]
-    
-    def track_noise(self, drones):
-        """
-        The matrix tracks all drones' matrix and record them to the matrix.
-        
-        :param drones: a list of working drones
-        :return:
-        """
-        for i in range(self.rows):
-            for j in range(self.cols):
-                cell = self.matrix[i][j]
-                noises = []
-                for drone in drones:
-                    lat_dist, lon_dist, line_dist = distance(cell.centroid, drone.location)
-                    #if line_dist == 0:
-                    #    noise = drone.NOISE
-                    #else:
-                    #    noise = calculate_noise_coord(x_dist=lon_dist, y_dist=lat_dist, central_noise=drone.NOISE)
-                    noise = calculate_noise_coord(x_dist=lon_dist, y_dist=lat_dist, central_noise=drone.NOISE)
-                    noises.append(noise)
-                mixed_noise = multi_source_sound_level(noises)
-                cell.receive_noise(mixed_noise)
     
     def calculate_std(self, time_count):
         return np.std(self.get_average_matrix(time_count))
