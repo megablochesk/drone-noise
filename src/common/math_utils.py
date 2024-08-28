@@ -5,7 +5,7 @@ from typing import List
 import random
 from common.constants import M_2_LATITUDE, M_2_LONGITUDE, DRONE_NOISE, DRONE_ALTITUTE
 
-ALTITUDE_SQUARED = DRONE_ALTITUTE ** 2
+DRONE_ALTITUDE_SQUARED = DRONE_ALTITUTE ** 2
 
 from matplotlib import pyplot as plt
 import seaborn as sns
@@ -24,20 +24,17 @@ def offset_coordinate(coordinate: Coordinate, la_range, lo_range):
     coordinate.longitude += random.uniform(-lo_range, lo_range)
 
 
-def distance(c1: Coordinate, c2: Coordinate):
+def calculate_distance(c1: Coordinate, c2: Coordinate):
     """
     Calculate distances between two coordinates
 
     :param c1: current coordinate
     :param c2: another coordinate
-    :return:
-        1. la_distance: latitude distance from c1 to c2 in latitude
-        2. lo_distance: longitude distance from c1 to c2 in longitude
-        3. meter_distance: straight-line distance from c1 to c2 in meters
+    :return: straight-line distance from c1 to c2 in meters
     """
     la_distance, lo_distance = c2 - c1
-    meter_distance = math.sqrt(math.pow(la_distance / M_2_LATITUDE, 2) + math.pow(lo_distance / M_2_LONGITUDE, 2))
-    return la_distance, lo_distance, meter_distance
+
+    return math.sqrt(math.pow(la_distance / M_2_LATITUDE, 2) + math.pow(lo_distance / M_2_LONGITUDE, 2))
 
 
 def straight_distance_matrix(row1, col1, row2, col2):
@@ -79,8 +76,10 @@ def nearest_neighbor_idx(neighbors: List[Coordinate], target: Coordinate) -> int
     """
     distances = []
     for neighbor in neighbors:
-        _, _, line_distance = distance(neighbor, target)
+        line_distance = calculate_distance(neighbor, target)
+
         distances.append(line_distance)
+
     return np.argmin(distances)
 
 
@@ -120,34 +119,20 @@ def calculate_noise_m(x_dist, y_dist, central_noise):
     return central_noise - math.fabs(10 * math.log10(math.pow(x_dist, 2) + math.pow(y_dist, 2)))
 
 
-def calculate_noise_coord(x_dist, y_dist, central_noise):
-    """
-    Calculate the noise level at a distance.
+def calculate_noise_at_distance(distance, noise_at_source):
+    if distance == 0:
+        return noise_at_source if DRONE_ALTITUTE <= 0 else noise_at_source - 20 * math.log10(DRONE_ALTITUTE)
 
-    :param x_dist: x-axis distance to center x in longitude
-    :param y_dist: y-axis distance to center y in latitude
-    :param central_noise: the center noise level
-    :return: the noise level at the specified distance
-    """
-    if x_dist == 0 and y_dist == 0:
-        return central_noise if DRONE_ALTITUTE <= 0 else central_noise - 20 * math.log10(DRONE_ALTITUTE)
+    total_distance_squared = distance ** 2 + DRONE_ALTITUDE_SQUARED
 
-    norm_squared_distances = (x_dist / M_2_LONGITUDE) ** 2 + (y_dist / M_2_LATITUDE) ** 2
-
-    return central_noise - 10 * math.log10(norm_squared_distances + ALTITUDE_SQUARED)
+    return noise_at_source - 10 * math.log10(total_distance_squared)
 
 
-def multi_source_sound_level(sources):
-    """
-    Calculate the mixed sound level from multiple sound sources
-
-    :param sources: a list of sound level
-    :return: the mixed sound level
-    """
-    if not sources:
+def calculate_mixed_noise_level(sound_sources):
+    if not sound_sources:
         return 0
 
-    linear_sum = np.sum(np.power(10, np.array(sources) / 10))
+    linear_sum = np.sum(np.power(10, np.array(sound_sources) / 10))
 
     return 10 * np.log10(linear_sum)
 

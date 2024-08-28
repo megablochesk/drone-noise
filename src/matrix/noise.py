@@ -4,7 +4,7 @@ from common.configuration import NOISE_CELL_LENGTH, NOISE_CELL_WIDTH
 from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM
 from common.configuration import GEO_PATH, PD_PATH
 from common.constants import M_2_LONGITUDE, M_2_LATITUDE
-from common.math_utils import multi_source_sound_level, distance, calculate_noise_coord
+from common.math_utils import calculate_mixed_noise_level, calculate_distance, calculate_noise_at_distance
 from cityMap.citymap import Coordinate
 import math
 import numpy as np
@@ -77,20 +77,15 @@ class DensityMatrix:
         The matrix tracks all drones' matrix and record them to the matrix.
 
         :param drones: a list of delivering drones
-        :return:
+        :return: none
         """
-        for i in range(self.rows):
-            for j in range(self.cols):
-                cell = self.matrix[i][j]
-                noises = []
-                for drone in drones:
-                    lat_dist, lon_dist, line_dist = distance(cell.centroid, drone.location)
-
-                    noise = calculate_noise_coord(x_dist=lon_dist, y_dist=lat_dist, central_noise=drone.NOISE)
-                    noises.append(noise)
-
-                mixed_noise = multi_source_sound_level(noises)
-
+        for row in self.matrix:
+            for cell in row:
+                noises = [
+                    calculate_noise_at_distance(calculate_distance(cell.centroid, drone.location), drone.NOISE)
+                    for drone in drones
+                ]
+                mixed_noise = calculate_mixed_noise_level(noises)
                 cell.set_noise(mixed_noise)
 
     def get_cell(self, coordinate: Coordinate):
