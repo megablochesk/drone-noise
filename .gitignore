@@ -48,3 +48,10 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+analysis/Code profiling/before refactoring/drone-noise2.pstat
+analysis/Code profiling/before refactoring/drone-noise1.pstat
+src/recourses/results/experiments/v2_o5_d400_p5_z100/config.csv
+src/recourses/results/experiments/v2_o5_d400_p5_z100/drone.csv
+src/recourses/results/experiments/v2_o5_d400_p5_z100/matrix.csv
+src/commons/configuration.py
+src/commons/configuration.py

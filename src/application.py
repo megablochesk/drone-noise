@@ -8,4 +8,4 @@ if __name__ == '__main__':
                     city_map=CityMap(left=MAP_LEFT, right=MAP_RIGHT, bottom=MAP_BOTTOM, top=MAP_TOP),
                     num_orders=ORDERS,
                     num_drones=DRONES)
-    center.run()
+    center.run_center()

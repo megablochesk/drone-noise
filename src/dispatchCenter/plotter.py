@@ -1,3 +1,7 @@
+import matplotlib
+matplotlib.use('TkAgg')
+
+
 import matplotlib.pyplot as plt
 from typing import List
 from cityMap.citymap import Coordinate
@@ -64,6 +68,7 @@ class Plotter:
         plt.scatter(self.order_x, self.order_y, color='green', marker='v', linewidths=1)
         self.clearData()
         plt.title("Drone Delivery Simulation")
+
         if self.interactive:
             plt.pause(0.0001)
         else:
