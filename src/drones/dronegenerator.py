@@ -1,6 +1,6 @@
 from cityMap.citymap import Coordinate
 from typing import List
-from commons.decorators import auto_str
+from common.decorators import auto_str
 from drones.drone import Drone
 import copy
 

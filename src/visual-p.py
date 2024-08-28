@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
-from commons.configuration import RESULT_BASE_PATH
-from commons.my_util import plot_matrix, plot_histogram
-from commons.configuration import GEO_PATH, PD_PATH, CRS
-from commons.configuration import style_function, highlight_function
-from commons.configuration import HARM_AVG_LEVEL, HARM_MAX_LEVEL
+from common.configuration import RESULT_BASE_PATH
+from common.math_utils import plot_matrix, plot_histogram
+from common.configuration import GEO_PATH, PD_PATH, CRS
+from common.configuration import style_function, highlight_function
+from common.configuration import HARM_AVG_LEVEL, HARM_MAX_LEVEL
 import geopandas as gpd
 import folium
 from folium.raster_layers import ImageOverlay

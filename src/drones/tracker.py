@@ -1,4 +1,4 @@
-from commons.decorators import auto_str
+from common.decorators import auto_str
 
 
 @auto_str

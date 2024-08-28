@@ -3,7 +3,10 @@ from cityMap.citymap import Coordinate
 import numpy as np
 from typing import List
 import random
-from commons.constants import M_2_LATITUDE, M_2_LONGITUDE, DRONE_NOISE, DRONE_ALTITUTE
+from common.constants import M_2_LATITUDE, M_2_LONGITUDE, DRONE_NOISE, DRONE_ALTITUTE
+
+ALTITUDE_SQUARED = DRONE_ALTITUTE ** 2
+
 from matplotlib import pyplot as plt
 import seaborn as sns
 
@@ -119,37 +122,34 @@ def calculate_noise_m(x_dist, y_dist, central_noise):
 
 def calculate_noise_coord(x_dist, y_dist, central_noise):
     """
-    Calculate the matrix at distance.
+    Calculate the noise level at a distance.
 
     :param x_dist: x-axis distance to center x in longitude
     :param y_dist: y-axis distance to center y in latitude
-    :param central_noise: the center matrix level
-    :return: the matrix at (center_x + x_dist, center_y + y_dist)
+    :param central_noise: the center noise level
+    :return: the noise level at the specified distance
     """
-    if math.fabs(x_dist) + math.fabs(y_dist) == 0:
-        if DRONE_ALTITUTE <= 0:
-            return central_noise
-        else:
-            return central_noise - math.fabs(10 * math.log10(math.pow(DRONE_ALTITUTE, 2)))
-    else:
-        return central_noise - math.fabs(10 * math.log10(math.pow(x_dist / M_2_LONGITUDE, 2) +
-                                                         math.pow(y_dist / M_2_LATITUDE, 2) +
-                                                         math.pow(DRONE_ALTITUTE, 2)))
+    if x_dist == 0 and y_dist == 0:
+        return central_noise if DRONE_ALTITUTE <= 0 else central_noise - 20 * math.log10(DRONE_ALTITUTE)
+
+    norm_squared_distances = (x_dist / M_2_LONGITUDE) ** 2 + (y_dist / M_2_LATITUDE) ** 2
+
+    return central_noise - 10 * math.log10(norm_squared_distances + ALTITUDE_SQUARED)
 
 
 def multi_source_sound_level(sources):
     """
     Calculate the mixed sound level from multiple sound sources
-    
+
     :param sources: a list of sound level
     :return: the mixed sound level
     """
-    if sources is None or len(sources) == 0:
+    if not sources:
         return 0
-    summation = 0
-    for source in sources:
-        summation += np.power(10, source / 10)
-    return 10 * np.log10(summation)
+
+    linear_sum = np.sum(np.power(10, np.array(sources) / 10))
+
+    return 10 * np.log10(linear_sum)
 
 
 def heuristic(row1, col1, row2, col2, step_cost):
