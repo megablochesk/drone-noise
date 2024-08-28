@@ -1,13 +1,13 @@
-from commons.decorators import auto_str
-from commons.enum import DroneStatus
-from commons.my_util import nearest_free_drone, difference
-from commons.util import Queue
-from commons.configuration import CENTER_PER_SLICE_TIME, PLOT_SIMULATION
-from commons.configuration import USE_DENSITY_MATRIX, USE_LOCAL_ORDER
-from commons.configuration import ORDERS, DRONES, NOISE_CELL_WIDTH, NOISE_CELL_LENGTH, COST_FUNCTION, PRIORITIZE_K, PRIORITIZE_P
-from commons.configuration import RESULT_BASE_PATH
-from commons.configuration import MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM
-from commons.constants import DRONE_ALTITUTE
+from common.decorators import auto_str
+from common.enum import DroneStatus
+from common.math_utils import nearest_free_drone, difference
+from common.util import Queue
+from common.configuration import CENTER_PER_SLICE_TIME, PLOT_SIMULATION
+from common.configuration import USE_DENSITY_MATRIX, USE_LOCAL_ORDER
+from common.configuration import ORDERS, DRONES, NOISE_CELL_WIDTH, NOISE_CELL_LENGTH, COST_FUNCTION, PRIORITIZE_K, PRIORITIZE_P
+from common.configuration import RESULT_BASE_PATH
+from common.configuration import MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM
+from common.constants import DRONE_ALTITUTE
 from cityMap.citymap import Coordinate, CityMap
 from drones.dronegenerator import DroneGenerator
 from orders.ordergenerator import OrderGenerator
@@ -76,6 +76,7 @@ class Center:
             order = self.waiting_orders.pop()  # pop the least recent order
             drone = nearest_free_drone(order, self.free_drones)  # find the nearest free drone
             drone.accept_order(order)  # let the drone accept the order
+
             self.free_drones.remove(drone)  # remove the drone from the list of free drones
             self.waiting_planning_drones.append(drone)
 

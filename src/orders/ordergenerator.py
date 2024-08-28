@@ -1,10 +1,9 @@
-from commons.decorators import auto_str
+from common.decorators import auto_str
+from common.configuration import ORDER_BASE_PATH, USE_LOCAL_ORDER
 from cityMap.citymap import CityMap, Coordinate
 from orders.order import Order
 from faker import Faker
 from datetime import datetime
-from commons.configuration import ORDER_BASE_PATH
-from commons.configuration import USE_LOCAL_ORDER
 import csv
 import pandas as pd
 

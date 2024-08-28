@@ -1,6 +1,6 @@
 import random
-from commons.decorators import auto_str
-from commons.configuration import CRS, GEO_PATH, PD_PATH, RANDOM_LA_COORD_OFFSET, RANDOM_LO_COORD_OFFSET
+from common.decorators import auto_str
+from common.configuration import CRS, GEO_PATH, PD_PATH, RANDOM_LA_COORD_OFFSET, RANDOM_LO_COORD_OFFSET
 import pandas as pd
 import geopandas as gpd
 import numpy as np

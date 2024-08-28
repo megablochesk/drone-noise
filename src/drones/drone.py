@@ -1,10 +1,10 @@
 from cityMap.citymap import Coordinate
 from orders.order import Order
-from commons.decorators import auto_str
-from commons.enum import DroneStatus
-from commons.my_util import nearest_neighbor, distance
-from commons.constants import DRONE_NOISE
-from commons.configuration import PRINT_TERMINAL, MAP_TOP, MAP_LEFT, MAP_RIGHT, MAP_BOTTOM
+from common.decorators import auto_str
+from common.enum import DroneStatus
+from common.math_utils import nearest_neighbor, distance
+from common.constants import DRONE_NOISE
+from common.configuration import PRINT_TERMINAL, MAP_TOP, MAP_LEFT, MAP_RIGHT, MAP_BOTTOM
 from datetime import datetime
 from typing import List
 from drones.tracker import Tracker
@@ -41,7 +41,7 @@ class Drone:
             print(f"[{datetime.now()}] Drone '{self.drone_id}' accepted Order '{self.order.order_id}'")
             print(f"[{datetime.now()}] Drone '{self.drone_id}' is flying to {self.destination} to pick up food")
     
-    def collect_food(self):
+    def collect_parcel(self):
         """
         Drone collects the food at the start location of the order.
         
@@ -56,9 +56,9 @@ class Drone:
             print(f"[{datetime.now()}] Drone '{self.drone_id}' collected Order '{self.order.order_id}'")
             print(f"[{datetime.now()}] Drone '{self.drone_id}' is flying to {self.destination} to deliver food")
     
-    def give_food(self):
+    def complete_delivering(self):
         """
-        Drone gives food to the customer and starts to return to one of warehouses.
+        Drone complete the delivery to the customer and starts to return to one of warehouses.
         
         Update the order's status from 'DELIVERING' to 'COMPLETE'.
         Find the nearest warehouse and set it as the new destination for the drone,
@@ -110,9 +110,9 @@ class Drone:
                 if self.reach_destination():
                     self.need_planning = True
                     if self.status is DroneStatus.COLLECTING:
-                        self.collect_food()
+                        self.collect_parcel()
                     elif self.status is DroneStatus.DELIVERING:
-                        self.give_food()
+                        self.complete_delivering()
                     elif self.status is DroneStatus.RETURNING:
                         self.recharge()
             else:

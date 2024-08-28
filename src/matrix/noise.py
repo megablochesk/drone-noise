@@ -1,10 +1,10 @@
-from commons.decorators import auto_str
-from commons.configuration import USE_POPULATION_DENSITY
-from commons.configuration import NOISE_CELL_LENGTH, NOISE_CELL_WIDTH
-from commons.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM
-from commons.configuration import GEO_PATH, PD_PATH
-from commons.constants import M_2_LONGITUDE, M_2_LATITUDE
-from commons.my_util import multi_source_sound_level, distance, calculate_noise_coord
+from common.decorators import auto_str
+from common.configuration import USE_POPULATION_DENSITY
+from common.configuration import NOISE_CELL_LENGTH, NOISE_CELL_WIDTH
+from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM
+from common.configuration import GEO_PATH, PD_PATH
+from common.constants import M_2_LONGITUDE, M_2_LATITUDE
+from common.math_utils import multi_source_sound_level, distance, calculate_noise_coord
 from cityMap.citymap import Coordinate
 import math
 import numpy as np
@@ -23,7 +23,7 @@ class Cell:
         self.max_noise = 0
         self.population_density = 1
     
-    def receive_noise(self, noise):
+    def set_noise(self, noise):
         """
         Cell receives a mixed matrix and update its total and maximum matrix.
         
@@ -85,14 +85,13 @@ class DensityMatrix:
                 noises = []
                 for drone in drones:
                     lat_dist, lon_dist, line_dist = distance(cell.centroid, drone.location)
-                    # if line_dist == 0:
-                    #    noise = drone.NOISE
-                    # else:
-                    #    noise = calculate_noise_coord(x_dist=lon_dist, y_dist=lat_dist, central_noise=drone.NOISE)
+
                     noise = calculate_noise_coord(x_dist=lon_dist, y_dist=lat_dist, central_noise=drone.NOISE)
                     noises.append(noise)
+
                 mixed_noise = multi_source_sound_level(noises)
-                cell.receive_noise(mixed_noise)
+
+                cell.set_noise(mixed_noise)
 
     def get_cell(self, coordinate: Coordinate):
         lon = coordinate.longitude
@@ -111,11 +110,7 @@ class DensityMatrix:
         if latitude >= self.top or latitude < self.bottom:
             return False
         return True
-    
-    def get_average_matrix(self, time_count):
-        return np.array([[self.matrix[i][j].total_noise / time_count for j in range(self.cols)]
-                         for i in range(self.rows)])
-    
+
     def get_maximum_matrix(self):
         return np.array([[self.matrix[i][j].max_noise for j in range(self.cols)]
                          for i in range(self.rows)])
@@ -126,3 +121,7 @@ class DensityMatrix:
     
     def calculate_std(self, time_count):
         return np.std(self.get_average_matrix(time_count))
+
+    def get_average_matrix(self, time_count):
+        return np.array([[self.matrix[i][j].total_noise / time_count for j in range(self.cols)]
+                         for i in range(self.rows)])

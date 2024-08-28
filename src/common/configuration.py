@@ -2,7 +2,7 @@
 # Print delivery info to the terminal
 PRINT_TERMINAL = True
 # Plot the simulation
-PLOT_SIMULATION = True
+PLOT_SIMULATION = False
 # Use DensityMatrix to track matrix: tracking noise in matrix
 USE_DENSITY_MATRIX = True
 # Use local order data: True - load predefined orders; False - generate new orders
@@ -21,7 +21,7 @@ WAREHOUSES = [[37.805858377440266, -122.41276123169143],
               [37.76077744044274, -122.390011845567],
               [37.7426674419608, -122.39981393102507]]
 # Total number of orders (5000 predefined orders)
-ORDERS = 800
+ORDERS = 5
 # Total number of drones
 DRONES = 400
 # Noise matrix cell size (in meter)
