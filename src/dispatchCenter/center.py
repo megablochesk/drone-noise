@@ -1,6 +1,6 @@
 from common.decorators import auto_str
 from common.enum import DroneStatus
-from common.math_utils import nearest_free_drone, difference
+from common.math_utils import difference, find_nearest_free_drone
 from common.util import Queue
 from common.configuration import CENTER_PER_SLICE_TIME, PLOT_SIMULATION
 from common.configuration import USE_DENSITY_MATRIX, USE_LOCAL_ORDER
@@ -74,7 +74,7 @@ class Center:
 
         while self.has_waiting_order() and self.has_free_drone():
             order = self.waiting_orders.pop()  # pop the least recent order
-            drone = nearest_free_drone(order, self.free_drones)  # find the nearest free drone
+            drone = find_nearest_free_drone(order, self.free_drones)
             drone.accept_order(order)  # let the drone accept the order
 
             self.free_drones.remove(drone)  # remove the drone from the list of free drones
@@ -103,7 +103,7 @@ class Center:
         If any delivering drone completes its order, update its status and move it to the list of free drones.
         """
         for drone in self.delivering_drones:
-            drone.update()
+            drone.update_position()
             if drone.status is DroneStatus.WAITING:
                 self.free_drones.append(drone)
 

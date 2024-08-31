@@ -54,7 +54,7 @@ class OrderGenerator:
             orders_list.append([order.order_id,
                                 order.start_location.latitude, order.start_location.longitude,
                                 order.end_location.latitude, order.end_location.longitude,
-                                order.generate_time, order.description])
+                                order.creation_time, order.description])
         fields = ['Order ID',
                   'Start Latitude', 'Start Longitude',
                   'End Latitude', 'End Longitude',

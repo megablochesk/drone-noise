@@ -34,7 +34,7 @@ class Drone:
         Update drone's status from 'WAITING' to 'COLLECTING'.
         """
         self.order = order
-        self.order.accept()
+        self.order.mark_as_accepted()
         self.status = DroneStatus.COLLECTING
         self.destination = self.order.start_location
         if PRINT_TERMINAL:
@@ -49,7 +49,7 @@ class Drone:
         Set a new destination for the drone and calculate speed based on the new destination.
         Update drone's status from 'COLLECTING' to 'DELIVERING'.
         """
-        self.order.deliver()
+        self.order.mark_as_en_route()
         self.status = DroneStatus.DELIVERING
         self.destination = self.order.end_location
         if PRINT_TERMINAL:
@@ -65,14 +65,14 @@ class Drone:
         and calculate speed based on the new destination.
         Update drone's status from 'DELIVERING' to 'RETURNING'.
         """
-        self.order.complete()
+        self.order.mark_as_delivered()
         self.status = DroneStatus.RETURNING
         self.destination = nearest_neighbor(neighbors=self.warehouses, target=self.location)
         if PRINT_TERMINAL:
             print(f"[{datetime.now()}] Drone '{self.drone_id}' delivered Order '{self.order.order_id}'")
             print(f"[{datetime.now()}] Drone '{self.drone_id}' is flying to {self.destination} to recharge")
     
-    def recharge(self):
+    def return_to_warehouse(self):
         """
         Drone arrives at one of the warehouses and start to recharge.
         
@@ -87,48 +87,60 @@ class Drone:
         if PRINT_TERMINAL:
             print(f"[{datetime.now()}] Drone '{self.drone_id}' returned to the nearest warehouse and start to recharge")
             print(f"[{datetime.now()}] Drone '{self.drone_id}' is recharging and waiting for new orders")
-    
-    def update(self):
+
+    def update_position(self):
         """
         Update drone's position and status based on its current status.
-        
+
         Drone's status will change: COLLECTING -> DELIVERING -> RETURNING -> WAITING
         """
-        if self.out_of_map():
-            # if the drone is out of the map, print an error message
-            # and send it to the nearest warehouse
-            if PRINT_TERMINAL:
-                print(f"ERROR: {self} is out of boundary, {self.order} is failed to be delivered, "
-                      f"{self} has been sent to the nearest warehouse")
-            self.order = None
-            self.destination = None
-            self.status = DroneStatus.WAITING
-            self.location = nearest_neighbor(neighbors=self.warehouses, target=self.location)
+        if self.is_outside_map_boundary():
+            self.handle_out_of_boundary()
+        elif self.drone_has_path():
+            self.follow_path()
         else:
-            if self.has_path():
-                self.fly_path()
-                if self.reach_destination():
-                    self.need_planning = True
-                    if self.status is DroneStatus.COLLECTING:
-                        self.collect_parcel()
-                    elif self.status is DroneStatus.DELIVERING:
-                        self.complete_delivering()
-                    elif self.status is DroneStatus.RETURNING:
-                        self.recharge()
-            else:
-                if PRINT_TERMINAL:
-                    print(f"WARNING: {self} has no path")
+            self.handle_no_path()
+
+    def handle_out_of_boundary(self):
+        if PRINT_TERMINAL:
+            print(f"ERROR: {self} is out of boundary, {self.order} failed to be delivered, "
+                  f"{self} has been sent to the nearest warehouse")
+
+        self.abort_mission()
+
+    def handle_no_path(self):
+        if PRINT_TERMINAL:
+            print(f"WARNING: {self} has no path")
+
+    def follow_path(self):
+        self.fly_to_next_coordinate()
+        if self.has_reached_destination():
+            self.need_planning = True
+            self.update_status_on_reach()
+
+    def update_status_on_reach(self):
+        if self.status is DroneStatus.COLLECTING:
+            self.collect_parcel()
+        elif self.status is DroneStatus.DELIVERING:
+            self.complete_delivering()
+        elif self.status is DroneStatus.RETURNING:
+            self.return_to_warehouse()
+
+    def abort_mission(self):
+        self.order = None
+        self.destination = None
+        self.status = DroneStatus.UNASSIGNED
+
+        self.send_to_nearest_warehouse()
+
+    def send_to_nearest_warehouse(self):
+        self.location = nearest_neighbor(neighbors=self.warehouses, target=self.location)
     
     def receive_path(self, path):
-        """
-        Receive a path.
-        
-        :param path: a path planned by 'PathPlanner'
-        """
         self.path = path
         self.need_planning = False
     
-    def fly_path(self):
+    def fly_to_next_coordinate(self):
         """
         Fly to the next coordinate on the path. While flying, use tracker to track step and distance.
         """
@@ -140,23 +152,17 @@ class Drone:
         self.tracker.increment_distance(distance)
         self.tracker.increment_step()
     
-    def out_of_map(self):
+    def is_outside_map_boundary(self):
         """
         Check if the drone is within the boundary of the map
         """
-        if self.location.latitude > MAP_TOP or self.location.latitude < MAP_BOTTOM \
-                or self.location.longitude > MAP_RIGHT or self.location.longitude < MAP_LEFT:
-            return True
-        else:
-            return False
+        return not (MAP_BOTTOM <= self.location.latitude <= MAP_TOP and
+                    MAP_LEFT <= self.location.longitude <= MAP_RIGHT)
     
-    def has_path(self):
-        """
-        Check if the drone has a path.
-        """
-        return len(self.path) > 0
-    
-    def reach_destination(self):
+    def drone_has_path(self):
+        return bool(self.path)
+
+    def has_reached_destination(self):
         """
         Check if the drone has reached the current destination.
         """

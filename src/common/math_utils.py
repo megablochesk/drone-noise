@@ -66,6 +66,28 @@ def intersection(list1, list2):
     return list(set(list1).intersection(set(list2)))
 
 
+def find_nearest_free_drone(order, free_drones):
+    """
+    Find the nearest drone among free drones to a given order
+
+    :param order: the target order
+    :param free_drones: all free drones that can chosen from
+    :return the nearest drone
+    """
+    return free_drones[nearest_neighbor_idx(
+        neighbors=[x.location for x in free_drones],
+        target=order.start_location)]
+
+def nearest_neighbor(neighbors: List[Coordinate], target: Coordinate) -> Coordinate:
+    """
+    Find the nearest neighbor to the target location.
+
+    :param neighbors: All candidate neighbors around the target
+    :param target:  The target location
+    :return: The location of the nearest neighbor
+    """
+    return neighbors[nearest_neighbor_idx(neighbors, target)]
+
 def nearest_neighbor_idx(neighbors: List[Coordinate], target: Coordinate) -> int:
     """
     Find the index of the nearest neighbor to the target location.
@@ -81,30 +103,6 @@ def nearest_neighbor_idx(neighbors: List[Coordinate], target: Coordinate) -> int
         distances.append(line_distance)
 
     return np.argmin(distances)
-
-
-def nearest_neighbor(neighbors: List[Coordinate], target: Coordinate) -> Coordinate:
-    """
-    Find the nearest neighbor to the target location.
-
-    :param neighbors: All candidate neighbors around the target
-    :param target:  The target location
-    :return: The location of the nearest neighbor
-    """
-    return neighbors[nearest_neighbor_idx(neighbors, target)]
-
-
-def nearest_free_drone(order, free_drones):
-    """
-    Find the nearest drone among free drones to a given order
-
-    :param order: the target order
-    :param free_drones: all free drones that can chosen from
-    :return the nearest drone
-    """
-    return free_drones[nearest_neighbor_idx(
-        neighbors=[x.location for x in free_drones],
-        target=order.start_location)]
 
 
 def calculate_noise_m(x_dist, y_dist, central_noise):
