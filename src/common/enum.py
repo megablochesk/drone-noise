@@ -2,10 +2,10 @@ from enum import Enum
 
 
 class OrderStatus(Enum):
-    WAITING = 1
+    UNASSIGNED = 1
     ACCEPTED = 2
-    DELIVERING = 3
-    COMPLETE = 4
+    EN_ROUTE = 3
+    DELIVERED = 4
 
 
 class DroneStatus(Enum):

@@ -2,7 +2,7 @@
 # Print delivery info to the terminal
 PRINT_TERMINAL = True
 # Plot the simulation
-PLOT_SIMULATION = False
+PLOT_SIMULATION = True
 # Use DensityMatrix to track matrix: tracking noise in matrix
 USE_DENSITY_MATRIX = True
 # Use local order data: True - load predefined orders; False - generate new orders
