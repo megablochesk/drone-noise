@@ -207,7 +207,7 @@ class Center:
         Create a number of drones and add them to the list of free drones
         """
         print("Start creating drones...")
-        self.free_drones.extend(self.drone_generator.get_drones(num))
+        self.free_drones.extend(self.drone_generator.generate_drones(num))
 
     def init_orders(self, num):
         """
