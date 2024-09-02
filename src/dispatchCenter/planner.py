@@ -24,68 +24,87 @@ class PathPlanner:
         
     def plan(self, start: Coordinate, end: Coordinate, time_count):
         """A-star search"""
-        grid_path = []
-        first_cell = self.matrix.get_cell(start)
-        last_cell = self.matrix.get_cell(end)
+        start_cell = self.matrix.get_cell(start)
+        end_cell = self.matrix.get_cell(end)
         avg_matrix = self.matrix.get_average_matrix(time_count)
         
         open_nodes = list()  # [Node, Node, ...]
         close_nodes = set()  # {[row, col], ...}
-        
-        first_hn = heuristic(first_cell.row, first_cell.col, last_cell.row, last_cell.col, 0)
-        first_node = Node(first_cell.row, first_cell.col, None, 0, first_hn)
-        open_nodes.append(first_node)
-        while len(open_nodes) != 0:
-            # pop up the node with the lowest priority
-            current = pop_lowest_priority(open_nodes)
-            row, col = current.row, current.col
-            if row == last_cell.row and col == last_cell.col:
-                # if the current node is the end node:
-                # find the path from the end node to the start node
-                grid_path = backtrack(first_cell.row, first_cell.col, current)
-                break
-            else:
-                # if the current node is not the end node
-                close_nodes.add((row, col))  # mark the current position as visited
-                children = self.expand(current)
-                for child in children:
-                    if (child.row, child.col) in close_nodes:
-                        # this child has already been reached
-                        continue
-                    # TODO: consider population density
-                    if COST_FUNCTION is 'first':
-                        cost = cost_1(current.row, current.col, child.row, child.col, avg_matrix, PRIORITIZE_K)
-                    else:
-                        cost = cost_2(current.row, current.col, child.row, child.col, avg_matrix, PRIORITIZE_P)
-                    child_gn = current.gn + cost
-                    child_hn = heuristic(child.row, child.col, last_cell.row, last_cell.col, DRONE_NOISE)
-                    res_node = find_node(child.row, child.col, open_nodes)
-                    if res_node is not None:
-                        if res_node.gn > child_gn:
-                            # Update res_node
-                            res_node.parent = current
-                            res_node.gn = child_gn
-                            res_node.fn = res_node.gn + res_node.hn
-                    else:
-                        child.gn = child_gn
-                        child.hn = child_hn
-                        child.fn = child.gn + child.hn
-                        open_nodes.append(child)
-        real_path = []
-        for row, col in grid_path:
-            real_path.append(self.matrix.matrix[row][col].centroid)
-        real_path.append(end)
-        return real_path
-    
-    def expand(self, old_node):
-        """Expand current node to 8 directions"""
-        children = []
-        for i in range(-1, 2):
-            for j in range(-1, 2):
-                new_row = old_node.row + i
-                new_col = old_node.col + j
-                if new_row == old_node.row and new_col == old_node.col:
+
+        start_node = self._create_node(start_cell, end_cell, gn=0)
+        open_nodes.append(start_node)
+
+        while open_nodes:
+            current_node = self._pop_lowest_priority_node(open_nodes)
+
+            if self._is_goal_node(current_node, end_cell):
+                return self._construct_real_path(current_node, start_cell, end)
+
+            close_nodes.add((current_node.row, current_node.col))
+            children = self.expand(current_node)
+
+            for child in children:
+                if (child.row, child.col) in close_nodes:
                     continue
-                if 0 <= new_row < self.matrix.rows and 0 <= new_col < self.matrix.cols:
-                    children.append(Node(new_row, new_col, old_node, 0, 0))
+
+                # TODO: consider population density
+                cost = self._calculate_cost(current_node, child, avg_matrix)
+
+                child_gn = current_node.gn + cost
+                child_hn = self._calculate_heuristic(child, end_cell)
+
+                existing_node = find_node(child.row, child.col, open_nodes)
+                if existing_node and existing_node.gn > child_gn:
+                        self._update_node(existing_node, current_node, child_gn, child_hn)
+                elif not existing_node:
+                    self._add_new_node(open_nodes, child, current_node, child_gn, child_hn)
+
+        return []
+    
+    def expand(self, current_node):
+        """Expand current node to 8 directions"""
+        directions = [(i, j) for i in range(-1, 2) for j in range(-1, 2) if not (i == 0 and j == 0)]
+        children = [
+            Node(current_node.row + i, current_node.col + j, current_node, 0, 0)
+            for i, j in directions
+            if self._is_within_bounds(current_node.row + i, current_node.col + j)
+        ]
         return children
+
+    def _create_node(self, start_cell, end_cell, gn):
+        hn = heuristic(start_cell.row, start_cell.col, end_cell.row, end_cell.col, 0)
+        return Node(start_cell.row, start_cell.col, None, gn, hn)
+
+    def _pop_lowest_priority_node(self, open_nodes):
+        return pop_lowest_priority(open_nodes)
+
+    def _is_goal_node(self, node, end_cell):
+        return node.row == end_cell.row and node.col == end_cell.col
+
+    def _construct_real_path(self, current_node, start_cell, end):
+        grid_path = backtrack(start_cell.row, start_cell.col, current_node)
+        return [self.matrix.matrix[row][col].centroid for row, col in grid_path] + [end]
+
+    def _calculate_cost(self, current_node, child, avg_matrix):
+        if COST_FUNCTION is 'first':
+            return cost_1(current_node.row, current_node.col, child.row, child.col, avg_matrix, PRIORITIZE_K)
+        else:
+            return cost_2(current_node.row, current_node.col, child.row, child.col, avg_matrix, PRIORITIZE_P)
+
+    def _calculate_heuristic(self, child, end_cell):
+        return heuristic(child.row, child.col, end_cell.row, end_cell.col, DRONE_NOISE)
+
+    def _update_node(self, existing_node, parent_node, new_gn, new_hn):
+        existing_node.parent = parent_node
+        existing_node.gn = new_gn
+        existing_node.fn = new_gn + new_hn
+
+    def _add_new_node(self, open_nodes, child, parent_node, child_gn, child_hn):
+        child.parent = parent_node
+        child.gn = child_gn
+        child.hn = child_hn
+        child.fn = child_gn + child_hn
+        open_nodes.append(child)
+
+    def _is_within_bounds(self, row, column):
+        return 0 <= row < self.matrix.rows and 0 <= column < self.matrix.cols
