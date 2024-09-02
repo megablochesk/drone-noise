@@ -1,7 +1,7 @@
 import matplotlib
 matplotlib.use('TkAgg')
 
-
+import numpy as np
 import matplotlib.pyplot as plt
 from typing import List
 from cityMap.citymap import Coordinate
@@ -15,67 +15,45 @@ class Plotter:
         self.interactive = True
         self.img = plt.imread(BACKGROUND_IMAGE_PATH)
         self.figure, self.ax = plt.subplots()
-        self.warehouses_x = [x.longitude for x in warehouses]
-        self.warehouses_y = [x.latitude for x in warehouses]
-        self.drone_x = []
-        self.drone_y = []
-        self.order_x = []
-        self.order_y = []
-        la_diff = city_map.right - city_map.left
-        lo_diff = city_map.top - city_map.bottom
-        self.mapLeft = city_map.left     #+ 0.004  #- 0.1 * lo_diff
-        self.mapRight = city_map.right   #+ 0.020  #+ 0.1 * lo_diff
-        self.mapBottom = city_map.bottom #+ 0.003  #- 0.1 * la_diff
-        self.mapTop = city_map.top       #- 0.005  #+ 0.1 * la_diff
         self.ax.xaxis.set_visible(False)
         self.ax.yaxis.set_visible(False)
-        plt.sca(self.ax)
-        plt.xlim(self.mapLeft, self.mapRight)
-        plt.ylim(self.mapBottom, self.mapTop)
+        self.ax.imshow(self.img, extent=[city_map.left, city_map.right, city_map.bottom, city_map.top])
+
+        # Preparing static plot elements
+        self.warehouses_x = [x.longitude for x in warehouses]
+        self.warehouses_y = [x.latitude for x in warehouses]
+        self.warehouse_scatter = plt.scatter(self.warehouses_x, self.warehouses_y, color='blue', marker='p',
+                                             linewidths=5)
+
+        # Initializing dynamic plot elements
+        self.drone_scatter = plt.scatter([], [], color='red', linewidths=0.5)
+        self.order_scatter = plt.scatter([], [], color='green', marker='v', linewidths=1)
+
+        plt.xlim(city_map.left, city_map.right)
+        plt.ylim(city_map.bottom, city_map.top)
+
         if self.interactive:
             plt.ion()
-        
+
     def plot(self, drones: List[Drone]):
-        """
-        Store locations of drones and orders and plot them on the map.
-        
-        :param drones: a list of working drones
-        :return:
-        """
+        """ Update drone and order locations and replot them. """
+        if not drones:
+            return
+
+        drone_x, drone_y = [], []
+        order_x, order_y = [], []
+
         for drone in drones:
-            self.drone_x.append(drone.location.longitude)
-            self.drone_y.append(drone.location.latitude)
-            self.order_x.append(drone.order.start_location.longitude)
-            self.order_x.append(drone.order.end_location.longitude)
-            self.order_y.append(drone.order.start_location.latitude)
-            self.order_y.append(drone.order.end_location.latitude)
-        self.plot_everything()
+            drone_x.append(drone.location.longitude)
+            drone_y.append(drone.location.latitude)
+            order_x.append(drone.order.start_location.longitude)
+            order_x.append(drone.order.end_location.longitude)
+            order_y.append(drone.order.start_location.latitude)
+            order_y.append(drone.order.end_location.latitude)
 
-    def clearData(self):
-        """Clear coordinates cache data."""
-        self.drone_x.clear()
-        self.drone_y.clear()
-        self.order_x.clear()
-        self.order_y.clear()
+        # Update data for scatter plots
+        self.drone_scatter.set_offsets(list(zip(drone_x, drone_y)))
+        self.order_scatter.set_offsets(list(zip(order_x, order_y)))
 
-    def plot_everything(self):
-        """Plot drones, orders and warehouses on the map."""
-        plt.sca(self.ax)
-        plt.cla()
-        self.ax.imshow(self.img, extent=[self.mapLeft, self.mapRight, self.mapBottom, self.mapTop])
-        plt.scatter(self.warehouses_x, self.warehouses_y, color='blue', marker='p', linewidths=5)
-        plt.scatter(self.drone_x, self.drone_y, color='red', linewidths=0.5)
-        plt.scatter(self.order_x, self.order_y, color='green', marker='v', linewidths=1)
-        self.clearData()
         plt.title("Drone Delivery Simulation")
-
-        if self.interactive:
-            plt.pause(0.0001)
-        else:
-            plt.show()
-            self.figure, self.ax = plt.subplots()
-            self.ax.xaxis.set_visible(False)
-            self.ax.yaxis.set_visible(False)
-            plt.sca(self.ax)
-            plt.xlim(self.mapLeft, self.mapRight)
-            plt.ylim(self.mapBottom, self.mapTop)
+        plt.pause(0.0001) if self.interactive else plt.show()
