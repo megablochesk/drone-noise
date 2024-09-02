@@ -144,6 +144,10 @@ class Queue:
     def push(self, item):
         """Enqueue the 'item' into the queue"""
         self.list.insert(0, item)
+
+    def extend(self, items):
+        """Enqueue multiple items into the queue"""
+        self.list = items[::-1] + self.list
         
     def pop(self):
         """

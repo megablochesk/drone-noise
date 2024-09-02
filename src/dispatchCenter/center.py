@@ -24,19 +24,40 @@ import csv
 class Center:
     def __init__(self, warehouses, city_map: CityMap, num_orders, num_drones):
         self.warehouses = [Coordinate(latitude=x[0], longitude=x[1]) for x in warehouses]
-        self.order_generator = OrderGenerator(city_map=city_map)
-        self.drone_generator = DroneGenerator(warehouses=self.warehouses)
+
         self.iteration_count = 0
+
         self.waiting_orders = Queue()
         self.free_drones = list()
         self.delivering_drones = list()
         self.waiting_planning_drones = list()
-        self.init_drones(num_drones)
-        self.init_orders(num_orders)
+
+        self.init_drones(num_drones, self.warehouses)
+        self.init_orders(num_orders, city_map)
+
         self.matrix = DensityMatrix()
         self.planner = PathPlanner(self.matrix)
+
         if PLOT_SIMULATION:
             self.plotter = Plotter(warehouses=self.warehouses, city_map=city_map)
+
+    def init_drones(self, num, warehouses):
+        print("Start creating drones...")
+
+        drone_generator = DroneGenerator(warehouses)
+
+        drones = drone_generator.generate_drones(num)
+
+        self.free_drones.extend(drones)
+
+    def init_orders(self, num, city_map):
+        print("Start initializing orders...")
+
+        order_generator = OrderGenerator(city_map)
+
+        orders = order_generator.get_orders(num=num, bias=True)
+
+        self.waiting_orders.extend(orders)
 
     def run_center(self):
         print("Simulation starts, running the center...")
@@ -73,11 +94,11 @@ class Center:
     def process_orders(self):
 
         while self.has_waiting_order() and self.has_free_drone():
-            order = self.waiting_orders.pop()  # pop the least recent order
+            order = self.waiting_orders.pop()
             drone = find_nearest_free_drone(order, self.free_drones)
-            drone.accept_order(order)  # let the drone accept the order
+            drone.accept_order(order)
 
-            self.free_drones.remove(drone)  # remove the drone from the list of free drones
+            self.free_drones.remove(drone)
             self.waiting_planning_drones.append(drone)
 
     def plan_drones_path(self):
@@ -88,7 +109,7 @@ class Center:
                                      time_count=self.iteration_count)
 
             drone.receive_path(path)
-            # After receiving a path, a free drone can start to deliver food
+
             if drone not in self.delivering_drones:
                 self.delivering_drones.append(drone)
         # Update the list of waiting for planning drones
@@ -96,10 +117,7 @@ class Center:
 
     def update_drones(self):
         """
-        Update delivering (working) drones' status and position.
-
-        Record the current position of each delivering drone.
-        Update drones and orders' status and positions.
+        Update delivering drones' status and position.
         If any delivering drone completes its order, update its status and move it to the list of free drones.
         """
         for drone in self.delivering_drones:
@@ -124,8 +142,6 @@ class Center:
 
         if USE_DENSITY_MATRIX:
             self.save_results()
-
-        print("Simulation ends, shutting down the center...")
 
     def save_results(self):
         print("Saving results to the local")
@@ -202,36 +218,14 @@ class Center:
             f.flush()
             f.close()
 
-    def init_drones(self, num):
-        """
-        Create a number of drones and add them to the list of free drones
-        """
-        print("Start creating drones...")
-        self.free_drones.extend(self.drone_generator.generate_drones(num))
-
-    def init_orders(self, num):
-        """
-        Create a number of orders and add them to the queue of waiting orders
-        """
-        print("Start initializing orders...")
-        # orders = self.order_generator.save_orders(num=num, bias=True)
-        # exit()
-        orders = self.order_generator.get_orders(num=num, bias=True)
-        for order in orders:
-            self.waiting_orders.push(order)
-
     def has_free_drone(self) -> bool:
-        """Check if there is any free (recharging) drone"""
         return len(self.free_drones) > 0
 
     def has_delivering_drones(self) -> bool:
-        """Check if there is any flying (working) drone"""
         return len(self.delivering_drones) > 0
 
     def has_waiting_order(self) -> bool:
-        """Check if there is any new waiting order"""
         return self.waiting_orders.isEmpty() is False
 
     def has_planning_drone(self) -> bool:
-        """Check if there is any drone waiting for planning a path"""
         return len(self.waiting_planning_drones) > 0

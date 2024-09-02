@@ -13,17 +13,17 @@ from drones.tracker import Tracker
 @auto_str
 class Drone:
     def __init__(self, drone_id, warehouses: List[Coordinate], start_location: Coordinate, height):
-        self.drone_id = drone_id  # Drone id
-        self.warehouses = warehouses  # Locations of all warehouses
-        self.location = start_location  # Location of the drone
+        self.drone_id = drone_id
+        self.warehouses = warehouses
+        self.location = start_location
         self.height = height  # TODO: Height of the drone
-        self.order = None  # Current order
-        self.status = DroneStatus.WAITING  # Drone's status, initially waiting
-        self.NOISE = DRONE_NOISE  # Default maximum drone matrix
-        self.destination = None  # Next destination
-        self.need_planning = True  # Whether the drone needs path planner to plan a path
-        self.path = []  # A planned path (list of coordinate)
-        self.tracker = Tracker()  # Tracker tracks drone steps and moving distance
+        self.order = None
+        self.status = DroneStatus.WAITING
+        self.NOISE = DRONE_NOISE
+        self.destination = None
+        self.need_planning = True
+        self.path = []
+        self.tracker = Tracker()
     
     def accept_order(self, order: Order):
         """
