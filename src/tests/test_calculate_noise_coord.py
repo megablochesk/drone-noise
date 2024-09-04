@@ -23,7 +23,7 @@ class TestCalculateNoiseCoord(unittest.TestCase):
 
         expected = TestCalculateNoiseCoord.calculate_expected_noise_coord(lo_distance, la_distance, DRONE_NOISE)
 
-        result = calculate_noise_at_distance(line_distance, DRONE_NOISE)
+        result = calculate_noise_at_distance(line_distance)
 
         # print(result, expected)
         self.assertEqual(result, expected)
@@ -46,7 +46,7 @@ class TestCalculateNoiseCoord(unittest.TestCase):
         )
 
         time_optimized = timeit.timeit(
-            lambda: calculate_noise_at_distance(line_distance, DRONE_NOISE),
+            lambda: calculate_noise_at_distance(line_distance),
             number=1000
         )
 

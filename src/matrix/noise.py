@@ -11,7 +11,8 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Point
-
+from concurrent.futures import ProcessPoolExecutor
+from functools import lru_cache
 
 @auto_str
 class Cell:
@@ -22,7 +23,7 @@ class Cell:
         self.total_noise = 0
         self.max_noise = 0
         self.population_density = 1
-    
+
     def set_noise(self, noise):
         """
         Cell receives a mixed matrix and update its total and maximum matrix.
@@ -32,8 +33,8 @@ class Cell:
         """
         self.total_noise += noise
         self.max_noise = max(self.max_noise, noise)
-        
-        
+
+
 @auto_str
 class DensityMatrix:
     def __init__(self):
@@ -53,7 +54,7 @@ class DensityMatrix:
                         for j in range(self.cols)] for i in range(self.rows)]
         if USE_POPULATION_DENSITY:
             self.load_pd()
-            # TODO: how to use population density ...
+        # TODO: how to use population density ...
 
     def load_pd(self):
         print("Loading population density data to the matrix...")
@@ -81,10 +82,10 @@ class DensityMatrix:
         """
         for row in self.matrix:
             for cell in row:
-                noises = [
-                    calculate_noise_at_distance(calculate_distance(cell.centroid, drone.location), drone.NOISE)
+                noises = np.array([
+                    calculate_noise_at_distance(calculate_distance(cell.centroid, drone.location))
                     for drone in drones
-                ]
+                ])
                 mixed_noise = calculate_mixed_noise_level(noises)
                 cell.set_noise(mixed_noise)
 
@@ -109,11 +110,11 @@ class DensityMatrix:
     def get_maximum_matrix(self):
         return np.array([[self.matrix[i][j].max_noise for j in range(self.cols)]
                          for i in range(self.rows)])
-    
+
     def get_pd_matrix(self):
         return np.array([[self.matrix[i][j].population_density for j in range(self.cols)]
                          for i in range(self.rows)])
-    
+
     def calculate_std(self, time_count):
         return np.std(self.get_average_matrix(time_count))
 

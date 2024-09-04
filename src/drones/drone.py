@@ -12,14 +12,13 @@ from drones.tracker import Tracker
 
 @auto_str
 class Drone:
-    def __init__(self, drone_id, warehouses: List[Coordinate], start_location: Coordinate, height):
+    def __init__(self, drone_id, warehouses: List[Coordinate], start_location: Coordinate):
         self.drone_id = drone_id
         self.warehouses = warehouses
         self.location = start_location
-        self.height = height  # TODO: Height of the drone
+
         self.order = None
         self.status = DroneStatus.WAITING
-        self.NOISE = DRONE_NOISE
         self.destination = None
         self.need_planning = True
         self.path = []

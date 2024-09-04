@@ -7,6 +7,8 @@ from common.constants import M_2_LATITUDE, M_2_LONGITUDE, DRONE_NOISE, DRONE_ALT
 
 DRONE_ALTITUDE_SQUARED = DRONE_ALTITUTE ** 2
 
+NOISE_AT_SOURCE = DRONE_NOISE
+
 from matplotlib import pyplot as plt
 import seaborn as sns
 
@@ -78,6 +80,7 @@ def find_nearest_free_drone(order, free_drones):
         neighbors=[x.location for x in free_drones],
         target=order.start_location)]
 
+
 def nearest_neighbor(neighbors: List[Coordinate], target: Coordinate) -> Coordinate:
     """
     Find the nearest neighbor to the target location.
@@ -87,6 +90,7 @@ def nearest_neighbor(neighbors: List[Coordinate], target: Coordinate) -> Coordin
     :return: The location of the nearest neighbor
     """
     return neighbors[nearest_neighbor_idx(neighbors, target)]
+
 
 def nearest_neighbor_idx(neighbors: List[Coordinate], target: Coordinate) -> int:
     """
@@ -105,7 +109,7 @@ def nearest_neighbor_idx(neighbors: List[Coordinate], target: Coordinate) -> int
     return np.argmin(distances)
 
 
-def calculate_noise_m(x_dist, y_dist, central_noise):
+def calculate_noise_m(x_dist, y_dist):
     """
     Calculate the matrix at distance.
     
@@ -114,23 +118,27 @@ def calculate_noise_m(x_dist, y_dist, central_noise):
     :param central_noise: the center matrix level
     :return: the matrix at (center_x + x_dist, center_y + y_dist)
     """
-    return central_noise - math.fabs(10 * math.log10(math.pow(x_dist, 2) + math.pow(y_dist, 2)))
+    return NOISE_AT_SOURCE - math.fabs(10 * math.log10(math.pow(x_dist, 2) + math.pow(y_dist, 2)))
 
 
-def calculate_noise_at_distance(distance, noise_at_source):
-    if distance == 0:
-        return noise_at_source if DRONE_ALTITUTE <= 0 else noise_at_source - 20 * math.log10(DRONE_ALTITUTE)
+BASELINE_NOISE_AT_ALTITUDE = DRONE_NOISE - 20 * math.log10(DRONE_ALTITUTE)
+# DISTANCE_OF_ZERO_NOISE = math.sqrt(10 ** (0.1 * DRONE_NOISE) - DRONE_ALTITUDE_SQUARED)
+
+
+def calculate_noise_at_distance(distance):
+    if distance <= 1:
+        return BASELINE_NOISE_AT_ALTITUDE
 
     total_distance_squared = distance ** 2 + DRONE_ALTITUDE_SQUARED
 
-    return noise_at_source - 10 * math.log10(total_distance_squared)
+    return NOISE_AT_SOURCE - 10 * math.log10(total_distance_squared)
 
 
 def calculate_mixed_noise_level(sound_sources):
-    if not sound_sources:
+    if sound_sources.size == 0:
         return 0
 
-    linear_sum = np.sum(np.power(10, np.array(sound_sources) / 10))
+    linear_sum = np.sum(np.exp(sound_sources * np.log(10) / 10))
 
     return 10 * np.log10(linear_sum)
 
@@ -266,7 +274,7 @@ def plot_matrix(X, Y, Z, title, path, color_min, color_max):
     plt.title(title)
     plt.savefig(path, bbox_inches='tight')
     plt.close()
-    
+
 
 def plot_histogram(data, title, path, y_bottom, y_top, x_bottom=0, x_top=None):
     """
@@ -282,7 +290,7 @@ def plot_histogram(data, title, path, y_bottom, y_top, x_bottom=0, x_top=None):
     fig, ax = plt.subplots()
     plt.ylim(y_bottom, y_top)
     if x_top != None:
-      plt.xlim(x_bottom, x_top)
+        plt.xlim(x_bottom, x_top)
     plt.title(title)
     sns.histplot(data=data, kde=True)
     plt.savefig(path, bbox_inches='tight')
