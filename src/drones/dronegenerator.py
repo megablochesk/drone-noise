@@ -26,8 +26,7 @@ class DroneGenerator:
         drone = Drone(
             drone_id=self._next_drone_id,
             warehouses=self.warehouses,
-            start_location=start_location,
-            height=0
+            start_location=start_location
         )
         self._next_drone_id += 1
         return drone

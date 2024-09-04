@@ -64,7 +64,7 @@ class Center:
 
         origin_time = time.time()
 
-        while True:
+        while 1:
             if self.is_time_for_next_iteration(origin_time):
                 self.iteration_count += 1
 
