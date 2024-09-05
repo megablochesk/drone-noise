@@ -32,23 +32,14 @@ class Center:
         self.delivering_drones = list()
         self.waiting_planning_drones = list()
 
-        self.init_drones(num_drones, self.warehouses)
         self.init_orders(num_orders, city_map)
+        self.init_drones(num_drones, self.warehouses)
 
         self.matrix = DensityMatrix()
         self.planner = PathPlanner(self.matrix)
 
         if PLOT_SIMULATION:
             self.plotter = Plotter(warehouses=self.warehouses, city_map=city_map)
-
-    def init_drones(self, num, warehouses):
-        print("Start creating drones...")
-
-        drone_generator = DroneGenerator(warehouses)
-
-        drones = drone_generator.generate_drones(num)
-
-        self.free_drones.extend(drones)
 
     def init_orders(self, num, city_map):
         print("Start initializing orders...")
@@ -58,6 +49,15 @@ class Center:
         orders = order_generator.get_orders(num=num, bias=True)
 
         self.waiting_orders.extend(orders)
+
+    def init_drones(self, num, warehouses):
+        print("Start creating drones...")
+
+        drone_generator = DroneGenerator(warehouses)
+
+        drones = drone_generator.generate_drones(num)
+
+        self.free_drones.extend(drones)
 
     def run_center(self):
         print("Simulation starts, running the center...")
