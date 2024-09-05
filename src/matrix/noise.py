@@ -82,10 +82,10 @@ class DensityMatrix:
         """
         for row in self.matrix:
             for cell in row:
-                noises = np.array([
+                noises = [
                     calculate_noise_at_distance(calculate_distance(cell.centroid, drone.location))
                     for drone in drones
-                ])
+                ]
                 mixed_noise = calculate_mixed_noise_level(noises)
                 cell.set_noise(mixed_noise)
 

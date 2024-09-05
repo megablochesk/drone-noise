@@ -5,7 +5,7 @@ from typing import List
 import random
 from common.constants import M_2_LATITUDE, M_2_LONGITUDE, DRONE_NOISE, DRONE_ALTITUTE
 
-DRONE_ALTITUDE_SQUARED = DRONE_ALTITUTE ** 2
+DRONE_ALTITUDE_SQUARED = DRONE_ALTITUTE * DRONE_ALTITUTE
 
 NOISE_AT_SOURCE = DRONE_NOISE
 
@@ -36,21 +36,28 @@ def calculate_distance(c1: Coordinate, c2: Coordinate):
     """
     la_distance, lo_distance = c2 - c1
 
-    return math.sqrt(math.pow(la_distance / M_2_LATITUDE, 2) + math.pow(lo_distance / M_2_LONGITUDE, 2))
+    la_distance_m = la_distance / M_2_LATITUDE
+    lo_distance_m = lo_distance / M_2_LONGITUDE
+
+    return math.sqrt(la_distance_m * la_distance_m +
+                     lo_distance_m * lo_distance_m)
 
 
 def straight_distance_matrix(row1, col1, row2, col2):
     """Calculate the straight distance in matrix"""
     dx = abs(col1 - col2)
     dy = abs(row1 - row2)
-    return math.sqrt(math.pow(dx, 2) + math.pow(dy, 2))
+    return math.sqrt(dx * dx + dy * dy)
+
+
+SQRT_OF_2 = math.sqrt(2)
 
 
 def diagonal_distance_matrix(row1, col1, row2, col2):
     """Calculate the diagonal distance in matrix"""
     dx = abs(col1 - col2)
     dy = abs(row1 - row2)
-    return math.sqrt(2) * min(dx, dy) + abs(dx - dy)
+    return SQRT_OF_2 * min(dx, dy) + abs(dx - dy)
 
 
 def difference(list1, list2):
@@ -118,7 +125,7 @@ def calculate_noise_m(x_dist, y_dist):
     :param central_noise: the center matrix level
     :return: the matrix at (center_x + x_dist, center_y + y_dist)
     """
-    return NOISE_AT_SOURCE - math.fabs(10 * math.log10(math.pow(x_dist, 2) + math.pow(y_dist, 2)))
+    return NOISE_AT_SOURCE - math.fabs(10 * math.log10(x_dist * x_dist + y_dist * y_dist))
 
 
 BASELINE_NOISE_AT_ALTITUDE = DRONE_NOISE - 20 * math.log10(DRONE_ALTITUTE)
@@ -129,18 +136,18 @@ def calculate_noise_at_distance(distance):
     if distance <= 1:
         return BASELINE_NOISE_AT_ALTITUDE
 
-    total_distance_squared = distance ** 2 + DRONE_ALTITUDE_SQUARED
+    total_distance_squared = distance * distance + DRONE_ALTITUDE_SQUARED
 
     return NOISE_AT_SOURCE - 10 * math.log10(total_distance_squared)
 
 
 def calculate_mixed_noise_level(sound_sources):
-    if sound_sources.size == 0:
+    if len(sound_sources) == 0:
         return 0
 
-    linear_sum = np.sum(np.exp(sound_sources * np.log(10) / 10))
+    linear_sum = sum(math.exp(source * math.log(10) / 10) for source in sound_sources)
 
-    return 10 * np.log10(linear_sum)
+    return 10 * math.log10(linear_sum)
 
 
 def heuristic(row1, col1, row2, col2, step_cost):
@@ -154,8 +161,8 @@ def heuristic(row1, col1, row2, col2, step_cost):
     :param step_cost: movement cost
     :return: heuristic cost
     """
-    d = straight_distance_matrix(row1, col1, row2, col2)
-    return step_cost * d
+    distance = straight_distance_matrix(row1, col1, row2, col2)
+    return step_cost * distance
 
 
 def cost_1(row1, col1, row2, col2, avg_matrix, priority_K):
@@ -170,8 +177,8 @@ def cost_1(row1, col1, row2, col2, avg_matrix, priority_K):
     :param priority_K: priority parameter, K
     :return: cost from parent to child
     """
-    d = diagonal_distance_matrix(row1, col1, row2, col2)
-    expand_cost = d * DRONE_NOISE + priority_K * avg_matrix[row2][col2]
+    distance = diagonal_distance_matrix(row1, col1, row2, col2)
+    expand_cost = distance * DRONE_NOISE + priority_K * avg_matrix[row2][col2]
     return expand_cost
 
 
@@ -187,8 +194,8 @@ def cost_2(row1, col1, row2, col2, avg_matrix, priority_P):
     :param priority_P: priority parameter, P
     :return: cost from parent to child
     """
-    d = diagonal_distance_matrix(row1, col1, row2, col2)
-    expand_cost = d * DRONE_NOISE + math.pow(avg_matrix[row2][col2], priority_P)
+    distance = diagonal_distance_matrix(row1, col1, row2, col2)
+    expand_cost = distance * DRONE_NOISE + math.pow(avg_matrix[row2][col2], priority_P)
     return expand_cost
 
 
