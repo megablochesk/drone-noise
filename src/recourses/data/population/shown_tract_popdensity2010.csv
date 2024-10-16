@@ -1,196 +1,627 @@
-﻿"tract","Name","Population_Density_in_2010"
-6075012502,"Tenderloin, San Francisco, CA",159208
-6075012401,"Tenderloin, San Francisco, CA",140972
-6075012201,"Tenderloin, San Francisco, CA",126861
-6075012501,"Tenderloin, San Francisco, CA",102596
-6075011901,"Lower Nob Hill, San Francisco, CA",100333
-6075012302,"San Francisco, CA",85361
-6075012202,"Tenderloin, San Francisco, CA",82944
-6075011300,"Chinatown, San Francisco, CA",80590
-6075012100,"Lower Nob Hill, San Francisco, CA",79854
-6075012000,"Lower Nob Hill, San Francisco, CA",79854
-6075010700,"Russian Hill, San Francisco, CA",78761
-6075012301,"Tenderloin, San Francisco, CA",75944
-6075011902,"Lower Nob Hill, San Francisco, CA",72167
-6075011800,"Chinatown, San Francisco, CA",68182
-6075013101,"Pacific Heights, San Francisco, CA",56881
-6075011100,"Nob Hill, San Francisco, CA",54358
-6075010600,"North Beach, San Francisco, CA",54083
-6075010800,"Nob Hill, San Francisco, CA",52621
-6075011000,"Nob Hill, San Francisco, CA",51903
-6075020800,"Mission District, San Francisco, CA",49082
-6075022901,"Mission District, San Francisco, CA",48333
-6075011200,"Nob Hill, San Francisco, CA",48324
-6075020200,"Mission Dolores, San Francisco, CA",47855
-6075061100,"Chinatown, San Francisco, CA",46312
-6075016300,"Western Addition, San Francisco, CA",45189
-6075010900,"Russian Hill, San Francisco, CA",45000
-6075015802,"North of the Panhandle, San Francisco, CA",44924
-6075017801,"South of Market, San Francisco, CA",42157
-6075022803,"Mission District, San Francisco, CA",42156
-6075022902,"Mission District, San Francisco, CA",41540
-6075016000,"Fillmore District, San Francisco, CA",40410
-6075016802,"Hayes Valley, San Francisco, CA",39325
-6075026404,"Visitacion Valley, San Francisco, CA",39055
-6075020700,"Mission Dolores, San Francisco, CA",38590
-6075016600,"Haight-Ashbury, San Francisco, CA",38402
-6075015900,"Fillmore District, San Francisco, CA",38158
-6075016100,"Western Addition, San Francisco, CA",37789
-6075026001,"Excelsior, San Francisco, CA",37344
-6075015100,"Western Addition, San Francisco, CA",37209
-6075010300,"Russian Hill, San Francisco, CA",37038
-6075016801,"Lower Haight, San Francisco, CA",36568
-6075012901,"Marina District, San Francisco, CA",36529
-6075015200,"Lower Pacific Heights, San Francisco, CA",36426
-6075020900,"Mission District, San Francisco, CA",36132
-6075020100,"Mission District, San Francisco, CA",35884
-6075016500,"San Francisco, CA",35545
-6075012601,"Marina District, San Francisco, CA",35288
-6075010400,"North Beach, San Francisco, CA",34962
-6075021000,"Mission District, San Francisco, CA",34678
-6075026301,"Crocker-Amazon, San Francisco, CA",34331
-6075045100,"Balboa Hollow, San Francisco, CA",33757
-6075042700,"Central Richmond, San Francisco, CA",33709
-6075026004,"Excelsior, San Francisco, CA",33192
-6075042601,"Central Richmond, San Francisco, CA",32628
-6075026003,"Excelsior, San Francisco, CA",31870
-6075016400,"Western Addition, San Francisco, CA",31748
-6075030101,"Inner Sunset, San Francisco, CA",31590
-6075030202,"Inner Sunset, San Francisco, CA",31482
-6075017601,"South of Market, San Francisco, CA",31270
-6075031201,"Ingleside, San Francisco, CA",31146
-6075047701,"Central Richmond, San Francisco, CA",30957
-6075026401,"Visitacion Valley, San Francisco, CA",30636
-6075017102,"Ashbury Heights, San Francisco, CA",30272
-6075060502,"Sunnydale, San Francisco, CA",30056
-6075035202,"Outer Sunset, San Francisco, CA",30014
-6075015500,"Japantown, San Francisco, CA",29934
-6075025300,"Bernal Heights, San Francisco, CA",29473
-6075017101,"Ashbury Heights, San Francisco, CA",29289
-6075013000,"Cow Hollow, San Francisco, CA",28681
-6075012402,"Civic Center, San Francisco, CA",28590
-6075013102,"Pacific Heights, San Francisco, CA",28533
-6075045200,"Balboa Hollow, San Francisco, CA",28395
-6075030201,"Inner Sunset, San Francisco, CA",28259
-6075022903,"Mission District, San Francisco, CA",28200
-6075026403,"Visitacion Valley, San Francisco, CA",28163
-6075047702,"Richmond District, San Francisco, CA",28118
-6075013500,"Pacific Heights, San Francisco, CA",28088
-6075047802,"Richmond District, San Francisco, CA",27908
-6075020300,"The Castro, San Francisco, CA",27582
-6075026303,"Crocker-Amazon, San Francisco, CA",27582
-6075032601,"Outer Sunset, San Francisco, CA",27429
-6075015801,"Fillmore District, San Francisco, CA",27023
-6075021500,"Noe Valley, San Francisco, CA",26681
-6075033204,"Lakeshore, San Francisco, CA",26535
-6075031202,"Ingleside, San Francisco, CA",26361
-6075013400,"Pacific Heights, San Francisco, CA",26270
-6075026402,"Visitacion Valley, San Francisco, CA",26063
-6075023003,"Bayview, San Francisco, CA",25905
-6075025600,"Excelsior, San Francisco, CA",25889
-6075026002,"Excelsior, San Francisco, CA",25681
-6075016900,"The Castro, San Francisco, CA",25649
-6075042602,"Central Richmond, San Francisco, CA",25336
-6075026200,"Outer Mission, San Francisco, CA",25298
-6075040100,"Inner Richmond, San Francisco, CA",25235
-6075040200,"Inner Richmond, San Francisco, CA",25199
-6075025402,"Bernal Heights, San Francisco, CA",25103
-6075047600,"Central Richmond, San Francisco, CA",25059
-6075012902,"Cow Hollow, San Francisco, CA",24824
-6075016700,"Lower Haight, San Francisco, CA",24614
-6075061200,"Bayview, San Francisco, CA",24485
-6075025401,"Bernal Heights, San Francisco, CA",24314
-6075015700,"Inner Richmond, San Francisco, CA",24248
-6075016200,"Hayes Valley, San Francisco, CA",24200
-6081600700,"Daly City, CA",24179
-6075015600,"Inner Richmond, San Francisco, CA",24142
-6075020500,"The Castro, San Francisco, CA",24140
-6075021400,"Noe Valley, San Francisco, CA",23825
-6075032602,"Outer Sunset, San Francisco, CA",23714
-6075021100,"Dolores Heights, San Francisco, CA",23494
-6075026100,"Balboa Park, San Francisco, CA",23483
-6075047902,"Outer Richmond, San Francisco, CA",22961
-6075017802,"South of Market, San Francisco, CA",22924
-6075022801,"Mission District, San Francisco, CA",22771
-6075015300,"Lower Pacific Heights, San Francisco, CA",22667
-6075025702,"Excelsior, San Francisco, CA",22646
-6075020401,"The Castro, San Francisco, CA",22587
-6075031400,"Oceanview, San Francisco, CA",22403
-6075031301,"Oceanview, San Francisco, CA",21989
-6075035100,"Sunset District, San Francisco, CA",21966
-6075047801,"Outer Richmond, San Francisco, CA",21766
-6075020600,"The Castro, San Francisco, CA",21511
-6075012800,"Cow Hollow, San Francisco, CA",21385
-6075025403,"Bernal Heights, San Francisco, CA",21335
-6075025200,"Bernal Heights, San Francisco, CA",21138
-6075025800,"Portola, San Francisco, CA",21075
-6075010200,"Russian Hill, San Francisco, CA",20819
-6075031302,"Ingleside Heights, San Francisco, CA",20814
-6075012700,"Marina District, San Francisco, CA",20786
-6075021200,"Dolores Heights, San Francisco, CA",20739
-6075033203,"Lakeshore, San Francisco, CA",20544
-6075021300,"Noe Valley, San Francisco, CA",20446
-6075017000,"The Castro, San Francisco, CA",20381
-6075025500,"Cayuga Terrace, San Francisco, CA",20363
-6075023001,"Bayview, San Francisco, CA",20296
-6075015400,"Laurel Heights, San Francisco, CA",20219
-6075032700,"Outer Sunset, San Francisco, CA",20160
-6075025701,"Excelsior, San Francisco, CA",19867
-6075021800,"Glen Park, San Francisco, CA",19794
-6075013200,"Pacific Heights, San Francisco, CA",19725
-6075032902,"Sunset District, San Francisco, CA",19646
-6075030301,"Inner Sunset, San Francisco, CA",19443
-6075032901,"Sunset District, San Francisco, CA",19386
-6075032802,"Sunset District, San Francisco, CA",19090
-6075013300,"Presidio Heights, San Francisco, CA",18893
-6075022802,"Mission District, San Francisco, CA",18741
-6075022702,"Potrero Hill, San Francisco, CA",18727
-6075032801,"Parkside, San Francisco, CA",18670
-6075023102,"Bayview, San Francisco, CA",18021
-6075061500,"South of Market, San Francisco, CA",17833
-6075020402,"Twin Peaks, San Francisco, CA",17531
-6075061400,"Potrero Hill, San Francisco, CA",17516
-6075026302,"Crocker-Amazon, San Francisco, CA",17038
-6075025900,"Excelsior, San Francisco, CA",16776
-6075035400,"Parkside, San Francisco, CA",16769
-6075035300,"Sunset District, San Francisco, CA",16611
-6075021600,"Noe Valley, San Francisco, CA",16606
-6075030302,"Golden Gate Heights, San Francisco, CA",15430
-6075031100,"Outer Mission, San Francisco, CA",14887
-6075022704,"Potrero Hill, San Francisco, CA",14867
-6075035201,"Sunset District, San Francisco, CA",14601
-6075025100,"Bernal Heights, San Francisco, CA",14312
-6075047901,"Outer Richmond, San Francisco, CA",14222
-6075023200,"Bayview, San Francisco, CA",13885
-6075030400,"Forest Hill, San Francisco, CA",13652
-6075033000,"Parkside, San Francisco, CA",13340
-6075010100,"North Beach, San Francisco, CA",12463
-6075012602,"Marina District, San Francisco, CA",11971
-6075030800,"West of Twin Peaks, San Francisco, CA",11831
-6075018000,"Mission Bay, San Francisco, CA",11660
-6075030700,"Miraloma, San Francisco, CA",11470
-6075033100,"Lakeshore, San Francisco, CA",11468
-6075060700,"Mission Bay, San Francisco, CA",11297
-6075042800,"Outer Richmond, San Francisco, CA",11155
-6075023400,"Bayview, San Francisco, CA",11091
-6075030600,"Forest Hill Extension, San Francisco, CA",11050
-6075031000,"West of Twin Peaks, San Francisco, CA",11022
-6075023300,"Bayview, San Francisco, CA",10667
-6075010500,"Financial District, San Francisco, CA",10170
-6075030102,"Inner Sunset, San Francisco, CA",9934
-6075033201,"Lakeshore, San Francisco, CA",9821
-6075030900,"Ingleside Terraces, San Francisco, CA",9204
-6075021700,"Glen Park, San Francisco, CA",8312
-6075011700,"San Francisco, CA",8293
-6075023103,"Bayview, San Francisco, CA",7680
-6075030500,"Midtown Terrace, San Francisco, CA",7235
-6075017700,"Mission District, San Francisco, CA",6097
-6075061000,"Bayview, San Francisco, CA",4313
-6075022600,"Central Waterfront, San Francisco, CA",2927
-6075060100,"Presidio, San Francisco, CA",1371
-6075980501,"Visitacion Valley, San Francisco, CA",1302
-6075060400,"Lakeshore, San Francisco, CA",995.3
-6075980200,"Sea Cliff, San Francisco, CA",810.1
-6075980600,"Bayview, San Francisco, CA",567.4
-6075980900,"Bayview, San Francisco, CA",252.7
-6075980300,"Golden Gate Park, San Francisco, CA",101.9
+tract,Name,Population_Density_in_2010
+E09000001,City of London,"2,438"
+E05000026,Barking and Dagenham,"11,960"
+E05000027,Barking and Dagenham,"8,278"
+E05000028,Barking and Dagenham,"11,751"
+E05000029,Barking and Dagenham,"3,317"
+E05000030,Barking and Dagenham,"3,214"
+E05000031,Barking and Dagenham,"8,537"
+E05000032,Barking and Dagenham,"12,950"
+E05000033,Barking and Dagenham,"9,755"
+E05000034,Barking and Dagenham,"5,983"
+E05000035,Barking and Dagenham,"7,511"
+E05000036,Barking and Dagenham,"6,177"
+E05000037,Barking and Dagenham,"8,476"
+E05000038,Barking and Dagenham,"3,379"
+E05000039,Barking and Dagenham,"1,969"
+E05000040,Barking and Dagenham,"9,037"
+E05000041,Barking and Dagenham,"5,304"
+E05000042,Barking and Dagenham,"8,020"
+E05000043,Barnet,"5,318"
+E05000044,Barnet,"9,765"
+E05000045,Barnet,"7,250"
+E05000046,Barnet,"10,411"
+E05000047,Barnet,"6,605"
+E05000048,Barnet,"4,522"
+E05000049,Barnet,"6,865"
+E05000050,Barnet,"3,662"
+E05000051,Barnet,"6,268"
+E05000052,Barnet,"3,552"
+E05000053,Barnet,"7,064"
+E05000054,Barnet,"3,409"
+E05000055,Barnet,"7,070"
+E05000056,Barnet,"1,917"
+E05000057,Barnet,"2,267"
+E05000058,Barnet,"5,058"
+E05000059,Barnet,"1,912"
+E05000060,Barnet,"3,632"
+E05000061,Barnet,"8,196"
+E05000062,Barnet,"5,945"
+E05000063,Barnet,"7,180"
+E05000064,Bexley,"3,872"
+E05000065,Bexley,"4,316"
+E05000066,Bexley,"6,552"
+E05000067,Bexley,"5,311"
+E05000068,Bexley,"5,541"
+E05000069,Bexley,"4,626"
+E05000070,Bexley,"6,509"
+E05000071,Bexley,"3,442"
+E05000072,Bexley,"1,688"
+E05000073,Bexley,"4,221"
+E05000074,Bexley,"5,254"
+E05000075,Bexley,"2,996"
+E05000076,Bexley,"6,638"
+E05000077,Bexley,"5,139"
+E05000078,Bexley,"4,207"
+E05000079,Bexley,"2,301"
+E05000080,Bexley,"6,208"
+E05000081,Bexley,"2,609"
+E05000082,Bexley,"7,981"
+E05000083,Bexley,"4,459"
+E05000084,Bexley,"2,782"
+E05000085,Brent,"8,254"
+E05000086,Brent,"5,580"
+E05000087,Brent,"7,915"
+E05000088,Brent,"6,427"
+E05000089,Brent,"9,491"
+E05000090,Brent,"5,401"
+E05000091,Brent,"15,248"
+E05000092,Brent,"13,756"
+E05000093,Brent,"5,509"
+E05000094,Brent,"19,583"
+E05000095,Brent,"11,747"
+E05000096,Brent,"4,780"
+E05000097,Brent,"6,782"
+E05000098,Brent,"10,839"
+E05000099,Brent,"9,111"
+E05000100,Brent,"4,723"
+E05000101,Brent,"7,583"
+E05000102,Brent,"6,404"
+E05000103,Brent,"6,190"
+E05000104,Brent,"10,560"
+E05000105,Brent,"10,856"
+E05000106,Bromley,"3,342"
+E05000107,Bromley,"1,299"
+E05000108,Bromley,"2,143"
+E05000109,Bromley,"5,195"
+E05000110,Bromley,"1,218"
+E05000111,Bromley,"1,606"
+E05000112,Bromley,"7,408"
+E05000113,Bromley,"5,091"
+E05000114,Bromley,"1,248"
+E05000115,Bromley,"4,441"
+E05000116,Bromley,"5,895"
+E05000117,Bromley,191
+E05000118,Bromley,"2,173"
+E05000119,Bromley,"1,539"
+E05000120,Bromley,"3,233"
+E05000121,Bromley,"4,333"
+E05000122,Bromley,"3,687"
+E05000123,Bromley,"6,181"
+E05000124,Bromley,"3,361"
+E05000125,Bromley,"4,117"
+E05000126,Bromley,"4,240"
+E05000127,Bromley,"3,458"
+E05000128,Camden,"18,529"
+E05000129,Camden,"12,024"
+E05000130,Camden,"11,968"
+E05000131,Camden,"18,350"
+E05000132,Camden,"13,525"
+E05000133,Camden,"8,948"
+E05000134,Camden,"18,522"
+E05000135,Camden,"5,064"
+E05000136,Camden,"19,305"
+E05000137,Camden,"3,726"
+E05000138,Camden,"12,326"
+E05000139,Camden,"14,700"
+E05000140,Camden,"20,200"
+E05000141,Camden,"21,430"
+E05000142,Camden,"11,450"
+E05000143,Camden,"12,935"
+E05000144,Camden,"11,920"
+E05000145,Camden,"15,691"
+E05000146,Croydon,"11,345"
+E05000147,Croydon,"5,364"
+E05000148,Croydon,"11,860"
+E05000149,Croydon,"8,059"
+E05000150,Croydon,"1,621"
+E05000151,Croydon,"3,078"
+E05000152,Croydon,"4,863"
+E05000153,Croydon,"6,344"
+E05000154,Croydon,"7,964"
+E05000155,Croydon,"1,529"
+E05000156,Croydon,"2,409"
+E05000157,Croydon,"4,559"
+E05000158,Croydon,"7,144"
+E05000159,Croydon,"3,830"
+E05000160,Croydon,"2,050"
+E05000161,Croydon,"8,471"
+E05000162,Croydon,"1,856"
+E05000163,Croydon,"5,159"
+E05000164,Croydon,"7,438"
+E05000165,Croydon,"10,355"
+E05000166,Croydon,"6,455"
+E05000167,Croydon,"5,054"
+E05000168,Croydon,"9,697"
+E05000169,Croydon,"7,882"
+E05000170,Ealing,"8,904"
+E05000171,Ealing,"6,676"
+E05000172,Ealing,"6,299"
+E05000173,Ealing,"8,372"
+E05000174,Ealing,"6,575"
+E05000175,Ealing,"4,602"
+E05000176,Ealing,"8,029"
+E05000177,Ealing,"7,272"
+E05000178,Ealing,"4,302"
+E05000179,Ealing,"4,894"
+E05000180,Ealing,"6,511"
+E05000181,Ealing,"8,923"
+E05000182,Ealing,"8,906"
+E05000183,Ealing,"4,587"
+E05000184,Ealing,"5,644"
+E05000185,Ealing,"4,199"
+E05000186,Ealing,"3,815"
+E05000187,Ealing,"4,632"
+E05000188,Ealing,"10,132"
+E05000189,Ealing,"8,375"
+E05000190,Ealing,"10,278"
+E05000191,Ealing,"9,585"
+E05000192,Ealing,"9,136"
+E05000193,Enfield,"10,162"
+E05000194,Enfield,"5,789"
+E05000195,Enfield,863
+E05000196,Enfield,"1,456"
+E05000197,Enfield,"6,085"
+E05000198,Enfield,"3,647"
+E05000199,Enfield,"5,642"
+E05000200,Enfield,"4,194"
+E05000201,Enfield,"9,715"
+E05000202,Enfield,"2,742"
+E05000203,Enfield,"3,824"
+E05000204,Enfield,"8,067"
+E05000205,Enfield,"8,411"
+E05000206,Enfield,"4,840"
+E05000207,Enfield,"5,623"
+E05000208,Enfield,"5,984"
+E05000209,Enfield,"5,846"
+E05000210,Enfield,"7,118"
+E05000211,Enfield,"6,854"
+E05000212,Enfield,"7,367"
+E05000213,Enfield,"5,191"
+E05000214,Greenwich,"6,231"
+E05000215,Greenwich,"6,452"
+E05000216,Greenwich,"7,640"
+E05000217,Greenwich,"5,366"
+E05000218,Greenwich,"5,060"
+E05000219,Greenwich,"2,789"
+E05000220,Greenwich,"5,742"
+E05000221,Greenwich,"11,430"
+E05000222,Greenwich,"7,994"
+E05000223,Greenwich,"6,320"
+E05000224,Greenwich,"4,151"
+E05000225,Greenwich,"4,653"
+E05000226,Greenwich,"7,718"
+E05000227,Greenwich,"3,645"
+E05000228,Greenwich,"4,309"
+E05000229,Greenwich,"8,087"
+E05000230,Greenwich,"6,838"
+E05000231,Hackney,"17,491"
+E05000232,Hackney,"21,471"
+E05000233,Hackney,"16,974"
+E05000234,Hackney,"18,744"
+E05000235,Hackney,"18,020"
+E05000236,Hackney,"18,773"
+E05000237,Hackney,"18,655"
+E05000238,Hackney,"13,739"
+E05000239,Hackney,"13,957"
+E05000240,Hackney,"21,408"
+E05000241,Hackney,"6,869"
+E05000242,Hackney,"14,633"
+E05000243,Hackney,"11,484"
+E05000244,Hackney,"16,386"
+E05000245,Hackney,"13,769"
+E05000246,Hackney,"14,161"
+E05000247,Hackney,"18,646"
+E05000248,Hackney,"17,740"
+E05000249,Hackney,"7,849"
+E05000250,Hammersmith and Fulham,"20,197"
+E05000251,Hammersmith and Fulham,"19,082"
+E05000252,Hammersmith and Fulham,"13,132"
+E05000253,Hammersmith and Fulham,"2,653"
+E05000254,Hammersmith and Fulham,"17,609"
+E05000255,Hammersmith and Fulham,"13,057"
+E05000256,Hammersmith and Fulham,"11,551"
+E05000257,Hammersmith and Fulham,"17,480"
+E05000258,Hammersmith and Fulham,"17,393"
+E05000259,Hammersmith and Fulham,"4,947"
+E05000260,Hammersmith and Fulham,"12,295"
+E05000261,Hammersmith and Fulham,"8,783"
+E05000262,Hammersmith and Fulham,"10,310"
+E05000263,Hammersmith and Fulham,"11,175"
+E05000264,Hammersmith and Fulham,"16,815"
+E05000265,Hammersmith and Fulham,"14,808"
+E05000266,Haringey,"4,897"
+E05000267,Haringey,"10,979"
+E05000268,Haringey,"16,675"
+E05000269,Haringey,"9,543"
+E05000270,Haringey,"7,026"
+E05000271,Haringey,"9,487"
+E05000272,Haringey,"5,210"
+E05000273,Haringey,"12,785"
+E05000274,Haringey,"7,438"
+E05000275,Haringey,"12,607"
+E05000276,Haringey,"8,887"
+E05000277,Haringey,"14,643"
+E05000278,Haringey,"13,843"
+E05000279,Haringey,"11,724"
+E05000280,Haringey,"12,570"
+E05000281,Haringey,"9,797"
+E05000282,Haringey,"10,454"
+E05000283,Haringey,"8,145"
+E05000284,Haringey,"10,801"
+E05000285,Harrow,"6,555"
+E05000286,Harrow,"2,601"
+E05000287,Harrow,"9,506"
+E05000288,Harrow,"9,260"
+E05000289,Harrow,"3,707"
+E05000290,Harrow,"2,572"
+E05000291,Harrow,"3,322"
+E05000292,Harrow,"3,309"
+E05000293,Harrow,"8,259"
+E05000294,Harrow,"8,691"
+E05000295,Harrow,"6,521"
+E05000296,Harrow,"7,921"
+E05000297,Harrow,"3,177"
+E05000298,Harrow,"4,591"
+E05000299,Harrow,"7,680"
+E05000300,Harrow,"7,475"
+E05000301,Harrow,"8,690"
+E05000302,Harrow,"7,413"
+E05000303,Harrow,"2,727"
+E05000304,Harrow,"10,515"
+E05000305,Harrow,"6,886"
+E05000306,Havering,"4,526"
+E05000307,Havering,"2,003"
+E05000308,Havering,"3,650"
+E05000309,Havering,"2,673"
+E05000310,Havering,"2,121"
+E05000311,Havering,"5,095"
+E05000312,Havering,"1,945"
+E05000313,Havering,"1,385"
+E05000314,Havering,"4,184"
+E05000315,Havering,"4,611"
+E05000316,Havering,"4,444"
+E05000317,Havering,"3,443"
+E05000318,Havering,778
+E05000319,Havering,"6,114"
+E05000320,Havering,"5,138"
+E05000321,Havering,"2,261"
+E05000322,Havering,"5,361"
+E05000323,Havering,589
+E05000324,Hillingdon,"6,747"
+E05000325,Hillingdon,"4,669"
+E05000326,Hillingdon,"4,459"
+E05000327,Hillingdon,"6,195"
+E05000328,Hillingdon,"4,456"
+E05000329,Hillingdon,"3,584"
+E05000330,Hillingdon,522
+E05000331,Hillingdon,588
+E05000332,Hillingdon,"3,852"
+E05000333,Hillingdon,"1,785"
+E05000334,Hillingdon,"6,212"
+E05000335,Hillingdon,"1,533"
+E05000336,Hillingdon,"3,755"
+E05000337,Hillingdon,"5,937"
+E05000338,Hillingdon,"1,822"
+E05000339,Hillingdon,"4,670"
+E05000340,Hillingdon,"3,271"
+E05000341,Hillingdon,"4,998"
+E05000342,Hillingdon,"5,362"
+E05000343,Hillingdon,"2,788"
+E05000344,Hillingdon,"6,387"
+E05000345,Hillingdon,"3,693"
+E05000346,Hounslow,"3,083"
+E05000347,Hounslow,"5,770"
+E05000348,Hounslow,"5,421"
+E05000349,Hounslow,"5,892"
+E05000350,Hounslow,"4,969"
+E05000351,Hounslow,"3,493"
+E05000352,Hounslow,"5,072"
+E05000353,Hounslow,"3,852"
+E05000354,Hounslow,"3,390"
+E05000355,Hounslow,"7,848"
+E05000356,Hounslow,"6,593"
+E05000357,Hounslow,"3,515"
+E05000358,Hounslow,"10,271"
+E05000359,Hounslow,"5,607"
+E05000360,Hounslow,"6,825"
+E05000361,Hounslow,"9,240"
+E05000362,Hounslow,"6,330"
+E05000363,Hounslow,"2,246"
+E05000364,Hounslow,"5,447"
+E05000365,Hounslow,"6,865"
+E05000366,Islington,"16,681"
+E05000367,Islington,"16,752"
+E05000368,Islington,"14,181"
+E05000369,Islington,"16,596"
+E05000370,Islington,"13,553"
+E05000371,Islington,"18,144"
+E05000372,Islington,"13,720"
+E05000373,Islington,"17,292"
+E05000374,Islington,"16,156"
+E05000375,Islington,"16,853"
+E05000376,Islington,"12,952"
+E05000377,Islington,"17,591"
+E05000378,Islington,"16,095"
+E05000379,Islington,"15,305"
+E05000380,Islington,"18,754"
+E05000381,Islington,"17,218"
+E05000382,Kensington and Chelsea,"17,320"
+E05000383,Kensington and Chelsea,"9,504"
+E05000384,Kensington and Chelsea,"9,225"
+E05000385,Kensington and Chelsea,"20,762"
+E05000386,Kensington and Chelsea,"17,697"
+E05000387,Kensington and Chelsea,"12,863"
+E05000388,Kensington and Chelsea,"21,573"
+E05000389,Kensington and Chelsea,"9,768"
+E05000390,Kensington and Chelsea,"15,737"
+E05000391,Kensington and Chelsea,"9,478"
+E05000392,Kensington and Chelsea,"11,799"
+E05000393,Kensington and Chelsea,"15,035"
+E05000394,Kensington and Chelsea,"15,400"
+E05000395,Kensington and Chelsea,"16,048"
+E05000396,Kensington and Chelsea,"13,396"
+E05000397,Kensington and Chelsea,"8,006"
+E05000398,Kensington and Chelsea,"12,735"
+E05000399,Kensington and Chelsea,"12,039"
+E05000400,Kingston upon Thames,"3,817"
+E05000401,Kingston upon Thames,"7,355"
+E05000402,Kingston upon Thames,"6,074"
+E05000403,Kingston upon Thames,"12,765"
+E05000404,Kingston upon Thames,"4,826"
+E05000405,Kingston upon Thames,"1,470"
+E05000406,Kingston upon Thames,"2,570"
+E05000407,Kingston upon Thames,"6,359"
+E05000408,Kingston upon Thames,"6,598"
+E05000409,Kingston upon Thames,"8,450"
+E05000410,Kingston upon Thames,"5,673"
+E05000411,Kingston upon Thames,"4,466"
+E05000412,Kingston upon Thames,"8,956"
+E05000413,Kingston upon Thames,"6,962"
+E05000414,Kingston upon Thames,"4,219"
+E05000415,Kingston upon Thames,"6,554"
+E05000416,Lambeth,"6,714"
+E05000417,Lambeth,"15,049"
+E05000418,Lambeth,"10,469"
+E05000419,Lambeth,"13,724"
+E05000420,Lambeth,"14,950"
+E05000421,Lambeth,"20,537"
+E05000422,Lambeth,"9,497"
+E05000423,Lambeth,"8,132"
+E05000424,Lambeth,"10,569"
+E05000425,Lambeth,"18,520"
+E05000426,Lambeth,"13,567"
+E05000427,Lambeth,"14,002"
+E05000428,Lambeth,"11,260"
+E05000429,Lambeth,"18,412"
+E05000430,Lambeth,"12,575"
+E05000431,Lambeth,"8,656"
+E05000432,Lambeth,"11,728"
+E05000433,Lambeth,"13,304"
+E05000434,Lambeth,"9,572"
+E05000435,Lambeth,"15,988"
+E05000436,Lambeth,"14,917"
+E05000437,Lewisham,"5,228"
+E05000438,Lewisham,"6,677"
+E05000439,Lewisham,"11,342"
+E05000440,Lewisham,"8,449"
+E05000441,Lewisham,"9,131"
+E05000442,Lewisham,"6,450"
+E05000443,Lewisham,"12,607"
+E05000444,Lewisham,"9,085"
+E05000445,Lewisham,"6,522"
+E05000446,Lewisham,"9,475"
+E05000447,Lewisham,"8,783"
+E05000448,Lewisham,"11,733"
+E05000449,Lewisham,"10,357"
+E05000450,Lewisham,"9,888"
+E05000451,Lewisham,"9,800"
+E05000452,Lewisham,"9,591"
+E05000453,Lewisham,"11,503"
+E05000454,Lewisham,"6,958"
+E05000455,Merton,"7,751"
+E05000456,Merton,"4,320"
+E05000457,Merton,"10,159"
+E05000458,Merton,"4,009"
+E05000459,Merton,"8,532"
+E05000460,Merton,"10,590"
+E05000461,Merton,"11,390"
+E05000462,Merton,"7,921"
+E05000463,Merton,"9,475"
+E05000464,Merton,"7,292"
+E05000465,Merton,"5,010"
+E05000466,Merton,"5,294"
+E05000467,Merton,"5,001"
+E05000468,Merton,"5,479"
+E05000469,Merton,"5,507"
+E05000470,Merton,"6,022"
+E05000471,Merton,"9,507"
+E05000472,Merton,"1,378"
+E05000473,Merton,"5,553"
+E05000474,Merton,"5,177"
+E05000475,Newham,"2,565"
+E05000476,Newham,"19,348"
+E05000477,Newham,"7,155"
+E05000478,Newham,"11,028"
+E05000479,Newham,"6,923"
+E05000480,Newham,"16,596"
+E05000481,Newham,"16,134"
+E05000482,Newham,"9,148"
+E05000483,Newham,"13,662"
+E05000484,Newham,"15,895"
+E05000485,Newham,"23,619"
+E05000486,Newham,"20,557"
+E05000487,Newham,"9,524"
+E05000488,Newham,"11,966"
+E05000489,Newham,"17,212"
+E05000490,Newham,"13,025"
+E05000491,Newham,"3,219"
+E05000492,Newham,"7,375"
+E05000493,Newham,"11,671"
+E05000494,Newham,"12,498"
+E05000495,Redbridge,"1,857"
+E05000496,Redbridge,"8,891"
+E05000497,Redbridge,"4,879"
+E05000498,Redbridge,"10,628"
+E05000499,Redbridge,"8,601"
+E05000500,Redbridge,"5,550"
+E05000501,Redbridge,"13,893"
+E05000502,Redbridge,"5,720"
+E05000503,Redbridge,"3,761"
+E05000504,Redbridge,"6,317"
+E05000505,Redbridge,"8,687"
+E05000506,Redbridge,"2,468"
+E05000507,Redbridge,"14,558"
+E05000508,Redbridge,"7,911"
+E05000509,Redbridge,"3,686"
+E05000510,Redbridge,"8,539"
+E05000511,Redbridge,"5,547"
+E05000512,Redbridge,"7,989"
+E05000513,Redbridge,"6,523"
+E05000514,Redbridge,"10,493"
+E05000515,Redbridge,"2,430"
+E05000516,Richmond upon Thames,"3,435"
+E05000517,Richmond upon Thames,"1,904"
+E05000518,Richmond upon Thames,"5,694"
+E05000519,Richmond upon Thames,"1,160"
+E05000520,Richmond upon Thames,"1,530"
+E05000521,Richmond upon Thames,"5,003"
+E05000522,Richmond upon Thames,"4,145"
+E05000523,Richmond upon Thames,"5,707"
+E05000524,Richmond upon Thames,"3,345"
+E05000525,Richmond upon Thames,"5,972"
+E05000526,Richmond upon Thames,"4,281"
+E05000527,Richmond upon Thames,"6,208"
+E05000528,Richmond upon Thames,"4,257"
+E05000529,Richmond upon Thames,"6,096"
+E05000530,Richmond upon Thames,"2,560"
+E05000531,Richmond upon Thames,"5,654"
+E05000532,Richmond upon Thames,"4,541"
+E05000533,Richmond upon Thames,"6,356"
+E05000534,Southwark,"14,807"
+E05000535,Southwark,"17,106"
+E05000536,Southwark,"10,960"
+E05000537,Southwark,"19,829"
+E05000538,Southwark,"3,925"
+E05000539,Southwark,"13,244"
+E05000540,Southwark,"12,379"
+E05000541,Southwark,"16,137"
+E05000542,Southwark,"15,329"
+E05000543,Southwark,"10,636"
+E05000544,Southwark,"18,418"
+E05000545,Southwark,"11,196"
+E05000546,Southwark,"17,867"
+E05000547,Southwark,"6,548"
+E05000548,Southwark,"12,726"
+E05000549,Southwark,"10,796"
+E05000550,Southwark,"15,428"
+E05000551,Southwark,"10,020"
+E05000552,Southwark,"8,415"
+E05000553,Southwark,"12,261"
+E05000554,Southwark,"4,660"
+E05000555,Sutton,"2,162"
+E05000556,Sutton,"3,696"
+E05000557,Sutton,"4,576"
+E05000558,Sutton,"5,459"
+E05000559,Sutton,"1,519"
+E05000560,Sutton,"2,833"
+E05000561,Sutton,"5,837"
+E05000562,Sutton,"8,217"
+E05000563,Sutton,"5,599"
+E05000564,Sutton,"9,999"
+E05000565,Sutton,"6,086"
+E05000566,Sutton,"8,243"
+E05000567,Sutton,"6,384"
+E05000568,Sutton,"7,684"
+E05000569,Sutton,"7,330"
+E05000570,Sutton,"6,439"
+E05000571,Sutton,"6,550"
+E05000572,Sutton,"6,641"
+E05000573,Tower Hamlets,"18,960"
+E05000574,Tower Hamlets,"17,423"
+E05000575,Tower Hamlets,"9,946"
+E05000576,Tower Hamlets,"9,893"
+E05000577,Tower Hamlets,"10,686"
+E05000578,Tower Hamlets,"19,471"
+E05000579,Tower Hamlets,"15,935"
+E05000580,Tower Hamlets,"17,372"
+E05000581,Tower Hamlets,"18,284"
+E05000582,Tower Hamlets,"16,838"
+E05000583,Tower Hamlets,"12,627"
+E05000584,Tower Hamlets,"18,963"
+E05000585,Tower Hamlets,"10,124"
+E05000586,Tower Hamlets,"16,964"
+E05000587,Tower Hamlets,"19,038"
+E05000588,Tower Hamlets,"20,044"
+E05000589,Tower Hamlets,"21,300"
+E05000590,Waltham Forest,"16,600"
+E05000591,Waltham Forest,"12,882"
+E05000592,Waltham Forest,"8,531"
+E05000593,Waltham Forest,"2,920"
+E05000594,Waltham Forest,"5,876"
+E05000595,Waltham Forest,"6,615"
+E05000596,Waltham Forest,"17,795"
+E05000597,Waltham Forest,"5,474"
+E05000598,Waltham Forest,"4,809"
+E05000599,Waltham Forest,"5,184"
+E05000600,Waltham Forest,"5,020"
+E05000601,Waltham Forest,"13,860"
+E05000602,Waltham Forest,"5,895"
+E05000603,Waltham Forest,"6,499"
+E05000604,Waltham Forest,"7,773"
+E05000605,Waltham Forest,"10,284"
+E05000606,Waltham Forest,"10,674"
+E05000607,Waltham Forest,"6,152"
+E05000608,Waltham Forest,"15,565"
+E05000609,Waltham Forest,"7,983"
+E05000610,Wandsworth,"12,590"
+E05000611,Wandsworth,"7,880"
+E05000612,Wandsworth,"11,719"
+E05000613,Wandsworth,"10,056"
+E05000614,Wandsworth,"10,707"
+E05000615,Wandsworth,"10,939"
+E05000616,Wandsworth,"15,963"
+E05000617,Wandsworth,"14,344"
+E05000618,Wandsworth,"12,067"
+E05000619,Wandsworth,"9,395"
+E05000620,Wandsworth,"6,567"
+E05000621,Wandsworth,"3,609"
+E05000622,Wandsworth,"13,615"
+E05000623,Wandsworth,"15,041"
+E05000624,Wandsworth,"11,694"
+E05000625,Wandsworth,"8,859"
+E05000626,Wandsworth,"10,524"
+E05000627,Wandsworth,"5,384"
+E05000628,Wandsworth,"9,911"
+E05000629,Wandsworth,"8,321"
+E05000630,Westminster,"11,940"
+E05000631,Westminster,"22,309"
+E05000632,Westminster,"19,115"
+E05000633,Westminster,"19,535"
+E05000634,Westminster,"28,863"
+E05000635,Westminster,"27,560"
+E05000636,Westminster,"16,073"
+E05000637,Westminster,"2,836"
+E05000638,Westminster,"23,795"
+E05000639,Westminster,"19,399"
+E05000640,Westminster,"18,110"
+E05000641,Westminster,"12,044"
+E05000642,Westminster,"23,746"
+E05000643,Westminster,"6,017"
+E05000644,Westminster,"4,200"
+E05000645,Westminster,"20,795"
+E05000646,Westminster,"17,445"
+E05000647,Westminster,"18,200"
+E05000648,Westminster,"20,634"
+E05000649,Westminster,"6,685"
+E12000007,London,"5,648"
