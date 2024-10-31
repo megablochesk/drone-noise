@@ -13,8 +13,8 @@ USE_POPULATION_DENSITY = False
 # Prioritize low average noise cells
 # Use the first or second cost function: 'first' - K; 'second' - P
 COST_FUNCTION = 'second'
-PRIORITIZE_K = 0
-PRIORITIZE_P = 5
+PRIORITIZE_K = 5
+PRIORITIZE_P = 0
 
 # Coordinates of warehouses
 WAREHOUSES = [
@@ -41,12 +41,12 @@ LONDON_WAREHOUSES = [
 ]
 
 # Total number of orders (5000 predefined orders)
-ORDERS = 5
+ORDERS = 1
 # Total number of drones
 DRONES = 400
 # Noise matrix cell size (in meter)
-NOISE_CELL_LENGTH = 100
-NOISE_CELL_WIDTH = 100
+NOISE_CELL_LENGTH = 2000
+NOISE_CELL_WIDTH = 2000
 # Harm threshold (in dB)
 HARM_AVG_LEVEL = 45
 HARM_MAX_LEVEL = 85
