@@ -2,7 +2,7 @@ from common.decorators import auto_str
 from common.configuration import USE_POPULATION_DENSITY
 from common.configuration import NOISE_CELL_LENGTH, NOISE_CELL_WIDTH
 from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM
-from common.configuration import GEO_PATH, PD_PATH
+from common.configuration import GEO_PATH, OLD_POPULATION_DENSITY_PATH
 from common.constants import M_2_LONGITUDE, M_2_LATITUDE
 from common.math_utils import calculate_mixed_noise_level, calculate_distance, calculate_noise_at_distance
 from cityMap.citymap import Coordinate
@@ -59,7 +59,7 @@ class DensityMatrix:
     def load_pd(self):
         print("Loading population density data to the matrix...")
         geo = gpd.read_file(GEO_PATH)
-        pd_data = pd.read_csv(PD_PATH)
+        pd_data = pd.read_csv(OLD_POPULATION_DENSITY_PATH)
         # TODO: normalize population density first
         geo_pd_merged = geo.merge(pd_data, left_on="id2", right_on="tract")
         polys_geometry = geo_pd_merged.explode(index_parts=True, column='geometry')

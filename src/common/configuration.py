@@ -17,9 +17,29 @@ PRIORITIZE_K = 0
 PRIORITIZE_P = 5
 
 # Coordinates of warehouses
-WAREHOUSES = [[37.805858377440266, -122.41276123169143],
-              [37.76077744044274, -122.390011845567],
-              [37.7426674419608, -122.39981393102507]]
+WAREHOUSES = [
+    [37.805858377440266, -122.41276123169143],
+    [37.76077744044274, -122.390011845567],
+    [37.7426674419608, -122.39981393102507]
+]
+
+LONDON_WAREHOUSES = [
+    [51.500773, 0.160277],
+    [51.389926, 0.110440],
+    [51.361253, -0.119953],
+    [51.375578, -0.124525],
+    [51.372757, -0.121484],
+    [51.556886, -0.264871],
+    [51.556944, -0.262778],
+    [51.653594, -0.024036],
+    [51.524925, 0.111827],
+    [51.520417, -0.006570],
+    [51.504271, -0.447186],
+    [51.520837, -0.006301],
+    [51.521963, -0.080489],
+    [51.502286, -0.073931]
+]
+
 # Total number of orders (5000 predefined orders)
 ORDERS = 5
 # Total number of drones
@@ -40,6 +60,7 @@ CENTER_PER_SLICE_TIME = 0.5
 # Paths
 # Base path for saving/loading orders to/from the local
 ORDER_BASE_PATH = 'recourses/data/order/orders_v2.csv'
+NEW_ORDER_BASE_PATH = 'recourses/data/order/drone_delivery_orders.csv'
 # Base path for saving/loading matrix tracking data
 NOISE_BASE_PATH = 'recourses/results/matrix/trajectory'
 # Base path for saving heatmap/density map
@@ -48,8 +69,10 @@ HEATMAP_BASE_PATH = 'recourses/results/matrix/heatmaps'
 OVERLAY_BASE_PATH = 'recourses/results/matrix/heatmaps/overlay'
 # Geographical data
 GEO_PATH = 'recourses/data/geo/shown_geography.geojson'
-# Population density data
-PD_PATH = 'recourses/data/population/shown_tract_popdensity2010.csv'
+# Old population density data
+OLD_POPULATION_DENSITY_PATH = 'recourses/data/population/shown_tract_popdensity2010.csv'
+# New population density data
+NEW_POPULATION_DENSITY_PATH = 'recourses/data/population/London_msoa_2021_with_population_density.geojson'
 # Simulation plotter background image
 BACKGROUND_IMAGE_PATH = 'recourses/images/map.jpeg'
 # Base path for saving matrix density matrix
@@ -62,10 +85,10 @@ RESULT_BASE_PATH = 'recourses/results/experiments'
 # Map
 CRS = 'epsg:3857'
 # Map boundary
-MAP_LEFT   = -122.520 + 0.004
-MAP_RIGHT  = -122.375 + 0.020
-MAP_TOP    =   37.820 - 0.005
-MAP_BOTTOM =   37.700 + 0.003
+MAP_LEFT   = -0.510 + 0.004
+MAP_RIGHT  =  0.334 + 0.020
+MAP_TOP    =  51.691 - 0.005
+MAP_BOTTOM =  51.286 + 0.003
 # offset range 0-200m (latitude) to a random generated coordinate
 # Notice this is calculated at around 37 latitude
 RANDOM_LA_COORD_OFFSET = 0.001802

@@ -1,17 +1,19 @@
-import pandas as pd
-import numpy as np
-from common.configuration import RESULT_BASE_PATH
-from common.math_utils import plot_matrix, plot_histogram
-from common.configuration import GEO_PATH, PD_PATH, CRS
-from common.configuration import style_function, highlight_function
-from common.configuration import HARM_AVG_LEVEL, HARM_MAX_LEVEL
-import geopandas as gpd
-import folium
-from folium.raster_layers import ImageOverlay
 import csv
-import seaborn as sns
-from matplotlib import pyplot as plt
 import sys
+
+import folium
+import geopandas as gpd
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from folium.raster_layers import ImageOverlay
+from matplotlib import pyplot as plt
+
+from common.configuration import GEO_PATH, OLD_POPULATION_DENSITY_PATH, CRS
+from common.configuration import HARM_AVG_LEVEL, HARM_MAX_LEVEL
+from common.configuration import RESULT_BASE_PATH
+from common.configuration import style_function, highlight_function
+from common.math_utils import plot_matrix, plot_histogram
 
 # directory name: e.g. 'p=5', '2022-07-22_18:00:00'
 directory = 'v2_o200_d100_k0_z100'
@@ -80,7 +82,7 @@ print(f"Total simulation time: {round(total_simulation_time)} seconds, to delive
 
 # 3. overlay images on folium
 geo = gpd.read_file('./' + GEO_PATH)
-pd_data = pd.read_csv('./' + PD_PATH)
+pd_data = pd.read_csv('./' + OLD_POPULATION_DENSITY_PATH)
 popup = geo.merge(pd_data, left_on="id2", right_on="tract")
 threshold_scale = list(pd_data["Population_Density_in_2010"].quantile([0, 0.2, 0.4, 0.6, 0.8, 1]))
 x_center = geo.to_crs(CRS).centroid.to_crs(geo.crs).x.mean()

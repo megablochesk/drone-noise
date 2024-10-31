@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from common.configuration import RESULT_BASE_PATH
 from common.math_utils import plot_matrix, plot_histogram
-from common.configuration import GEO_PATH, PD_PATH, CRS
+from common.configuration import GEO_PATH, OLD_POPULATION_DENSITY_PATH, CRS
 from common.configuration import style_function, highlight_function
 from common.configuration import HARM_AVG_LEVEL, HARM_MAX_LEVEL
 import geopandas as gpd
@@ -69,7 +69,7 @@ print(f"Number of cells over 100 db: {cnt_100_harm_cell}, {round(cnt_100_harm_ce
 
 # 3. overlay images on folium
 geo = gpd.read_file('../' + GEO_PATH)
-pd_data = pd.read_csv('../' + PD_PATH)
+pd_data = pd.read_csv('../' + OLD_POPULATION_DENSITY_PATH)
 popup = geo.merge(pd_data, left_on="id2", right_on="tract")
 threshold_scale = list(pd_data["Population_Density_in_2010"].quantile([0, 0.2, 0.4, 0.6, 0.8, 1]))
 x_center = geo.to_crs(CRS).centroid.to_crs(geo.crs).x.mean()

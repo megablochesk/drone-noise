@@ -12,6 +12,7 @@ from cityMap.citymap import Coordinate, CityMap
 from drones.dronegenerator import DroneGenerator
 from orders.ordergenerator import OrderGenerator
 from dispatchCenter.plotter import Plotter
+from dispatchCenter.folium_plotter import FoliumPlotter
 from dispatchCenter.planner import PathPlanner
 from matrix.noise import DensityMatrix
 import time
@@ -40,6 +41,7 @@ class Center:
 
         if PLOT_SIMULATION:
             self.plotter = Plotter(warehouses=self.warehouses, city_map=city_map)
+            self.folium_plotter = FoliumPlotter(warehouses=self.warehouses, city_map=city_map)
 
     def init_orders(self, num, city_map):
         print("Start initializing orders...")
@@ -132,7 +134,8 @@ class Center:
         self.matrix.track_noise(self.delivering_drones)
 
     def plot_drones(self):
-        self.plotter.plot(self.delivering_drones)
+        # self.plotter.plot(self.delivering_drones)
+        self.folium_plotter.plot(self.delivering_drones)
 
     def should_end_simulation(self):
         return not (self.has_waiting_order() or self.has_delivering_drones() or self.has_planning_drone())

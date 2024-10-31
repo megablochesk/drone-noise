@@ -1,16 +1,8 @@
-import pandas as pd
 import numpy as np
-from common.configuration import RESULT_BASE_PATH
-from common.math_utils import plot_matrix, plot_histogram
-from common.configuration import GEO_PATH, PD_PATH, CRS
-from common.configuration import style_function, highlight_function
-from common.configuration import HARM_AVG_LEVEL, HARM_MAX_LEVEL
-import geopandas as gpd
-import folium
-from folium.raster_layers import ImageOverlay
-import csv
-import seaborn as sns
+import pandas as pd
 from matplotlib import pyplot as plt
+
+from common.configuration import RESULT_BASE_PATH
 
 plt.style.use('seaborn-white')
 plt.rcParams['font.family'] = 'serif'
