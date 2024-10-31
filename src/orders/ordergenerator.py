@@ -1,5 +1,5 @@
 from common.decorators import auto_str
-from common.configuration import ORDER_BASE_PATH, USE_LOCAL_ORDER
+from common.configuration import ORDER_BASE_PATH, USE_LOCAL_ORDER, NEW_ORDER_BASE_PATH
 from cityMap.citymap import CityMap, Coordinate
 from orders.order import Order
 from faker import Faker
@@ -50,15 +50,21 @@ class OrderGenerator:
     def save_orders(self, num, start_time=datetime.now(), end_time=datetime.now(), bias=True):
         orders = self.get_orders(num, start_time, end_time, bias)
         orders_list = []
+
         for order in orders:
             orders_list.append([order.order_id,
-                                order.start_location.latitude, order.start_location.longitude,
-                                order.end_location.latitude, order.end_location.longitude,
-                                order.creation_time, order.description])
+                                order.start_location.latitude,
+                                order.start_location.longitude,
+                                order.end_location.latitude,
+                                order.end_location.longitude,
+                                order.creation_time,
+                                order.description])
+
         fields = ['Order ID',
                   'Start Latitude', 'Start Longitude',
                   'End Latitude', 'End Longitude',
                   'Generate Time', 'Description']
+
         path = ORDER_BASE_PATH
         with open(path, 'w') as f:
             write = csv.writer(f)
@@ -67,11 +73,14 @@ class OrderGenerator:
             print(f'Done writing orders data to \'{path}\'')
             f.flush()
             f.close()
-    
-    def load_orders(self, num_orders):
-        print(f'Loading orders data from \'{ORDER_BASE_PATH}\'')
-        order_df = pd.read_csv(ORDER_BASE_PATH)
-        print(f'Done loading orders data from \'{ORDER_BASE_PATH}\'')
+
+    @staticmethod
+    def load_orders(num_orders):
+        orders_file = NEW_ORDER_BASE_PATH
+
+        print(f'Loading orders data from \'{orders_file}\'')
+        order_df = pd.read_csv(orders_file)
+        print(f'Done loading orders data from \'{orders_file}\'')
         orders = []
         print(f'Initializing orders from local data...')
         for i, line in order_df.iterrows():

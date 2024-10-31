@@ -1,6 +1,6 @@
 import random
 from common.decorators import auto_str
-from common.configuration import CRS, GEO_PATH, PD_PATH, RANDOM_LA_COORD_OFFSET, RANDOM_LO_COORD_OFFSET
+from common.configuration import CRS, GEO_PATH, OLD_POPULATION_DENSITY_PATH, RANDOM_LA_COORD_OFFSET, RANDOM_LO_COORD_OFFSET
 import pandas as pd
 import geopandas as gpd
 import numpy as np
@@ -47,7 +47,7 @@ class CityMap:
         self.bottom = bottom
         self.top = top
         self.geo = gpd.read_file(GEO_PATH)
-        self.pd_data = pd.read_csv(PD_PATH)
+        self.pd_data = pd.read_csv(OLD_POPULATION_DENSITY_PATH)
         pd_sum = self.pd_data['Population_Density_in_2010'].sum()
         self.pd_prob = [x / pd_sum for x in self.pd_data['Population_Density_in_2010']]
     
