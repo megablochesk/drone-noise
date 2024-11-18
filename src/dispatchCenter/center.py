@@ -220,7 +220,12 @@ class Center:
             print(f'Done writing configuration data!')
             f.flush()
             f.close()
+            
+        path = RESULT_BASE_PATH + '/' + ("v2_o%d_d%d_p%d_z%d" % (ORDERS, DRONES, PRIORITIZE_P, DRONE_ALTITUTE))
 
+        self.matrix.create_geojson(self.iteration_count, path + "geojson.geojson")
+ 
+    
     def has_free_drone(self) -> bool:
         return len(self.free_drones) > 0
 
