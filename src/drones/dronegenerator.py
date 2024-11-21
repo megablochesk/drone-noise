@@ -5,7 +5,6 @@ from typing import List
 import copy
 
 
-
 @auto_str
 class DroneGenerator:
     def __init__(self, warehouses: List[Coordinate]):
