@@ -62,6 +62,13 @@ class DensityMatrix:
         geo = gpd.read_file(GEO_PATH)
         pd_data = pd.read_csv(OLD_POPULATION_DENSITY_PATH)
         # TODO: normalize population density first
+        # george's change to merge them properly
+        geo["id2"] = geo["id2"].astype(str)  # Convert `id2` to string
+        pd_data["tract"] = pd_data["tract"].astype(str)  # Convert `tract` to string
+        print(geo.head())  # Inspect the first few rows of 'geo'
+        print(pd_data.head())  # Inspect the first few rows of 'pd_data'
+
+
         geo_pd_merged = geo.merge(pd_data, left_on="id2", right_on="tract")
         polys_geometry = geo_pd_merged.explode(index_parts=True, column='geometry')
         for i in range(self.rows):
