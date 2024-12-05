@@ -8,7 +8,7 @@ USE_DENSITY_MATRIX = True
 # Use local order data: True - load predefined orders; False - generate new orders
 USE_LOCAL_ORDER = True
 # TODO: load and use population density for harm calculation and path-finding
-USE_POPULATION_DENSITY = False
+USE_POPULATION_DENSITY = True
 
 # Prioritize low average noise cells
 # Use the first or second cost function: 'first' - K; 'second' - P
@@ -16,12 +16,22 @@ COST_FUNCTION = 'second'
 PRIORITIZE_K = 5
 PRIORITIZE_P = 0
 
-# Coordinates of warehouses
+# # Coordinates of warehouses
+# WAREHOUSES = [
+#     [37.805858377440266, -122.41276123169143],
+#     [37.76077744044274, -122.390011845567],
+#     [37.7426674419608, -122.39981393102507]
+# ]
+
+# Coordinates of Tesco warehouses in London
 WAREHOUSES = [
-    [37.805858377440266, -122.41276123169143],
-    [37.76077744044274, -122.390011845567],
-    [37.7426674419608, -122.39981393102507]
+    [51.5394, -0.2251],  # Tilling Road, Cricklewood
+    [51.5254, -0.0194],  # Hancock Road, Mile End
+    [51.6503, -0.1738],  # Station Road, Wealdstone
+    [51.4912, -0.0791],  # Dunton Road, Southwark
+    [51.6132, -0.1318],  # Coppetts Centre, North Finchley
 ]
+
 
 # LONDON_WAREHOUSES = [
 #     [51.500773, 0.160277],
@@ -48,7 +58,7 @@ LONDON_WAREHOUSES = [
 ]
 
 # Total number of orders (5000 predefined orders)
-ORDERS = 100
+ORDERS = 5
 # Total number of drones
 DRONES = 5
 # Noise matrix cell size (in meter)
@@ -75,9 +85,9 @@ HEATMAP_BASE_PATH = 'recourses/results/matrix/heatmaps'
 # Base path for saving overlay images of folium map and density matrix
 OVERLAY_BASE_PATH = 'recourses/results/matrix/heatmaps/overlay'
 # Geographical data
-GEO_PATH = 'recourses/data/geo/shown_geography.geojson'
+GEO_PATH = 'recourses/data/geo/london_lsoa_simple.geojson'
 # Old population density data
-OLD_POPULATION_DENSITY_PATH = 'recourses/data/population/shown_tract_popdensity2010.csv'
+OLD_POPULATION_DENSITY_PATH = 'recourses/data/population/newing_propensity_shop_online.csv'
 # New population density data
 NEW_POPULATION_DENSITY_PATH = 'recourses/data/population/London_msoa_2021_with_population_density.geojson'
 # Simulation plotter background image
