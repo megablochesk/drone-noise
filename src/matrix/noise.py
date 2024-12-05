@@ -13,6 +13,7 @@ import geopandas as gpd
 from shapely.geometry import Point
 from concurrent.futures import ProcessPoolExecutor
 from functools import lru_cache
+import json
 
 @auto_str
 class Cell:
@@ -61,6 +62,13 @@ class DensityMatrix:
         geo = gpd.read_file(GEO_PATH)
         pd_data = pd.read_csv(OLD_POPULATION_DENSITY_PATH)
         # TODO: normalize population density first
+        # george's change to merge them properly
+        geo["id2"] = geo["id2"].astype(str)  # Convert `id2` to string
+        pd_data["tract"] = pd_data["tract"].astype(str)  # Convert `tract` to string
+        print(geo.head())  # Inspect the first few rows of 'geo'
+        print(pd_data.head())  # Inspect the first few rows of 'pd_data'
+
+
         geo_pd_merged = geo.merge(pd_data, left_on="id2", right_on="tract")
         polys_geometry = geo_pd_merged.explode(index_parts=True, column='geometry')
         for i in range(self.rows):
@@ -121,3 +129,32 @@ class DensityMatrix:
     def get_average_matrix(self, time_count):
         return np.array([[self.matrix[i][j].total_noise / time_count for j in range(self.cols)]
                          for i in range(self.rows)])
+    
+    def create_geojson(self, time_count, output_file):
+       geojson_data = {
+           "type": "FeatureCollection",
+           "features": []
+       }
+
+       for i in range(self.rows):
+           for j in range(self.cols):
+               cell = self.matrix[i][j]
+               feature = {
+                   "type": "Feature",
+                   "geometry": {
+                       "type": "Point",
+                       "coordinates": [cell.centroid.longitude, cell.centroid.latitude]
+                   },
+                   "properties": {
+                       "average_noise": cell.total_noise / time_count,
+                       "max_noise": cell.max_noise,
+                       "population_density": cell.population_density
+                   }
+               }
+               geojson_data["features"].append(feature)
+       
+       with open(output_file, 'w') as file:
+           json.dump(geojson_data, file)
+       
+       print(f"GeoJSON file saved successfully: {output_file}")
+
