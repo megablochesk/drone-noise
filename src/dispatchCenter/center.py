@@ -1,24 +1,25 @@
+import csv
+import os
+import time
+
+from cityMap.citymap import Coordinate, CityMap
+from common.configuration import CENTER_PER_SLICE_TIME, PLOT_SIMULATION
+from common.configuration import MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM
+from common.configuration import ORDERS, DRONES, NOISE_CELL_WIDTH, NOISE_CELL_LENGTH, COST_FUNCTION, PRIORITIZE_K, \
+    PRIORITIZE_P
+from common.configuration import RESULT_BASE_PATH
+from common.configuration import USE_DENSITY_MATRIX
+from common.constants import DRONE_ALTITUTE
 from common.decorators import auto_str
 from common.enum import DroneStatus
 from common.math_utils import difference, find_nearest_free_drone
 from common.util import Queue
-from common.configuration import CENTER_PER_SLICE_TIME, PLOT_SIMULATION
-from common.configuration import USE_DENSITY_MATRIX, USE_LOCAL_ORDER
-from common.configuration import ORDERS, DRONES, NOISE_CELL_WIDTH, NOISE_CELL_LENGTH, COST_FUNCTION, PRIORITIZE_K, PRIORITIZE_P
-from common.configuration import RESULT_BASE_PATH
-from common.configuration import MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM
-from common.constants import DRONE_ALTITUTE
-from cityMap.citymap import Coordinate, CityMap
-from drones.dronegenerator import DroneGenerator
-from orders.ordergenerator import OrderGenerator
-from dispatchCenter.plotter import Plotter
 from dispatchCenter.folium_plotter import FoliumPlotter
 from dispatchCenter.planner import PathPlanner
+from dispatchCenter.plotter import Plotter
+from drones.dronegenerator import DroneGenerator
 from matrix.noise import DensityMatrix
-import time
-import os
-from datetime import datetime
-import csv
+from orders.order_generator import OrderGenerator
 
 
 @auto_str
@@ -33,7 +34,7 @@ class Center:
         self.delivering_drones = list()
         self.waiting_planning_drones = list()
 
-        self.init_orders(num_orders, city_map)
+        self.init_orders(num_orders)
         self.init_drones(num_drones, self.warehouses)
 
         self.matrix = DensityMatrix()
@@ -43,12 +44,10 @@ class Center:
             self.plotter = Plotter(warehouses=self.warehouses, city_map=city_map)
             self.folium_plotter = FoliumPlotter(warehouses=self.warehouses, city_map=city_map)
 
-    def init_orders(self, num, city_map):
+    def init_orders(self, number_of_orders):
         print("Start initializing orders...")
 
-        order_generator = OrderGenerator(city_map)
-
-        orders = order_generator.get_orders(num=num, bias=True)
+        orders = OrderGenerator.load_orders(number_of_orders)
 
         self.waiting_orders.extend(orders)
 

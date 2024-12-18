@@ -5,8 +5,6 @@ PRINT_TERMINAL = True
 PLOT_SIMULATION = True
 # Use DensityMatrix to track matrix: tracking noise in matrix
 USE_DENSITY_MATRIX = True
-# Use local order data: True - load predefined orders; False - generate new orders
-USE_LOCAL_ORDER = True
 # TODO: load and use population density for harm calculation and path-finding
 USE_POPULATION_DENSITY = False
 
@@ -41,7 +39,7 @@ LONDON_WAREHOUSES = [
 ]
 
 # Total number of orders (5000 predefined orders)
-ORDERS = 1
+ORDERS = 5
 # Total number of drones
 DRONES = 400
 # Noise matrix cell size (in meter)

@@ -6,14 +6,12 @@ from datetime import datetime
 
 @auto_str
 class Order:
-    def __init__(self, order_id, start_location: Coordinate, end_location: Coordinate, time: datetime, description=""):
+    def __init__(self, order_id, start_location: Coordinate, end_location: Coordinate):
         self.order_id = order_id
         self.start_location = start_location
         self.end_location = end_location
-        self.creation_time = time
         self.delivery_time = None
         self.status = OrderStatus.UNASSIGNED
-        self.description = description
     
     def update_status(self, new_status: OrderStatus):
         self.status = new_status
