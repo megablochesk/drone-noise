@@ -60,7 +60,7 @@ CENTER_PER_SLICE_TIME = 0.5
 # Paths
 # Base path for saving/loading orders to/from the local
 ORDER_BASE_PATH = 'recourses/data/order/orders_v2.csv'
-NEW_ORDER_BASE_PATH = 'recourses/data/order/drone_delivery_orders.csv'
+NEW_ORDER_BASE_PATH = 'recourses/data/order/drone_delivery_orders_old.csv'
 # Base path for saving/loading matrix tracking data
 NOISE_BASE_PATH = 'recourses/results/matrix/trajectory'
 # Base path for saving heatmap/density map
