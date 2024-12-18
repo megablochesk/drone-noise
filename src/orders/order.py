@@ -1,10 +1,9 @@
-from cityMap.citymap import Coordinate
-from common.decorators import auto_str
-from common.enum import OrderStatus
 from datetime import datetime
 
+from common.coordinate import Coordinate
+from common.enum import OrderStatus
 
-@auto_str
+
 class Order:
     def __init__(self, order_id, start_location: Coordinate, end_location: Coordinate):
         self.order_id = order_id

@@ -1,23 +1,22 @@
 import matplotlib
 matplotlib.use('TkAgg')
 
-import numpy as np
 import matplotlib.pyplot as plt
 from typing import List
-from cityMap.citymap import Coordinate
+from common.coordinate import Coordinate
 from drones.drone import Drone
-from cityMap.citymap import CityMap
+from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM
 from common.configuration import BACKGROUND_IMAGE_PATH
 
 
 class Plotter:
-    def __init__(self, warehouses: List[Coordinate], city_map: CityMap):
+    def __init__(self, warehouses: List[Coordinate]):
         self.interactive = True
         self.img = plt.imread(BACKGROUND_IMAGE_PATH)
         self.figure, self.ax = plt.subplots()
         self.ax.xaxis.set_visible(False)
         self.ax.yaxis.set_visible(False)
-        self.ax.imshow(self.img, extent=[city_map.left, city_map.right, city_map.bottom, city_map.top])
+        self.ax.imshow(self.img, extent=[MAP_LEFT, MAP_RIGHT, MAP_BOTTOM, MAP_TOP])
 
         # Preparing static plot elements
         self.warehouses_x = [x.longitude for x in warehouses]
@@ -29,8 +28,8 @@ class Plotter:
         self.drone_scatter = plt.scatter([], [], color='red', linewidths=0.5)
         self.order_scatter = plt.scatter([], [], color='green', marker='v', linewidths=1)
 
-        plt.xlim(city_map.left, city_map.right)
-        plt.ylim(city_map.bottom, city_map.top)
+        plt.xlim(MAP_LEFT, MAP_RIGHT)
+        plt.ylim(MAP_BOTTOM, MAP_TOP)
 
         if self.interactive:
             plt.ion()

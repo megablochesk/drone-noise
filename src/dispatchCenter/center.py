@@ -2,7 +2,7 @@ import csv
 import os
 import time
 
-from cityMap.citymap import Coordinate, CityMap
+from common.coordinate import Coordinate
 from common.configuration import CENTER_PER_SLICE_TIME, PLOT_SIMULATION
 from common.configuration import MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM
 from common.configuration import ORDERS, DRONES, NOISE_CELL_WIDTH, NOISE_CELL_LENGTH, COST_FUNCTION, PRIORITIZE_K, \
@@ -24,7 +24,7 @@ from orders.order_generator import OrderGenerator
 
 @auto_str
 class Center:
-    def __init__(self, warehouses, city_map: CityMap, num_orders, num_drones):
+    def __init__(self, warehouses, number_of_orders, number_of_drones):
         self.warehouses = [Coordinate(latitude=x[0], longitude=x[1]) for x in warehouses]
 
         self.iteration_count = 0
@@ -34,15 +34,15 @@ class Center:
         self.delivering_drones = list()
         self.waiting_planning_drones = list()
 
-        self.init_orders(num_orders)
-        self.init_drones(num_drones, self.warehouses)
+        self.init_orders(number_of_orders)
+        self.init_drones(number_of_drones, self.warehouses)
 
         self.matrix = DensityMatrix()
         self.planner = PathPlanner(self.matrix)
 
         if PLOT_SIMULATION:
-            self.plotter = Plotter(warehouses=self.warehouses, city_map=city_map)
-            self.folium_plotter = FoliumPlotter(warehouses=self.warehouses, city_map=city_map)
+            self.plotter = Plotter(self.warehouses)
+            self.folium_plotter = FoliumPlotter(self.warehouses)
 
     def init_orders(self, number_of_orders):
         print("Start initializing orders...")
@@ -51,12 +51,12 @@ class Center:
 
         self.waiting_orders.extend(orders)
 
-    def init_drones(self, num, warehouses):
+    def init_drones(self, number_of_drones, warehouses):
         print("Start creating drones...")
 
         drone_generator = DroneGenerator(warehouses)
 
-        drones = drone_generator.generate_drones(num)
+        drones = drone_generator.generate_drones(number_of_drones)
 
         self.free_drones.extend(drones)
 

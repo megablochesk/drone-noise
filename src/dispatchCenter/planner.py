@@ -1,5 +1,5 @@
 from matrix.noise import DensityMatrix
-from cityMap.citymap import Coordinate
+from common.coordinate import Coordinate
 from common.decorators import auto_str
 from common.math_utils import heuristic, cost_1, cost_2, pop_lowest_priority, find_node, backtrack
 from common.constants import DRONE_NOISE

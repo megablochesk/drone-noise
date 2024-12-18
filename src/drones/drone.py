@@ -1,4 +1,4 @@
-from cityMap.citymap import Coordinate
+from common.coordinate import Coordinate
 from orders.order import Order
 from common.decorators import auto_str
 from common.enum import DroneStatus

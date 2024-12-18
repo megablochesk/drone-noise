@@ -1,9 +1,10 @@
 import math
-from cityMap.citymap import Coordinate
-import numpy as np
-from typing import List
 import random
+from typing import List
+
+import numpy as np
 from common.constants import M_2_LATITUDE, M_2_LONGITUDE, DRONE_NOISE, DRONE_ALTITUTE
+from common.coordinate import Coordinate
 
 DRONE_ALTITUDE_SQUARED = DRONE_ALTITUTE * DRONE_ALTITUTE
 

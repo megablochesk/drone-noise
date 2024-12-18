@@ -3,7 +3,7 @@ import math
 import timeit
 from parameterized import parameterized
 
-from cityMap.citymap import Coordinate
+from common.coordinate import Coordinate
 from common.constants import DRONE_ALTITUTE, M_2_LATITUDE, M_2_LONGITUDE, DRONE_NOISE
 from common.math_utils import calculate_noise_coord, calculate_noise_at_distance, calculate_distance
 

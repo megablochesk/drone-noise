@@ -1,22 +1,22 @@
-import folium
 from typing import List
-from cityMap.citymap import Coordinate, CityMap
-from drones.drone import Drone
 
+import branca
+import folium
+import matplotlib
 import numpy as np
 import pandas as pd
+from PIL import Image
+from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM
+from common.coordinate import Coordinate
+from drones.drone import Drone
 from matplotlib import cm
 from matplotlib.colors import Normalize
-from PIL import Image
-import branca
-import matplotlib
 
 
 class FoliumPlotter:
-    def __init__(self, warehouses: List[Coordinate], city_map: CityMap):
-        self.city_map = city_map  # Store city_map as an instance variable
-        center_latitude = (city_map.bottom + city_map.top) / 2
-        center_longitude = (city_map.left + city_map.right) / 2
+    def __init__(self, warehouses: List[Coordinate]):
+        center_latitude = (MAP_BOTTOM + MAP_TOP) / 2
+        center_longitude = (MAP_LEFT + MAP_RIGHT) / 2
         self.map = folium.Map(location=[center_latitude, center_longitude], zoom_start=13)
 
         # Add warehouse markers
@@ -101,12 +101,6 @@ class FoliumPlotter:
             print("No noise data available. Please call add_noise_pollution_map(result_path) first.")
             return
 
-        # Map boundaries from city_map
-        MAP_LEFT = self.city_map.left
-        MAP_RIGHT = self.city_map.right
-        MAP_TOP = self.city_map.top
-        MAP_BOTTOM = self.city_map.bottom
-
         # Normalize the average noises
         norm_avg_noises = self.norm(self.avg_noises)
         img = self.colormap(norm_avg_noises)
@@ -118,14 +112,13 @@ class FoliumPlotter:
         img_pil = Image.fromarray(img_uint8)
         img_pil.save('avg_noises.png')
 
-        # Define the image bounds
-        bounds = [[MAP_BOTTOM, MAP_LEFT], [MAP_TOP, MAP_RIGHT]]
+        image_bounds = [[MAP_BOTTOM, MAP_LEFT], [MAP_TOP, MAP_RIGHT]]
 
         # Add the image overlay
         folium.raster_layers.ImageOverlay(
             name='Average Noise',
             image='avg_noises.png',
-            bounds=bounds,
+            bounds=image_bounds,
             opacity=0.6,
             interactive=True,
             cross_origin=False,

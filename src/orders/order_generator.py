@@ -1,6 +1,6 @@
 import pandas as pd
 
-from cityMap.citymap import Coordinate
+from common.coordinate import Coordinate
 from common.configuration import NEW_ORDER_BASE_PATH
 from orders.order import Order
 

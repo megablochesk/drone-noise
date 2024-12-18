@@ -5,7 +5,7 @@ from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM
 from common.configuration import GEO_PATH, OLD_POPULATION_DENSITY_PATH
 from common.constants import M_2_LONGITUDE, M_2_LATITUDE
 from common.math_utils import calculate_mixed_noise_level, calculate_distance, calculate_noise_at_distance
-from cityMap.citymap import Coordinate
+from common.coordinate import Coordinate
 import math
 import numpy as np
 import pandas as pd
