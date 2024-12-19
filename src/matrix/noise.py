@@ -1,18 +1,18 @@
-from common.decorators import auto_str
-from common.configuration import USE_POPULATION_DENSITY
-from common.configuration import NOISE_CELL_LENGTH, NOISE_CELL_WIDTH
-from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM
-from common.configuration import GEO_PATH, OLD_POPULATION_DENSITY_PATH
-from common.constants import M_2_LONGITUDE, M_2_LATITUDE
-from matrix.noise_math_utils import calculate_mixed_noise_level, calculate_noise_at_distance
-from common.coordinate import Coordinate, calculate_distance
 import math
+
+import geopandas as gpd
 import numpy as np
 import pandas as pd
-import geopandas as gpd
+from common.configuration import GEO_PATH, OLD_POPULATION_DENSITY_PATH
+from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM
+from common.configuration import NOISE_CELL_LENGTH, NOISE_CELL_WIDTH
+from common.configuration import USE_POPULATION_DENSITY
+from common.constants import M_2_LONGITUDE, M_2_LATITUDE
+from common.coordinate import Coordinate, calculate_distance
+from common.decorators import auto_str
+from matrix.noise_math_utils import calculate_mixed_noise_level, calculate_noise_at_distance
 from shapely.geometry import Point
-from concurrent.futures import ProcessPoolExecutor
-from functools import lru_cache
+
 
 @auto_str
 class Cell:

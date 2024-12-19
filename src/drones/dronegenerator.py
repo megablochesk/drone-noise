@@ -1,8 +1,9 @@
+import copy
+from typing import List
+
 from common.coordinate import Coordinate
 from common.decorators import auto_str
 from drones.drone import Drone
-from typing import List
-import copy
 
 
 @auto_str

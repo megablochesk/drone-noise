@@ -2,7 +2,6 @@ import csv
 import os
 import time
 
-from common.coordinate import Coordinate
 from common.configuration import CENTER_PER_SLICE_TIME, PLOT_SIMULATION
 from common.configuration import MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM
 from common.configuration import ORDERS, DRONES, NOISE_CELL_WIDTH, NOISE_CELL_LENGTH, COST_FUNCTION, PRIORITIZE_K, \
@@ -10,6 +9,7 @@ from common.configuration import ORDERS, DRONES, NOISE_CELL_WIDTH, NOISE_CELL_LE
 from common.configuration import RESULT_BASE_PATH
 from common.configuration import USE_DENSITY_MATRIX
 from common.constants import DRONE_ALTITUTE
+from common.coordinate import Coordinate
 from common.decorators import auto_str
 from common.enum import DroneStatus
 from common.math_utils import difference, find_nearest_warehouse_location

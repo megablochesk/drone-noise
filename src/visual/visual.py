@@ -1,14 +1,15 @@
-import pandas as pd
-import numpy as np
-from common.configuration import RESULT_BASE_PATH
-from common.configuration import GEO_PATH, OLD_POPULATION_DENSITY_PATH, CRS
-from common.configuration import style_function, highlight_function
-from common.configuration import HARM_AVG_LEVEL, HARM_MAX_LEVEL
-import geopandas as gpd
-import folium
-from folium.raster_layers import ImageOverlay
 import csv
+
+import folium
+import geopandas as gpd
+import numpy as np
+import pandas as pd
 import seaborn as sns
+from common.configuration import GEO_PATH, OLD_POPULATION_DENSITY_PATH, CRS
+from common.configuration import HARM_AVG_LEVEL, HARM_MAX_LEVEL
+from common.configuration import RESULT_BASE_PATH
+from common.configuration import style_function, highlight_function
+from folium.raster_layers import ImageOverlay
 from matplotlib import pyplot as plt
 
 

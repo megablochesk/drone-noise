@@ -1,7 +1,6 @@
 import pandas as pd
-
-from common.coordinate import Coordinate
 from common.configuration import NEW_ORDER_BASE_PATH
+from common.coordinate import Coordinate
 from orders.order import Order
 
 

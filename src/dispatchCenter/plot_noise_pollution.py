@@ -1,12 +1,11 @@
+import branca
+import folium
+import matplotlib
 import numpy as np
 import pandas as pd
-import folium
-import matplotlib.pyplot as plt
+from PIL import Image
 from matplotlib import cm
 from matplotlib.colors import Normalize
-from PIL import Image
-import branca
-import matplotlib
 
 MAP_LEFT = -0.510 + 0.004
 MAP_RIGHT = 0.334 + 0.020

@@ -1,13 +1,13 @@
+from datetime import datetime
+from typing import List
+
+from common.configuration import PRINT_TERMINAL, MAP_TOP, MAP_LEFT, MAP_RIGHT, MAP_BOTTOM
 from common.coordinate import Coordinate
-from orders.order import Order
 from common.decorators import auto_str
 from common.enum import DroneStatus
 from common.math_utils import find_nearest_warehouse, calculate_distance
-from common.constants import DRONE_NOISE
-from common.configuration import PRINT_TERMINAL, MAP_TOP, MAP_LEFT, MAP_RIGHT, MAP_BOTTOM
-from datetime import datetime
-from typing import List
 from drones.tracker import Tracker
+from orders.order import Order
 
 
 @auto_str
