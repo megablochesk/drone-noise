@@ -13,7 +13,7 @@ from common.configuration import (CRS, GEO_PATH, HARM_AVG_LEVEL,
                                   HARM_MAX_LEVEL, OLD_POPULATION_DENSITY_PATH,
                                   RESULT_BASE_PATH, highlight_function,
                                   style_function)
-from common.math_utils import plot_histogram, plot_matrix
+from visual.visual import plot_histogram, plot_matrix
 
 
 def get_result_path(directory_path):

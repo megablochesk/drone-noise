@@ -4,8 +4,8 @@ from common.configuration import NOISE_CELL_LENGTH, NOISE_CELL_WIDTH
 from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM
 from common.configuration import GEO_PATH, OLD_POPULATION_DENSITY_PATH
 from common.constants import M_2_LONGITUDE, M_2_LATITUDE
-from common.math_utils import calculate_mixed_noise_level, calculate_distance, calculate_noise_at_distance
-from common.coordinate import Coordinate
+from matrix.noise_math_utils import calculate_mixed_noise_level, calculate_noise_at_distance
+from common.coordinate import Coordinate, calculate_distance
 import math
 import numpy as np
 import pandas as pd
@@ -16,21 +16,15 @@ from functools import lru_cache
 
 @auto_str
 class Cell:
-    def __init__(self, latitude, longitude, row, col):
+    def __init__(self, latitude, longitude, row, column):
         self.row = row
-        self.col = col
+        self.column = column
         self.centroid = Coordinate(latitude, longitude)
         self.total_noise = 0
         self.max_noise = 0
         self.population_density = 1
 
     def set_noise(self, noise):
-        """
-        Cell receives a mixed matrix and update its total and maximum matrix.
-        
-        :param noise: a mixed matrix
-        :return:
-        """
         self.total_noise += noise
         self.max_noise = max(self.max_noise, noise)
 
@@ -50,7 +44,7 @@ class DensityMatrix:
         self.cols = math.floor((MAP_RIGHT - MAP_LEFT) / self.cell_length_lo)
         self.matrix = [[Cell(latitude=self.top - (i + 1 / 2) * self.cell_width_la,
                              longitude=self.left + (j + 1 / 2) * self.cell_length_lo,
-                             row=i, col=j)
+                             row=i, column=j)
                         for j in range(self.cols)] for i in range(self.rows)]
         if USE_POPULATION_DENSITY:
             self.load_pd()
@@ -74,12 +68,6 @@ class DensityMatrix:
                         break
 
     def track_noise(self, drones):
-        """
-        The matrix tracks all drones' matrix and record them to the matrix.
-
-        :param drones: a list of delivering drones
-        :return: none
-        """
         for row in self.matrix:
             for cell in row:
                 noises = [

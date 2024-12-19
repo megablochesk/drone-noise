@@ -2,7 +2,7 @@ from common.coordinate import Coordinate
 from orders.order import Order
 from common.decorators import auto_str
 from common.enum import DroneStatus
-from common.math_utils import nearest_neighbor, calculate_distance
+from common.math_utils import find_nearest_warehouse, calculate_distance
 from common.constants import DRONE_NOISE
 from common.configuration import PRINT_TERMINAL, MAP_TOP, MAP_LEFT, MAP_RIGHT, MAP_BOTTOM
 from datetime import datetime
@@ -66,7 +66,7 @@ class Drone:
         """
         self.order.mark_as_delivered()
         self.status = DroneStatus.RETURNING
-        self.destination = nearest_neighbor(neighbors=self.warehouses, target=self.location)
+        self.destination = find_nearest_warehouse(self.warehouses, self.location)
         if PRINT_TERMINAL:
             print(f"[{datetime.now()}] Drone '{self.drone_id}' delivered Order '{self.order.order_id}'")
             print(f"[{datetime.now()}] Drone '{self.drone_id}' is flying to {self.destination} to recharge")

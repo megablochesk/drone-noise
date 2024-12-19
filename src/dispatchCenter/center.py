@@ -12,7 +12,7 @@ from common.configuration import USE_DENSITY_MATRIX
 from common.constants import DRONE_ALTITUTE
 from common.decorators import auto_str
 from common.enum import DroneStatus
-from common.math_utils import difference, find_nearest_free_drone
+from common.math_utils import difference, find_nearest_warehouse_location
 from common.util import Queue
 from dispatchCenter.folium_plotter import FoliumPlotter
 from dispatchCenter.planner import PathPlanner
@@ -96,11 +96,17 @@ class Center:
 
         while self.has_waiting_order() and self.has_free_drone():
             order = self.waiting_orders.pop()
-            drone = find_nearest_free_drone(order, self.free_drones)
+            drone = self.find_nearest_free_drone(order, self.free_drones)
             drone.accept_order(order)
 
             self.free_drones.remove(drone)
             self.waiting_planning_drones.append(drone)
+
+    @staticmethod
+    def find_nearest_free_drone(order, free_drones):
+        return free_drones[find_nearest_warehouse_location(
+            warehouses=[x.location for x in free_drones],
+            current_location=order.start_location)]
 
     def plan_drones_path(self):
         for drone in self.waiting_planning_drones:

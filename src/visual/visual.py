@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 from common.configuration import RESULT_BASE_PATH
-from common.math_utils import plot_matrix, plot_histogram
 from common.configuration import GEO_PATH, OLD_POPULATION_DENSITY_PATH, CRS
 from common.configuration import style_function, highlight_function
 from common.configuration import HARM_AVG_LEVEL, HARM_MAX_LEVEL
@@ -11,6 +10,30 @@ from folium.raster_layers import ImageOverlay
 import csv
 import seaborn as sns
 from matplotlib import pyplot as plt
+
+
+def plot_histogram(data, title, path, y_bottom, y_top, x_bottom=0, x_top=None):
+    fig, ax = plt.subplots()
+    plt.ylim(y_bottom, y_top)
+    if x_top != None:
+        plt.xlim(x_bottom, x_top)
+    plt.title(title)
+    sns.histplot(data=data, kde=True)
+    plt.savefig(path, bbox_inches='tight')
+    plt.close()
+
+
+def plot_matrix(X, Y, Z, title, path, color_min, color_max):
+    fig, ax = plt.subplots()
+    plt.pcolormesh(X, Y, Z)
+    plt.colorbar()
+    plt.clim(vmin=color_min, vmax=color_max)
+    ax.xaxis.set_visible(False)
+    ax.yaxis.set_visible(False)
+    plt.title(title)
+    plt.savefig(path, bbox_inches='tight')
+    plt.close()
+
 
 # directory name: e.g. 'p=5', '2022-07-22_18:00:00'
 directory = '08-06_16:46:48'
