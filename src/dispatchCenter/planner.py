@@ -84,7 +84,7 @@ class PathPlanner:
 
     @staticmethod
     def _calculate_cost(current_node, child, avg_matrix):
-        if COST_FUNCTION is 'first':
+        if COST_FUNCTION == 'first':
             return utils.expansion_cost_1(current_node.row, current_node.column, child.row, child.column, avg_matrix, PRIORITIZE_K)
         else:
             return utils.expansion_cost_2(current_node.row, current_node.column, child.row, child.column, avg_matrix, PRIORITIZE_P)

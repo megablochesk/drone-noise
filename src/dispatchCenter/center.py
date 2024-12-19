@@ -41,8 +41,8 @@ class Center:
         self.planner = PathPlanner(self.matrix)
 
         if PLOT_SIMULATION:
-            self.plotter = Plotter(self.warehouses)
-            self.folium_plotter = FoliumPlotter(self.warehouses)
+            # self.plotter = Plotter(self.warehouses)
+            self.folium_plotter = FoliumPlotter()
 
     def init_orders(self, number_of_orders):
         print("Start initializing orders...")
@@ -145,27 +145,35 @@ class Center:
     def should_end_simulation(self):
         return not (self.has_waiting_order() or self.has_delivering_drones() or self.has_planning_drone())
 
-    def end_simulation(self):
-        print("All orders have been completed, no more new orders")
-
-        if USE_DENSITY_MATRIX:
-            self.save_results()
-
-    def save_results(self):
-        print("Saving results to the local")
-        self.save()
-        print("Done saving results")
-
-    def save(self):
-        # t = datetime.now().strftime("%m-%d_%H:%M:%S")
-        # path = RESULT_BASE_PATH + '/' + t
+    @staticmethod
+    def define_folder_path():
         if COST_FUNCTION == 'first':
             path = RESULT_BASE_PATH + '/' + ("v2_o%d_d%d_k%d_z%d" % (ORDERS, DRONES, PRIORITIZE_K, DRONE_ALTITUTE))
         else:
             path = RESULT_BASE_PATH + '/' + ("v2_o%d_d%d_p%d_z%d" % (ORDERS, DRONES, PRIORITIZE_P, DRONE_ALTITUTE))
+
         if not os.path.exists(path):
             os.makedirs(path)
 
+        return path
+
+    def end_simulation(self):
+        print("All orders have been completed, no more new orders")
+
+        path = self.define_folder_path()
+
+        if USE_DENSITY_MATRIX:
+            self.save_results(path)
+
+        if PLOT_SIMULATION:
+            self.folium_plotter.save_flight_map(path)
+
+    def save_results(self, path):
+        print("Saving results to the local")
+        self.save(path)
+        print("Results saved")
+
+    def save(self, path):
         # drone data
         drone_path = path + '/drone.csv'
         drone_fields = ['Drone ID', 'Total Step', 'Total Distance', 'Total Orders']
