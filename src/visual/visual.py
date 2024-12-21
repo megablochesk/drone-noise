@@ -5,12 +5,13 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from common.configuration import GEO_PATH, OLD_POPULATION_DENSITY_PATH, CRS
+from common.configuration import GEO_PATH, CRS
 from common.configuration import HARM_AVG_LEVEL, HARM_MAX_LEVEL
 from common.configuration import RESULT_BASE_PATH
-from common.configuration import style_function, highlight_function
 from folium.raster_layers import ImageOverlay
 from matplotlib import pyplot as plt
+from visual.visual_configuration import (style_function, highlight_function, POPULATION_DENSITY_PATH, HARM_AVG_LEVEL,
+                                         HARM_MAX_LEVEL)
 
 
 def plot_histogram(data, title, path, y_bottom, y_top, x_bottom=0, x_top=None):
@@ -87,13 +88,15 @@ max_harm_title = f"Maximum Noise Harm Matrix (>{HARM_MAX_LEVEL}db)"
 plot_matrix(X, Y, avg_noises_harm, avg_harm_title, result_path + '/avg_harm_matrix', color_min=0, color_max=55)
 plot_matrix(X, Y, max_noises_harm, max_harm_title, result_path + '/max_harm_matrix', color_min=0, color_max=105)
 
-print(f"Number of cells over avg harm threshold: {cnt_avg_harm_cell}, {round(cnt_avg_harm_cell/(rows * cols) * 100, 3)}%")
-print(f"Number of cells over max harm threshold: {cnt_max_harm_cell}, {round(cnt_max_harm_cell/(rows * cols) * 100, 3)}%")
-print(f"Number of cells over 100 db: {cnt_100_harm_cell}, {round(cnt_100_harm_cell/(rows * cols) * 100, 3)}%")
+print(
+    f"Number of cells over avg harm threshold: {cnt_avg_harm_cell}, {round(cnt_avg_harm_cell / (rows * cols) * 100, 3)}%")
+print(
+    f"Number of cells over max harm threshold: {cnt_max_harm_cell}, {round(cnt_max_harm_cell / (rows * cols) * 100, 3)}%")
+print(f"Number of cells over 100 db: {cnt_100_harm_cell}, {round(cnt_100_harm_cell / (rows * cols) * 100, 3)}%")
 
 # 3. overlay images on folium
 geo = gpd.read_file('../' + GEO_PATH)
-pd_data = pd.read_csv('../' + OLD_POPULATION_DENSITY_PATH)
+pd_data = pd.read_csv('../' + POPULATION_DENSITY_PATH)
 popup = geo.merge(pd_data, left_on="id2", right_on="tract")
 threshold_scale = list(pd_data["Population_Density_in_2010"].quantile([0, 0.2, 0.4, 0.6, 0.8, 1]))
 x_center = geo.to_crs(CRS).centroid.to_crs(geo.crs).x.mean()
@@ -146,17 +149,21 @@ avg_overlay = ImageOverlay(avg_img_path,
                            opacity=1,
                            )
 avg_harm_overlay = ImageOverlay(avg_harm_img_path,
-                           [[config['Bottom Latitude'] * 0.9998 - 0.001, config['Left Longitude'] * 1.00018 - 0.006],
-                            [config['Top Latitude'] * 1.00025 - 0.001, config['Right Longitude'] * 0.99952 - 0.004]],
-                           name='average_harm',
-                           opacity=0.8,
-                           )
+                                [[config['Bottom Latitude'] * 0.9998 - 0.001,
+                                  config['Left Longitude'] * 1.00018 - 0.006],
+                                 [config['Top Latitude'] * 1.00025 - 0.001,
+                                  config['Right Longitude'] * 0.99952 - 0.004]],
+                                name='average_harm',
+                                opacity=0.8,
+                                )
 max_harm_overlay = ImageOverlay(max_harm_img_path,
-                           [[config['Bottom Latitude'] * 0.9998 - 0.001, config['Left Longitude'] * 1.00018 - 0.006],
-                            [config['Top Latitude'] * 1.00025 - 0.001, config['Right Longitude'] * 0.99952 - 0.004]],
-                           name='maximum_harm',
-                           opacity=0.8,
-                           )
+                                [[config['Bottom Latitude'] * 0.9998 - 0.001,
+                                  config['Left Longitude'] * 1.00018 - 0.006],
+                                 [config['Top Latitude'] * 1.00025 - 0.001,
+                                  config['Right Longitude'] * 0.99952 - 0.004]],
+                                name='maximum_harm',
+                                opacity=0.8,
+                                )
 mymap.add_child(max_overlay)
 mymap.add_child(avg_overlay)
 mymap.add_child(avg_harm_overlay)
@@ -164,7 +171,6 @@ mymap.add_child(max_harm_overlay)
 folium.LayerControl().add_to(mymap)
 html_path = result_path + '/overlay.html'
 mymap.save(html_path)
-
 
 # 4. maximum histogram
 # 5. average histogram
@@ -182,7 +188,6 @@ plot_histogram(data=matrix_df['Maximum Noise'],
                y_bottom=0,
                y_top=12500)
 
-
 # 6*. fairness
 total_drones = drone_df['Total Distance'].count()
 total_distance = drone_df['Total Distance'].sum()
@@ -192,14 +197,15 @@ avg_distance = total_distance / total_orders
 max_noise = matrix_df['Average Noise'].max()
 mean_noise = matrix_df['Average Noise'].mean()
 quantile_25_noise = matrix_df['Average Noise'].quantile(0.25)
-quantile_50_noise = matrix_df['Average Noise'].quantile(0.50)   # median
+quantile_50_noise = matrix_df['Average Noise'].quantile(0.50)  # median
 quantile_75_noise = matrix_df['Average Noise'].quantile(0.75)
 
-
 fairness_fields = ['Total Drones', 'Total Orders', 'Total Distance', 'Total Noise',
-                   'Order Average Distance', 'std dev', 'Maximum Average Noise', 'Mean Average Noise', '25% Quantiles', '50% Quantiles', '75% Quantiles', 'Priority']
+                   'Order Average Distance', 'std dev', 'Maximum Average Noise', 'Mean Average Noise', '25% Quantiles',
+                   '50% Quantiles', '75% Quantiles', 'Priority']
 fairness_data = [[total_drones, total_orders, total_distance, total_noise,
-                  avg_distance, std, max_noise, mean_noise, quantile_25_noise, quantile_50_noise, quantile_75_noise, config['Prioritization K']]]
+                  avg_distance, std, max_noise, mean_noise, quantile_25_noise, quantile_50_noise, quantile_75_noise,
+                  config['Prioritization K']]]
 fairness_path = result_path + '/fairness.csv'
 with open(fairness_path, 'w') as f:
     write = csv.writer(f)

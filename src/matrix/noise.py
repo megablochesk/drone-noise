@@ -6,7 +6,6 @@ import pandas as pd
 from common.configuration import GEO_PATH, OLD_POPULATION_DENSITY_PATH
 from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM
 from common.configuration import NOISE_CELL_LENGTH, NOISE_CELL_WIDTH
-from common.configuration import USE_POPULATION_DENSITY
 from common.constants import M_2_LONGITUDE, M_2_LATITUDE
 from common.coordinate import Coordinate, calculate_distance
 from common.decorators import auto_str
@@ -46,9 +45,6 @@ class DensityMatrix:
                              longitude=self.left + (j + 1 / 2) * self.cell_length_lo,
                              row=i, column=j)
                         for j in range(self.cols)] for i in range(self.rows)]
-        if USE_POPULATION_DENSITY:
-            self.load_pd()
-        # TODO: how to use population density ...
 
     def load_pd(self):
         print("Loading population density data to the matrix...")

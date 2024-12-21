@@ -9,11 +9,10 @@ import seaborn as sns
 from folium.raster_layers import ImageOverlay
 from matplotlib import pyplot as plt
 
-from common.configuration import (CRS, GEO_PATH, HARM_AVG_LEVEL,
-                                  HARM_MAX_LEVEL, OLD_POPULATION_DENSITY_PATH,
-                                  RESULT_BASE_PATH, highlight_function,
-                                  style_function)
+from common.configuration import CRS, GEO_PATH, RESULT_BASE_PATH
 from visual.visual import plot_histogram, plot_matrix
+from visual.visual_configuration import (style_function, highlight_function, POPULATION_DENSITY_PATH, HARM_AVG_LEVEL,
+                                         HARM_MAX_LEVEL)
 
 
 def get_result_path(directory_path):
@@ -93,8 +92,10 @@ def print_harm_counts(cnt_avg_harm_cell, cnt_max_harm_cell, cnt_100_harm_cell, r
     """Print the count of harmful cells."""
     total_cells = rows * cols
 
-    print(f"Number of cells over avg harm threshold: {cnt_avg_harm_cell}, {round(cnt_avg_harm_cell / total_cells * 100, 3)}%")
-    print(f"Number of cells over max harm threshold: {cnt_max_harm_cell}, {round(cnt_max_harm_cell / total_cells * 100, 3)}%")
+    print(
+        f"Number of cells over avg harm threshold: {cnt_avg_harm_cell}, {round(cnt_avg_harm_cell / total_cells * 100, 3)}%")
+    print(
+        f"Number of cells over max harm threshold: {cnt_max_harm_cell}, {round(cnt_max_harm_cell / total_cells * 100, 3)}%")
     print(f"Number of cells over 100 db: {cnt_100_harm_cell}, {round(cnt_100_harm_cell / total_cells * 100, 3)}%")
 
 
@@ -112,7 +113,7 @@ def compute_simulation_time(drone_df):
 def create_overlay_map(result_path, config):
     """Create and save an overlay map with folium."""
     geo = gpd.read_file(f'./{GEO_PATH}')
-    pd_data = pd.read_csv(f'./{OLD_POPULATION_DENSITY_PATH}')
+    pd_data = pd.read_csv(f'./{POPULATION_DENSITY_PATH}')
     popup = geo.merge(pd_data, left_on="id2", right_on="tract")
 
     threshold_scale = list(pd_data["Population_Density_in_2010"].quantile([0, 0.2, 0.4, 0.6, 0.8, 1]))
@@ -212,7 +213,7 @@ def compute_and_save_fairness_data(matrix_df, drone_df, config, iterations, std,
     max_noise = matrix_df['Average Noise'].max()
     mean_noise = matrix_df['Average Noise'].mean()
     quantile_25_noise = matrix_df['Average Noise'].quantile(0.25)
-    quantile_50_noise = matrix_df['Average Noise'].quantile(0.50)   # median
+    quantile_50_noise = matrix_df['Average Noise'].quantile(0.50)  # median
     quantile_75_noise = matrix_df['Average Noise'].quantile(0.75)
 
     fairness_fields = [

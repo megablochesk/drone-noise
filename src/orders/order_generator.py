@@ -1,5 +1,5 @@
 import pandas as pd
-from common.configuration import NEW_ORDER_BASE_PATH
+from common.configuration import ORDER_BASE_PATH
 from common.coordinate import Coordinate
 from orders.order import Order
 
@@ -7,8 +7,8 @@ from orders.order import Order
 class OrderGenerator:
     @staticmethod
     def load_orders(number_of_orders):
-        print(f"Loading orders data from {NEW_ORDER_BASE_PATH}")
-        order_df = pd.read_csv(NEW_ORDER_BASE_PATH)
+        print(f"Loading orders data from {ORDER_BASE_PATH}")
+        order_df = pd.read_csv(ORDER_BASE_PATH)
 
         print("Initializing orders from local data...")
         limited_df = order_df.head(number_of_orders)
