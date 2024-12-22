@@ -19,7 +19,7 @@ from orders.order_generator import OrderGenerator
 
 class Center:
     def __init__(self, warehouses, number_of_orders, number_of_drones):
-        self.warehouses = [Coordinate(latitude=x[0], longitude=x[1]) for x in warehouses]
+        self.warehouses = [Coordinate(northing=x[0], easting=x[1]) for x in warehouses]
 
         self.iteration_count = 0
 

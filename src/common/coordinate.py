@@ -4,18 +4,18 @@ from common.constants import M_2_LATITUDE, M_2_LONGITUDE
 
 
 class Coordinate:
-    def __init__(self, latitude: float, longitude: float):
-        self.latitude = latitude    # y
-        self.longitude = longitude  # x
+    def __init__(self, northing: float, easting: float):
+        self.northing = northing  # y
+        self.easting = easting    # x
     
     def __eq__(self, other):
-        return self.latitude == other.latitude and self.longitude == other.longitude
+        return self.northing == other.northing and self.easting == other.easting
     
     def __sub__(self, other):
-        return self.latitude - other.latitude, self.longitude - other.longitude
+        return self.northing - other.northing, self.easting - other.easting
     
     def __str__(self):
-        return f"[la={self.latitude}, lo={self.longitude}]"
+        return f"[no={self.northing}, ea={self.easting}]"
 
 
 def calculate_distance(c1: Coordinate, c2: Coordinate):

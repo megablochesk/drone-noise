@@ -114,8 +114,8 @@ class Drone:
         self.tracker.increment_step()
     
     def is_outside_map_boundary(self):
-        return not (MAP_BOTTOM <= self.location.latitude <= MAP_TOP and
-                    MAP_LEFT <= self.location.longitude <= MAP_RIGHT)
+        return not (MAP_BOTTOM <= self.location.northing <= MAP_TOP and
+                    MAP_LEFT <= self.location.easting <= MAP_RIGHT)
     
     def drone_has_path(self):
         return bool(self.path)

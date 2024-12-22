@@ -77,7 +77,7 @@ class FoliumPlotter:
     def plot(self, drones: List[Drone]):
         for drone in drones:
             folium.CircleMarker(
-                location=[drone.location.latitude, drone.location.longitude],
+                location=[drone.location.northing, drone.location.easting],
                 radius=5,
                 color='red',
                 fill=True,
@@ -87,7 +87,7 @@ class FoliumPlotter:
             ).add_to(self.drone_group)
 
             folium.CircleMarker(
-                location=[drone.order.start_location.latitude, drone.order.start_location.longitude],
+                location=[drone.order.start_location.northing, drone.order.start_location.easting],
                 radius=5,
                 color='green',
                 fill=True,
@@ -97,7 +97,7 @@ class FoliumPlotter:
             ).add_to(self.order_group)
 
             folium.CircleMarker(
-                location=[drone.order.end_location.latitude, drone.order.end_location.longitude],
+                location=[drone.order.end_location.northing, drone.order.end_location.easting],
                 radius=5,
                 color='blue',
                 fill=True,
