@@ -29,13 +29,13 @@ LONDON_WAREHOUSES = [
     [51.502286, -0.073931]
 ]
 
-# Total number of orders (5000 predefined orders)
+# Total number of orders
 ORDERS = 50
 # Total number of drones
 DRONES = 400
 # Noise matrix cell size (in meter)
-NOISE_CELL_LENGTH = 500
-NOISE_CELL_WIDTH = 500
+NOISE_MATRIX_CELL_LENGTH = 500
+NOISE_MATRIX_CELL_WIDTH = 500
 
 # Center iteration running step (doesn't work if the program is running very slowly)
 # e.g. CENTER_PER_SLICE_TIME = 1s, the program will run each iteration for 0.5 second (if possible)
@@ -46,12 +46,6 @@ CENTER_PER_SLICE_TIME = 0.01
 # Paths
 # Base path for saving/loading orders to/from the local
 ORDER_BASE_PATH = 'recourses/data/order/drone_delivery_orders_old.csv'
-# Geographical data
-GEO_PATH = 'recourses/data/geo/shown_geography.geojson'
-# Old population density data
-OLD_POPULATION_DENSITY_PATH = 'recourses/data/population/shown_tract_popdensity2010.csv'
-# Simulation plotter background image
-BACKGROUND_IMAGE_PATH = 'recourses/images/map.jpeg'
 # Base path for experiment results
 RESULT_BASE_PATH = 'recourses/results/experiments'
 

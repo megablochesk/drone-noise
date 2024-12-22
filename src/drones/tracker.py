@@ -1,7 +1,3 @@
-from common.decorators import auto_str
-
-
-@auto_str
 class Tracker:
     """A drone tracker tracks the number of step and distance of each order spent by a drone"""
     def __init__(self):
@@ -22,9 +18,6 @@ class Tracker:
     def total_step(self):
         return sum(self.end_step)
     
-    def num_step(self):
-        return len(self.end_step)
-    
     def increment_distance(self, distance):
         self.distance += distance
         
@@ -33,9 +26,6 @@ class Tracker:
         
     def total_distance(self):
         return sum(self.end_distance)
-    
-    def num_distance(self):
-        return len(self.end_distance)
     
     def record(self):
         self.end_step.append(self.step)

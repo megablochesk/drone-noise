@@ -3,14 +3,12 @@ from typing import List
 
 from common.configuration import PRINT_TERMINAL, MAP_TOP, MAP_LEFT, MAP_RIGHT, MAP_BOTTOM
 from common.coordinate import Coordinate
-from common.decorators import auto_str
 from common.enum import DroneStatus
 from common.math_utils import find_nearest_warehouse, calculate_distance
 from drones.tracker import Tracker
 from orders.order import Order
 
 
-@auto_str
 class Drone:
     def __init__(self, drone_id, warehouses: List[Coordinate], start_location: Coordinate):
         self.drone_id = drone_id

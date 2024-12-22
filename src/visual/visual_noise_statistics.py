@@ -9,10 +9,10 @@ import seaborn as sns
 from folium.raster_layers import ImageOverlay
 from matplotlib import pyplot as plt
 
-from common.configuration import CRS, GEO_PATH, RESULT_BASE_PATH
+from common.configuration import CRS, RESULT_BASE_PATH
 from visual.visual import plot_histogram, plot_matrix
 from visual.visual_configuration import (style_function, highlight_function, POPULATION_DENSITY_PATH, HARM_AVG_LEVEL,
-                                         HARM_MAX_LEVEL)
+                                         HARM_MAX_LEVEL, GEO_PATH)
 
 
 def get_result_path(directory_path):

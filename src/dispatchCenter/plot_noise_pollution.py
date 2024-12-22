@@ -7,10 +7,7 @@ from PIL import Image
 from matplotlib import cm
 from matplotlib.colors import Normalize
 
-MAP_LEFT = -0.510 + 0.004
-MAP_RIGHT = 0.334 + 0.020
-MAP_TOP = 51.691 - 0.005
-MAP_BOTTOM = 51.286 + 0.003
+from common.configuration import MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM
 
 
 def read_data(result_path):

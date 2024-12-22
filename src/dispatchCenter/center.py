@@ -4,25 +4,22 @@ import time
 
 from common.configuration import CENTER_PER_SLICE_TIME, PLOT_SIMULATION
 from common.configuration import MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM
-from common.configuration import ORDERS, DRONES, NOISE_CELL_WIDTH, NOISE_CELL_LENGTH, COST_FUNCTION, PRIORITIZE_K, \
+from common.configuration import ORDERS, DRONES, NOISE_MATRIX_CELL_WIDTH, NOISE_MATRIX_CELL_LENGTH, COST_FUNCTION, PRIORITIZE_K, \
     PRIORITIZE_P
 from common.configuration import RESULT_BASE_PATH
 from common.configuration import USE_DENSITY_MATRIX
 from common.constants import DRONE_ALTITUTE
 from common.coordinate import Coordinate
-from common.decorators import auto_str
 from common.enum import DroneStatus
 from common.math_utils import difference, find_nearest_warehouse_location
 from common.util import Queue
 from dispatchCenter.folium_plotter import FoliumPlotter
 from dispatchCenter.planner import PathPlanner
-from dispatchCenter.plotter import Plotter
 from drones.dronegenerator import DroneGenerator
 from matrix.noise import DensityMatrix
 from orders.order_generator import OrderGenerator
 
 
-@auto_str
 class Center:
     def __init__(self, warehouses, number_of_orders, number_of_drones):
         self.warehouses = [Coordinate(latitude=x[0], longitude=x[1]) for x in warehouses]
@@ -41,7 +38,6 @@ class Center:
         self.planner = PathPlanner(self.matrix)
 
         if PLOT_SIMULATION:
-            # self.plotter = Plotter(self.warehouses)
             self.folium_plotter = FoliumPlotter()
 
     def init_orders(self, number_of_orders):
@@ -123,10 +119,6 @@ class Center:
         self.waiting_planning_drones = difference(self.waiting_planning_drones, self.delivering_drones)
 
     def update_drones(self):
-        """
-        Update delivering drones' status and position.
-        If any delivering drone completes its order, update its status and move it to the list of free drones.
-        """
         for drone in self.delivering_drones:
             drone.update_position()
             if drone.status is DroneStatus.WAITING:
@@ -139,7 +131,6 @@ class Center:
         self.matrix.track_noise(self.delivering_drones)
 
     def plot_drones(self):
-        # self.plotter.plot(self.delivering_drones)
         self.folium_plotter.plot(self.delivering_drones)
 
     def should_end_simulation(self):
@@ -223,7 +214,7 @@ class Center:
                          'Prioritization K']
         config = [[MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM,
                    ORDERS, DRONES,
-                   NOISE_CELL_LENGTH, NOISE_CELL_WIDTH,
+                   NOISE_MATRIX_CELL_LENGTH, NOISE_MATRIX_CELL_WIDTH,
                    self.matrix.rows, self.matrix.cols,
                    PRIORITIZE_K]]
         with open(config_path, 'w') as f:

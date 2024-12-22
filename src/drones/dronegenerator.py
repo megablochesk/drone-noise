@@ -2,11 +2,9 @@ import copy
 from typing import List
 
 from common.coordinate import Coordinate
-from common.decorators import auto_str
 from drones.drone import Drone
 
 
-@auto_str
 class DroneGenerator:
     def __init__(self, warehouses: List[Coordinate]):
         self.warehouses = warehouses
