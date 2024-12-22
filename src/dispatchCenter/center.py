@@ -1,15 +1,15 @@
 import csv
 import os
 import time
+from collections import deque
 
 from common.configuration import CENTER_PER_SLICE_TIME, NOISE_MATRIX_CELL_WIDTH, NOISE_MATRIX_CELL_LENGTH
 from common.configuration import MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM
-from common.configuration import TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, COST_FUNCTION, PRIORITIZE_K, PRIORITIZE_P
 from common.configuration import RESULT_BASE_PATH, USE_DENSITY_MATRIX, PLOT_SIMULATION, DRONE_ALTITUTE
+from common.configuration import TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, COST_FUNCTION, PRIORITIZE_K, PRIORITIZE_P
 from common.coordinate import Coordinate
 from common.enum import DroneStatus
 from common.math_utils import difference, find_nearest_warehouse_location
-from common.util import Queue
 from dispatchCenter.folium_plotter import FoliumPlotter
 from dispatchCenter.planner import PathPlanner
 from drones.dronegenerator import DroneGenerator
@@ -23,7 +23,7 @@ class Center:
 
         self.iteration_count = 0
 
-        self.waiting_orders = Queue()
+        self.waiting_orders = deque()
         self.free_drones = list()
         self.delivering_drones = list()
         self.waiting_planning_drones = list()
@@ -227,7 +227,7 @@ class Center:
         return len(self.delivering_drones) > 0
 
     def has_waiting_order(self) -> bool:
-        return self.waiting_orders.isEmpty() is False
+        return bool(self.waiting_orders)
 
     def has_planning_drone(self) -> bool:
         return len(self.waiting_planning_drones) > 0
