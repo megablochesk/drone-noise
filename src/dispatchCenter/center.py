@@ -162,65 +162,63 @@ class Center:
         print("Results saved")
 
     def save(self, path):
-        # drone data
-        drone_path = path + '/drone.csv'
+        self.save_drones_data(path)
+        self.save_matrix_data(path)
+        self.save_configuration_data(path)
+
+    def save_drones_data(self, path):
+        drone_path = f"{path}/drone.csv"
         drone_fields = ['Drone ID', 'Total Step', 'Total Distance', 'Total Orders']
-        drone_data = []
-        for drone in self.free_drones:
-            drone_data.append([drone.drone_id,
-                               drone.tracker.total_step(),
-                               drone.tracker.total_distance(),
-                               drone.tracker.total_orders()])
-        with open(drone_path, 'w') as f:
-            write = csv.writer(f)
-            write.writerow(drone_fields)
-            write.writerows(drone_data)
-            print(f'Done writing drones data!')
-            f.flush()
-            f.close()
+        drone_data = [
+            [
+                drone.drone_id,
+                drone.tracker.total_step(),
+                drone.tracker.total_distance(),
+                drone.tracker.total_orders()
+            ]
+            for drone in self.free_drones
+        ]
+        self.write_csv(drone_path, drone_fields, drone_data, 'drones data')
 
-        # density matrix matrix data
-        matrix_path = path + '/matrix.csv'
-        matrix_fields = ['Row',
-                         'Col',
-                         'Average Noise',
-                         'Maximum Noise',
-                         'Time']
-        matrix_data = []
-        for i in range(self.matrix.rows):
-            for j in range(self.matrix.cols):
-                matrix_data.append([i,
-                                    j,
-                                    self.matrix.matrix[i][j].total_noise / self.iteration_count,
-                                    self.matrix.matrix[i][j].max_noise,
-                                    self.iteration_count])
-        with open(matrix_path, 'w') as f:
-            write = csv.writer(f)
-            write.writerow(matrix_fields)
-            write.writerows(matrix_data)
-            print(f'Done writing matrix density matrix data!')
-            f.flush()
-            f.close()
+    def save_matrix_data(self, path):
+        matrix_path = f"{path}/matrix.csv"
+        matrix_fields = ['Row', 'Col', 'Average Noise', 'Maximum Noise', 'Time']
+        matrix_data = [
+            [
+                i, j,
+                self.matrix.matrix[i][j].total_noise / self.iteration_count,
+                self.matrix.matrix[i][j].max_noise,
+                self.iteration_count
+            ]
+            for i in range(self.matrix.rows)
+            for j in range(self.matrix.cols)
+        ]
+        self.write_csv(matrix_path, matrix_fields, matrix_data, 'matrix density matrix data')
 
-        # configuration
-        config_path = path + '/config.csv'
+    def save_configuration_data(self, path):
+        config_path = f"{path}/config.csv"
         config_fields = ['Left Longitude', 'Right Longitude', 'Top Latitude', 'Bottom Latitude',
                          'Orders', 'Drones',
                          'Cell Length', 'Cell Width',
                          'Rows', 'Cols',
                          'Prioritization K']
-        config = [[MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM,
-                   TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER,
-                   NOISE_MATRIX_CELL_LENGTH, NOISE_MATRIX_CELL_WIDTH,
-                   self.matrix.rows, self.matrix.cols,
-                   PRIORITIZE_K]]
-        with open(config_path, 'w') as f:
-            write = csv.writer(f)
-            write.writerow(config_fields)
-            write.writerows(config)
-            print(f'Done writing configuration data!')
+        config = [[
+            MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM,
+            TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER,
+            NOISE_MATRIX_CELL_LENGTH, NOISE_MATRIX_CELL_WIDTH,
+            self.matrix.rows, self.matrix.cols,
+            PRIORITIZE_K
+        ]]
+        self.write_csv(config_path, config_fields, config, 'configuration data')
+
+    @staticmethod
+    def write_csv(file_path, headers, data, data_type):
+        with open(file_path, 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(headers)
+            writer.writerows(data)
+            print(f"Done writing {data_type}!")
             f.flush()
-            f.close()
 
     def has_free_drone(self) -> bool:
         return len(self.free_drones) > 0
