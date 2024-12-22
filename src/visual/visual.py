@@ -5,12 +5,11 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from common.configuration import CRS
 from common.configuration import RESULT_BASE_PATH
 from folium.raster_layers import ImageOverlay
 from matplotlib import pyplot as plt
 from visual.visual_configuration import (style_function, highlight_function, POPULATION_DENSITY_PATH, HARM_AVG_LEVEL,
-                                         HARM_MAX_LEVEL, GEO_PATH)
+                                         HARM_MAX_LEVEL, GEO_PATH, CRS)
 
 
 def plot_histogram(data, title, path, y_bottom, y_top, x_bottom=0, x_top=None):

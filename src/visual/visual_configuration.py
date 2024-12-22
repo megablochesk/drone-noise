@@ -17,3 +17,6 @@ POPULATION_DENSITY_PATH = 'recourses/data/population/shown_tract_popdensity2010.
 # Harm threshold (in dB)
 HARM_AVG_LEVEL = 45
 HARM_MAX_LEVEL = 85
+
+# Map
+CRS = 'epsg:3857'

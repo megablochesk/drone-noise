@@ -50,8 +50,6 @@ ORDER_BASE_PATH = 'recourses/data/order/drone_delivery_orders_old.csv'
 # Base path for experiment results
 RESULT_BASE_PATH = 'recourses/results/experiments'
 
-# Map
-CRS = 'epsg:3857'
 # Map boundary
 MAP_LEFT   = -0.510 + 0.004
 MAP_RIGHT  =  0.334 + 0.020
