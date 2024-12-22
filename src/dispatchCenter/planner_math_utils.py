@@ -1,7 +1,7 @@
 import math
 from typing import List
 
-from common.constants import DRONE_NOISE
+from common.configuration import DRONE_NOISE
 
 SQRT_OF_2 = math.sqrt(2)
 

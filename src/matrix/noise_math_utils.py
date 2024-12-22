@@ -1,6 +1,6 @@
 import math
 
-from common.constants import DRONE_NOISE, DRONE_ALTITUTE
+from common.configuration import DRONE_NOISE, DRONE_ALTITUTE
 
 DRONE_ALTITUDE_SQUARED = DRONE_ALTITUTE * DRONE_ALTITUTE
 NOISE_AT_SOURCE = DRONE_NOISE

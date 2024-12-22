@@ -29,13 +29,14 @@ LONDON_WAREHOUSES = [
     [51.502286, -0.073931]
 ]
 
-# Total number of orders
-ORDERS = 50
-# Total number of drones
-DRONES = 400
-# Noise matrix cell size (in meter)
+TOTAL_ORDER_NUMBER = 50
+TOTAL_DRONE_NUMBER = 400
+
 NOISE_MATRIX_CELL_LENGTH = 500
 NOISE_MATRIX_CELL_WIDTH = 500
+
+DRONE_NOISE = 90  # The central sound level of a flying drone (db)
+DRONE_ALTITUTE = 100
 
 # Center iteration running step (doesn't work if the program is running very slowly)
 # e.g. CENTER_PER_SLICE_TIME = 1s, the program will run each iteration for 0.5 second (if possible)

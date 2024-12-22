@@ -2,7 +2,8 @@ import math
 import timeit
 import unittest
 
-from common.constants import DRONE_ALTITUTE, M_2_LATITUDE, M_2_LONGITUDE, DRONE_NOISE
+from common.constants import M_2_LATITUDE, M_2_LONGITUDE
+from common.configuration import DRONE_NOISE, DRONE_ALTITUTE
 from common.coordinate import Coordinate, calculate_distance
 from matrix.noise_math_utils import calculate_noise_at_distance
 from parameterized import parameterized

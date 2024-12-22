@@ -2,13 +2,10 @@ import csv
 import os
 import time
 
-from common.configuration import CENTER_PER_SLICE_TIME, PLOT_SIMULATION
+from common.configuration import CENTER_PER_SLICE_TIME, NOISE_MATRIX_CELL_WIDTH, NOISE_MATRIX_CELL_LENGTH
 from common.configuration import MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM
-from common.configuration import ORDERS, DRONES, NOISE_MATRIX_CELL_WIDTH, NOISE_MATRIX_CELL_LENGTH, COST_FUNCTION, PRIORITIZE_K, \
-    PRIORITIZE_P
-from common.configuration import RESULT_BASE_PATH
-from common.configuration import USE_DENSITY_MATRIX
-from common.constants import DRONE_ALTITUTE
+from common.configuration import TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, COST_FUNCTION, PRIORITIZE_K, PRIORITIZE_P
+from common.configuration import RESULT_BASE_PATH, USE_DENSITY_MATRIX, PLOT_SIMULATION, DRONE_ALTITUTE
 from common.coordinate import Coordinate
 from common.enum import DroneStatus
 from common.math_utils import difference, find_nearest_warehouse_location
@@ -139,9 +136,9 @@ class Center:
     @staticmethod
     def define_folder_path():
         if COST_FUNCTION == 'first':
-            path = RESULT_BASE_PATH + '/' + ("v2_o%d_d%d_k%d_z%d" % (ORDERS, DRONES, PRIORITIZE_K, DRONE_ALTITUTE))
+            path = RESULT_BASE_PATH + '/' + ("v2_o%d_d%d_k%d_z%d" % (TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, PRIORITIZE_K, DRONE_ALTITUTE))
         else:
-            path = RESULT_BASE_PATH + '/' + ("v2_o%d_d%d_p%d_z%d" % (ORDERS, DRONES, PRIORITIZE_P, DRONE_ALTITUTE))
+            path = RESULT_BASE_PATH + '/' + ("v2_o%d_d%d_p%d_z%d" % (TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, PRIORITIZE_P, DRONE_ALTITUTE))
 
         if not os.path.exists(path):
             os.makedirs(path)
@@ -213,7 +210,7 @@ class Center:
                          'Rows', 'Cols',
                          'Prioritization K']
         config = [[MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM,
-                   ORDERS, DRONES,
+                   TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER,
                    NOISE_MATRIX_CELL_LENGTH, NOISE_MATRIX_CELL_WIDTH,
                    self.matrix.rows, self.matrix.cols,
                    PRIORITIZE_K]]
