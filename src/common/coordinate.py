@@ -1,6 +1,10 @@
 import math
+from pyproj import Transformer
 
 from common.constants import M_2_LATITUDE, M_2_LONGITUDE
+
+
+OSGB36_TO_WGS84 = Transformer.from_crs("EPSG:27700", "EPSG:4326", always_xy=True)
 
 
 class Coordinate:
@@ -16,6 +20,9 @@ class Coordinate:
     
     def __str__(self):
         return f"[no={self.northing}, ea={self.easting}]"
+
+    def convert_to_latlon(self):
+        return OSGB36_TO_WGS84.transform(self.easting, self.northing)
 
 
 def calculate_distance(c1: Coordinate, c2: Coordinate):
