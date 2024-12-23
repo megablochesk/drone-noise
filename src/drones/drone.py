@@ -29,7 +29,7 @@ class Drone:
         self.destination = self.order.start_location
 
         if PRINT_TERMINAL:
-            print(f"Drone '{self.drone_id}' accepted Order '{self.order.order_id}' and is flying to {self.destination}")
+            print(f"Drone '{self.drone_id}' accepted order '{self.order.order_id}' and is flying to {self.destination}")
     
     def collect_parcel(self):
         self.order.mark_as_en_route()
@@ -37,7 +37,7 @@ class Drone:
         self.destination = self.order.end_location
 
         if PRINT_TERMINAL:
-            print(f"Drone '{self.drone_id}' collected Order '{self.order.order_id}' and is flying to {self.destination}")
+            print(f"Drone '{self.drone_id}' collected order '{self.order.order_id}' and is flying to {self.destination}")
     
     def complete_delivering(self):
         self.order.mark_as_delivered()
@@ -45,7 +45,7 @@ class Drone:
         self.destination = find_nearest_warehouse(self.warehouses, self.location)
 
         if PRINT_TERMINAL:
-            print(f"Drone '{self.drone_id}' delivered order '{self.order.order_id} and is flying to {self.destination}'")
+            print(f"Drone '{self.drone_id}' delivered order '{self.order.order_id} and is flying to {self.destination}")
     
     def return_to_warehouse(self):
         self.status = DroneStatus.WAITING

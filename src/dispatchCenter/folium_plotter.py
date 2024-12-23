@@ -17,9 +17,12 @@ from dispatchCenter.plot_noise_pollution import generate_density_matrix, read_da
 
 class FoliumPlotter:
     def __init__(self):
-        center_latitude = (MAP_BOTTOM + MAP_TOP) / 2
-        center_longitude = (MAP_LEFT + MAP_RIGHT) / 2
-        self.map = folium.Map(location=[center_latitude, center_longitude], zoom_start=13)
+        center_northing = (MAP_BOTTOM + MAP_TOP) / 2
+        center_easting = (MAP_LEFT + MAP_RIGHT) / 2
+
+        centroid = Coordinate(center_northing, center_easting).convert_to_latlon()
+
+        self.map = folium.Map(location=centroid, zoom_start=13)
 
         self.drone_group = folium.FeatureGroup(name='Drones')
         self.order_group = folium.FeatureGroup(name='Orders')
@@ -47,7 +50,10 @@ class FoliumPlotter:
         img_pil = Image.fromarray(img_uint8)
         img_pil.save(img_file)
 
-        image_bounds = [[MAP_BOTTOM, MAP_LEFT], [MAP_TOP, MAP_RIGHT]]
+        bottom_left_corner = Coordinate(MAP_BOTTOM, MAP_LEFT).convert_to_latlon()
+        top_right_corner = Coordinate(MAP_TOP, MAP_RIGHT).convert_to_latlon()
+
+        image_bounds = [bottom_left_corner, top_right_corner]
 
         folium.raster_layers.ImageOverlay(
             name='Average Noise',
@@ -77,7 +83,7 @@ class FoliumPlotter:
     def plot(self, drones: List[Drone]):
         for drone in drones:
             folium.CircleMarker(
-                location=[drone.location.northing, drone.location.easting],
+                location=drone.location.convert_to_latlon(),
                 radius=5,
                 color='red',
                 fill=True,
@@ -87,7 +93,7 @@ class FoliumPlotter:
             ).add_to(self.drone_group)
 
             folium.CircleMarker(
-                location=[drone.order.start_location.northing, drone.order.start_location.easting],
+                location=drone.order.start_location.convert_to_latlon(),
                 radius=5,
                 color='green',
                 fill=True,
@@ -97,7 +103,7 @@ class FoliumPlotter:
             ).add_to(self.order_group)
 
             folium.CircleMarker(
-                location=[drone.order.end_location.northing, drone.order.end_location.easting],
+                location=drone.order.end_location.convert_to_latlon(),
                 radius=5,
                 color='blue',
                 fill=True,

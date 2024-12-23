@@ -15,9 +15,9 @@ class OrderGenerator:
 
         orders = [
             Order(
-                order_id=row['Order ID'],
-                start_location=Coordinate(row['Start Latitude'], row['Start Longitude']),
-                end_location=Coordinate(row['End Latitude'], row['End Longitude'])
+                order_id=int(row['Order ID']),
+                start_location=Coordinate(row['Start Northing'], row['Start Easting']),
+                end_location=Coordinate(row['End Northing'], row['End Easting'])
             )
             for _, row in limited_df.iterrows()
         ]

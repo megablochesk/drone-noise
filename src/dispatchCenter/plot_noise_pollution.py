@@ -4,10 +4,9 @@ import matplotlib
 import numpy as np
 import pandas as pd
 from PIL import Image
+from common.configuration import MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM
 from matplotlib import cm
 from matplotlib.colors import Normalize
-
-from common.configuration import MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM
 
 
 def read_data(result_path):
@@ -28,8 +27,10 @@ def generate_density_matrix(matrix_df, config_df):
     return avg_noises, max_noises
 
 def plot_noise_on_map(avg_noises):
-    center_lat = (MAP_TOP + MAP_BOTTOM) / 2
-    center_lon = (MAP_LEFT + MAP_RIGHT) / 2
+    center_northing = (MAP_BOTTOM + MAP_TOP) / 2
+    center_easting = (MAP_LEFT + MAP_RIGHT) / 2
+
+    centroid = Coordinate(center_northing, center_easting).convert_to_latlon()
 
     # Normalize the average noises
     vmin = 25  # Minimum noise level for color scaling
@@ -45,9 +46,12 @@ def plot_noise_on_map(avg_noises):
     img_pil = Image.fromarray(img_uint8)
     img_pil.save('avg_noises.png')
 
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=11)
+    m = folium.Map(location=centroid, zoom_start=11)
 
-    bounds = [[MAP_BOTTOM, MAP_LEFT], [MAP_TOP, MAP_RIGHT]]
+    bottom_left_corner = Coordinate(MAP_BOTTOM, MAP_LEFT).convert_to_latlon()
+    top_right_corner = Coordinate(MAP_TOP, MAP_RIGHT).convert_to_latlon()
+
+    bounds = [bottom_left_corner, top_right_corner]
 
     folium.raster_layers.ImageOverlay(
         name='Average Noise',
@@ -74,6 +78,8 @@ def plot_noise_on_map(avg_noises):
 
     m.save('avg_noise_map.html')
     print("Map has been saved to 'avg_noise_map.html'")
+
+    os.remove('avg_noises.png')
 
 
 def add_noise_pollution_layer():

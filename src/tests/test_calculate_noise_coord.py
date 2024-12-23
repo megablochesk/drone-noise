@@ -2,7 +2,6 @@ import math
 import timeit
 import unittest
 
-from common.constants import M_2_LATITUDE, M_2_LONGITUDE
 from common.configuration import DRONE_NOISE, DRONE_ALTITUTE
 from common.coordinate import Coordinate, calculate_distance
 from matrix.noise_math_utils import calculate_noise_at_distance
@@ -66,8 +65,8 @@ class TestCalculateNoiseCoord(unittest.TestCase):
             else:
                 return central_noise - math.fabs(10 * math.log10(math.pow(DRONE_ALTITUTE, 2)))
         else:
-            return central_noise - math.fabs(10 * math.log10(math.pow(x_dist / M_2_LONGITUDE, 2) +
-                                                             math.pow(y_dist / M_2_LATITUDE, 2) +
+            return central_noise - math.fabs(10 * math.log10(math.pow(x_dist, 2) +
+                                                             math.pow(y_dist, 2) +
                                                              math.pow(DRONE_ALTITUTE, 2)))
 
 
