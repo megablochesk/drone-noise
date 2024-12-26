@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 
-from common.configuration import PRINT_TERMINAL, MAP_TOP, MAP_LEFT, MAP_RIGHT, MAP_BOTTOM
+from common.configuration import PRINT_DRONE_STATISTICS, MAP_TOP, MAP_LEFT, MAP_RIGHT, MAP_BOTTOM
 from common.coordinate import Coordinate
 from common.enum import DroneStatus
 from common.math_utils import find_nearest_warehouse, calculate_distance
@@ -28,7 +28,7 @@ class Drone:
         self.status = DroneStatus.COLLECTING
         self.destination = self.order.start_location
 
-        if PRINT_TERMINAL:
+        if PRINT_DRONE_STATISTICS:
             print(f"Drone '{self.drone_id}' accepted order '{self.order.order_id}' and is flying to {self.destination}")
     
     def collect_parcel(self):
@@ -36,7 +36,7 @@ class Drone:
         self.status = DroneStatus.DELIVERING
         self.destination = self.order.end_location
 
-        if PRINT_TERMINAL:
+        if PRINT_DRONE_STATISTICS:
             print(f"Drone '{self.drone_id}' collected order '{self.order.order_id}' and is flying to {self.destination}")
     
     def complete_delivering(self):
@@ -44,7 +44,7 @@ class Drone:
         self.status = DroneStatus.RETURNING
         self.destination = find_nearest_warehouse(self.warehouses, self.location)
 
-        if PRINT_TERMINAL:
+        if PRINT_DRONE_STATISTICS:
             print(f"Drone '{self.drone_id}' delivered order '{self.order.order_id} and is flying to {self.destination}")
     
     def return_to_warehouse(self):
@@ -53,7 +53,7 @@ class Drone:
         self.destination = None
         self.tracker.record()
 
-        if PRINT_TERMINAL:
+        if PRINT_DRONE_STATISTICS:
             print(f"Drone '{self.drone_id}' returned to the nearest warehouse and start to recharge")
 
     def update_position(self):
@@ -66,14 +66,14 @@ class Drone:
             self.handle_no_path()
 
     def handle_out_of_boundary(self):
-        if PRINT_TERMINAL:
+        if PRINT_DRONE_STATISTICS:
             print(f"ERROR: {self} is out of boundary, {self.order} failed to be delivered, "
                   f"{self} has been sent to the nearest warehouse")
 
         self.abort_mission()
 
     def handle_no_path(self):
-        if PRINT_TERMINAL:
+        if PRINT_DRONE_STATISTICS:
             print(f"WARNING: {self} has no path")
 
     def follow_path(self):

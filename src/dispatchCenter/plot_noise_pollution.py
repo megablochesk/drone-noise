@@ -26,6 +26,7 @@ def generate_density_matrix(matrix_df, config_df):
 
     return avg_noises, max_noises
 
+
 def plot_noise_on_map(avg_noises):
     center_northing = (MAP_BOTTOM + MAP_TOP) / 2
     center_easting = (MAP_LEFT + MAP_RIGHT) / 2

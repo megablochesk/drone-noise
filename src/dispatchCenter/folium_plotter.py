@@ -30,7 +30,7 @@ class FoliumPlotter:
         self.map.add_child(self.order_group)
 
         self.vmin = 25  # Minimum noise level for color scaling
-        self.vmax = 75  # Maximum noise level for color scaling
+        self.vmax = 50  # Maximum noise level for color scaling
         self.norm = Normalize(vmin=self.vmin, vmax=self.vmax)
         self.colormap = cm.get_cmap('jet')
 
@@ -84,7 +84,7 @@ class FoliumPlotter:
         for drone in drones:
             folium.CircleMarker(
                 location=drone.location.convert_to_latlon(),
-                radius=5,
+                radius=3,
                 color='red',
                 fill=True,
                 fill_color='red',

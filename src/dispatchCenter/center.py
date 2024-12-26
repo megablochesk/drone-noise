@@ -3,10 +3,10 @@ import os
 import time
 from collections import deque
 
-from common.configuration import CENTER_PER_SLICE_TIME, NOISE_MATRIX_CELL_WIDTH, NOISE_MATRIX_CELL_LENGTH
-from common.configuration import MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM
-from common.configuration import RESULT_BASE_PATH, USE_DENSITY_MATRIX, PLOT_SIMULATION, DRONE_ALTITUTE
-from common.configuration import TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, COST_FUNCTION, PRIORITIZE_K, PRIORITIZE_P
+from common.configuration import CENTER_PER_SLICE_TIME, NOISE_MATRIX_CELL_WIDTH, NOISE_MATRIX_CELL_LENGTH, \
+                                 MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM, \
+                                 RESULT_BASE_PATH, USE_DENSITY_MATRIX, PLOT_SIMULATION, DRONE_ALTITUTE, \
+                                 TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, PRINT_MODEL_STATISTICS
 from common.coordinate import Coordinate
 from common.enum import DroneStatus
 from common.math_utils import difference, find_nearest_warehouse_location
@@ -32,7 +32,7 @@ class Center:
         self.init_drones(number_of_drones, self.warehouses)
 
         self.matrix = DensityMatrix()
-        self.planner = PathPlanner(self.matrix)
+        self.planner = PathPlanner()
 
         if PLOT_SIMULATION:
             self.folium_plotter = FoliumPlotter()
@@ -53,6 +53,18 @@ class Center:
 
         self.free_drones.extend(drones)
 
+    def is_time_for_next_iteration(self, origin_time):
+        next_iteration_time = origin_time + self.iteration_count * CENTER_PER_SLICE_TIME
+
+        return time.time() > next_iteration_time
+
+    def print_drones_statistics(self):
+        print(f"Drone Statistics at iteration {self.iteration_count}:")
+        print(f"  Waiting Orders: {len(self.waiting_orders)}")
+        print(f"  Free Drones: {len(self.free_drones)}")
+        print(f"  Delivering Drones: {len(self.delivering_drones)}")
+        print(f"  Waiting Planning Drones: {len(self.waiting_planning_drones)}\n")
+
     def run_center(self):
         print("Simulation starts, running the center...")
 
@@ -60,6 +72,9 @@ class Center:
 
         while 1:
             if self.is_time_for_next_iteration(origin_time):
+                if PRINT_MODEL_STATISTICS:
+                    self.print_drones_statistics()
+
                 self.iteration_count += 1
 
                 if self.has_waiting_order() or self.has_delivering_drones():
@@ -68,11 +83,6 @@ class Center:
                 if self.should_end_simulation():
                     self.end_simulation()
                     break
-
-    def is_time_for_next_iteration(self, origin_time):
-        next_iteration_time = origin_time + self.iteration_count * CENTER_PER_SLICE_TIME
-
-        return time.time() > next_iteration_time
 
     def process_iteration(self):
         self.process_orders()
@@ -86,7 +96,6 @@ class Center:
             self.plot_drones()
 
     def process_orders(self):
-
         while self.has_waiting_order() and self.has_free_drone():
             order = self.waiting_orders.pop()
             drone = self.find_nearest_free_drone(order, self.free_drones)
@@ -103,16 +112,12 @@ class Center:
 
     def plan_drones_path(self):
         for drone in self.waiting_planning_drones:
-            # NOTE: paths are re-planned at each iteration (to adapt to noise matrix accumulated so far)
-            path = self.planner.plan(start=drone.location,
-                                     end=drone.destination,
-                                     time_count=self.iteration_count)
-
+            path = self.planner.plan(start=drone.location, end=drone.destination)
             drone.receive_path(path)
 
             if drone not in self.delivering_drones:
                 self.delivering_drones.append(drone)
-        # Update the list of waiting for planning drones
+
         self.waiting_planning_drones = difference(self.waiting_planning_drones, self.delivering_drones)
 
     def update_drones(self):
@@ -135,10 +140,7 @@ class Center:
 
     @staticmethod
     def define_folder_path():
-        if COST_FUNCTION == 'first':
-            path = RESULT_BASE_PATH + '/' + ("v2_o%d_d%d_k%d_z%d" % (TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, PRIORITIZE_K, DRONE_ALTITUTE))
-        else:
-            path = RESULT_BASE_PATH + '/' + ("v2_o%d_d%d_p%d_z%d" % (TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, PRIORITIZE_P, DRONE_ALTITUTE))
+        path = RESULT_BASE_PATH + '/' + f"stat_o{TOTAL_ORDER_NUMBER}_d{TOTAL_DRONE_NUMBER}_alt{DRONE_ALTITUTE}"
 
         if not os.path.exists(path):
             os.makedirs(path)
@@ -157,14 +159,13 @@ class Center:
             self.folium_plotter.save_flight_map(path)
 
     def save_results(self, path):
-        print("Saving results to the local")
-        self.save(path)
-        print("Results saved")
+        print("Saving results to the local:")
 
-    def save(self, path):
         self.save_drones_data(path)
         self.save_matrix_data(path)
         self.save_configuration_data(path)
+
+        print("Results saved!")
 
     def save_drones_data(self, path):
         drone_path = f"{path}/drone.csv"
@@ -200,14 +201,12 @@ class Center:
         config_fields = ['Left Longitude', 'Right Longitude', 'Top Latitude', 'Bottom Latitude',
                          'Orders', 'Drones',
                          'Cell Length', 'Cell Width',
-                         'Rows', 'Cols',
-                         'Prioritization K']
+                         'Rows', 'Cols']
         config = [[
             MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM,
             TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER,
             NOISE_MATRIX_CELL_LENGTH, NOISE_MATRIX_CELL_WIDTH,
-            self.matrix.rows, self.matrix.cols,
-            PRIORITIZE_K
+            self.matrix.rows, self.matrix.cols
         ]]
         self.write_csv(config_path, config_fields, config, 'configuration data')
 
