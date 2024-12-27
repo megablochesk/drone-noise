@@ -1,12 +1,10 @@
 import csv
 import os
-import time
-from collections import deque
 
-from common.configuration import CENTER_PER_SLICE_TIME, NOISE_MATRIX_CELL_WIDTH, NOISE_MATRIX_CELL_LENGTH, \
+from common.configuration import NOISE_MATRIX_CELL_WIDTH, NOISE_MATRIX_CELL_LENGTH, \
                                  MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM, \
                                  RESULT_BASE_PATH, USE_DENSITY_MATRIX, PLOT_SIMULATION, DRONE_ALTITUTE, \
-                                 TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, PRINT_MODEL_STATISTICS
+                                 TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, PRINT_MODEL_STATISTICS, MODEL_START_TIME, MODEL_TIME_STEP
 from common.coordinate import Coordinate
 from common.enum import DroneStatus
 from common.math_utils import difference, find_nearest_warehouse_location
@@ -20,13 +18,14 @@ from orders.order_generator import OrderGenerator
 class Center:
     def __init__(self, warehouses, number_of_orders, number_of_drones):
         self.warehouses = [Coordinate(northing=coords[0], easting=coords[1]) for _, coords in warehouses]
-
+        
+        self.model_time = MODEL_START_TIME
         self.iteration_count = 0
 
-        self.waiting_orders = deque()
-        self.free_drones = list()
-        self.delivering_drones = list()
-        self.waiting_planning_drones = list()
+        self.waiting_orders = []
+        self.free_drones = []
+        self.delivering_drones = []
+        self.waiting_planning_drones = []
 
         self.init_orders(number_of_orders)
         self.init_drones(number_of_drones, self.warehouses)
@@ -53,36 +52,32 @@ class Center:
 
         self.free_drones.extend(drones)
 
-    def is_time_for_next_iteration(self, origin_time):
-        next_iteration_time = origin_time + self.iteration_count * CENTER_PER_SLICE_TIME
-
-        return time.time() > next_iteration_time
-
     def print_drones_statistics(self):
-        print(f"Drone Statistics at iteration {self.iteration_count}:")
+        print(f"Drone Statistics at iteration {self.iteration_count}, time {self.model_time}:")
         print(f"  Waiting Orders: {len(self.waiting_orders)}")
         print(f"  Free Drones: {len(self.free_drones)}")
         print(f"  Delivering Drones: {len(self.delivering_drones)}")
         print(f"  Waiting Planning Drones: {len(self.waiting_planning_drones)}\n")
 
+    def update_model_time(self):
+        self.model_time += MODEL_TIME_STEP
+        self.iteration_count += 1
+
     def run_center(self):
         print("Simulation starts, running the center...")
 
-        origin_time = time.time()
-
         while 1:
-            if self.is_time_for_next_iteration(origin_time):
-                if PRINT_MODEL_STATISTICS:
-                    self.print_drones_statistics()
+            if PRINT_MODEL_STATISTICS:
+                self.print_drones_statistics()
 
-                self.iteration_count += 1
+            if self.has_waiting_order() or self.has_delivering_drones():
+                self.process_iteration()
 
-                if self.has_waiting_order() or self.has_delivering_drones():
-                    self.process_iteration()
+            self.update_model_time()
 
-                if self.should_end_simulation():
-                    self.end_simulation()
-                    break
+            if self.should_end_simulation():
+                self.end_simulation()
+                break
 
     def process_iteration(self):
         self.process_orders()
@@ -219,14 +214,14 @@ class Center:
             print(f"Done writing {data_type}!")
             f.flush()
 
-    def has_free_drone(self) -> bool:
-        return len(self.free_drones) > 0
+    def has_free_drone(self):
+        return bool(self.free_drones)
 
-    def has_delivering_drones(self) -> bool:
-        return len(self.delivering_drones) > 0
+    def has_delivering_drones(self):
+        return bool(self.delivering_drones)
 
-    def has_waiting_order(self) -> bool:
+    def has_waiting_order(self):
         return bool(self.waiting_orders)
 
-    def has_planning_drone(self) -> bool:
-        return len(self.waiting_planning_drones) > 0
+    def has_planning_drone(self):
+        return bool(self.waiting_planning_drones)

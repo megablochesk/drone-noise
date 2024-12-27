@@ -30,14 +30,9 @@ NOISE_MATRIX_CELL_WIDTH = 500
 
 DRONE_NOISE = 90  # The central sound level of a flying drone (db)
 DRONE_SPEED = 27  # metres per second, average drone speed
+MODEL_START_TIME = 36000  # 10 a.m. model start time (10 * 60 * 60)
 MODEL_TIME_STEP = 30  # seconds
 DRONE_ALTITUTE = 100
-
-# Center iteration running step (doesn't work if the program is running very slowly)
-# e.g. CENTER_PER_SLICE_TIME = 1s, the program will run each iteration for 0.5 second (if possible)
-# when it's the iteration to writing data to local, the program will slow down a little bit,
-# but it will run faster in the next a few iterations to compensate for the slow-down
-CENTER_PER_SLICE_TIME = 0.1
 
 # Paths
 # Base path for saving/loading orders to/from the local

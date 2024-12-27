@@ -1,20 +1,18 @@
-from datetime import datetime
+from dataclasses import dataclass
 
 from common.coordinate import Coordinate
 from common.enum import OrderStatus
 
 
+@dataclass
 class Order:
-    def __init__(self, order_id, start_location: Coordinate, end_location: Coordinate):
-        self.order_id = order_id
-        self.start_location = start_location
-        self.end_location = end_location
-        self.delivery_time = None
-        self.status = OrderStatus.UNASSIGNED
-    
+    order_id: int
+    start_location: Coordinate
+    end_location: Coordinate
+    status: OrderStatus = OrderStatus.UNASSIGNED
+
     def update_status(self, new_status: OrderStatus):
         self.status = new_status
-        # self._log_status_change(new_status)
 
     def mark_as_accepted(self):
         self.update_status(OrderStatus.ACCEPTED)
@@ -23,8 +21,4 @@ class Order:
         self.update_status(OrderStatus.EN_ROUTE)
 
     def mark_as_delivered(self):
-        self.delivery_time = datetime.now()
         self.update_status(OrderStatus.DELIVERED)
-
-    def _log_status_change(self, new_status: OrderStatus):
-        print(f"[{datetime.now()}] Order '{self.order_id}' status changed to {new_status.value}")
