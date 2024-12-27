@@ -85,7 +85,7 @@ class Center:
         self.update_drones()
 
         if USE_DENSITY_MATRIX:
-            self.track_drones_noise()
+            self.track_drones()
 
         if PLOT_SIMULATION:
             self.plot_drones()
@@ -124,8 +124,8 @@ class Center:
         self.delivering_drones = [x for x in self.delivering_drones if x not in self.free_drones]
         self.waiting_planning_drones.extend([x for x in self.delivering_drones if x.need_planning is True])
 
-    def track_drones_noise(self):
-        self.matrix.track_noise(self.delivering_drones)
+    def track_drones(self):
+        self.matrix.track_drones(self.delivering_drones)
 
     def plot_drones(self):
         self.folium_plotter.plot(self.delivering_drones)
@@ -148,6 +148,7 @@ class Center:
         path = self.define_folder_path()
 
         if USE_DENSITY_MATRIX:
+            self.matrix.calculate_noise_matrix()
             self.save_results(path)
 
         if PLOT_SIMULATION:

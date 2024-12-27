@@ -1,11 +1,13 @@
 import math
-from dataclasses import dataclass, field
-import numpy as np
+from collections import OrderedDict
+from dataclasses import dataclass
 
+import numpy as np
 from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM, \
                                  NOISE_MATRIX_CELL_LENGTH, NOISE_MATRIX_CELL_WIDTH
-from common.coordinate import Coordinate, calculate_distance
+from common.coordinate import Coordinate, calculate_squared_distance
 from matrix.noise_math_utils import calculate_mixed_noise_level, calculate_noise_at_distance
+from tqdm import tqdm
 
 
 @dataclass
@@ -28,6 +30,8 @@ class DensityMatrix:
         self.rows = math.floor((MAP_TOP - MAP_BOTTOM) / self.cell_width)
         self.cols = math.floor((MAP_RIGHT - MAP_LEFT) / self.cell_length)
 
+        self.drone_location_history = []
+
         self.matrix = [
             [
                 Cell(
@@ -43,12 +47,25 @@ class DensityMatrix:
             for r in range(self.rows)
         ]
 
-    def track_noise(self, drones):
+    def track_drones(self, drones):
+        drone_locations = [drone.location for drone in drones]
+        self.drone_location_history.append(drone_locations)
+
+    def calculate_noise_in_cell(self, drone_locations):
         for row in self.matrix:
             for cell in row:
-                distances = [calculate_distance(cell.centroid, d.location) for d in drones]
-                noises = [calculate_noise_at_distance(d) for d in distances]
+                squared_distances = [calculate_squared_distance(cell.centroid, drone_location)
+                                     for drone_location in drone_locations]
+
+                noises = [calculate_noise_at_distance(distance) for distance in squared_distances]
+
                 cell.add_noise(calculate_mixed_noise_level(noises))
+
+    def calculate_noise_matrix(self):
+        with tqdm(total=len(self.drone_location_history), desc="Calculating Noise Matrix", unit="iteration") as process_bar:
+            for drone_locations in self.drone_location_history:
+                self.calculate_noise_in_cell(drone_locations)
+                process_bar.update(1)
 
     def get_cell(self, coordinate: Coordinate):
         if not self.is_valid(coordinate.easting, coordinate.northing):

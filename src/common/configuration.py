@@ -10,7 +10,7 @@ TOTAL_DRONE_NUMBER = 400
 NOISE_MATRIX_CELL_LENGTH = 500  # meters
 NOISE_MATRIX_CELL_WIDTH = 500  # meters
 
-DRONE_NOISE = 90  # The central sound level of a flying drone (db)
+DRONE_NOISE_AT_SOURCE = 90  # The central sound level of a flying drone (db)
 DRONE_SPEED = 27  # metres per second, average drone speed
 
 MODEL_START_TIME = 36000  # 10 a.m. - model start time (10 * 60 * 60)
@@ -18,7 +18,7 @@ MODEL_TIME_STEP = 30  # seconds
 DRONE_ALTITUTE = 100  # meters
 
 # Map boundary in British National Grid
-MAP_LEFT = 504278.00
+MAP_LEFT = 503700.00
 MAP_RIGHT = 562823.00
 MAP_TOP = 201205.00
 MAP_BOTTOM = 155489.00
