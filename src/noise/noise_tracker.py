@@ -1,12 +1,10 @@
 import math
-from collections import OrderedDict
 from dataclasses import dataclass
 
-import numpy as np
 from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM, \
                                  NOISE_MATRIX_CELL_LENGTH, NOISE_MATRIX_CELL_WIDTH
 from common.coordinate import Coordinate, calculate_squared_distance
-from matrix.noise_math_utils import calculate_mixed_noise_level, calculate_noise_at_distance
+from noise.noise_math_utils import calculate_mixed_noise_level, calculate_noise_at_distance
 from tqdm import tqdm
 
 
@@ -23,23 +21,20 @@ class Cell:
         self.max_noise = max(self.max_noise, noise)
 
 
-class DensityMatrix:
+class NoiseTracker:
     def __init__(self):
-        self.cell_length = NOISE_MATRIX_CELL_LENGTH
-        self.cell_width = NOISE_MATRIX_CELL_WIDTH
-        self.rows = math.floor((MAP_TOP - MAP_BOTTOM) / self.cell_width)
-        self.cols = math.floor((MAP_RIGHT - MAP_LEFT) / self.cell_length)
+        self.rows = math.floor((MAP_TOP - MAP_BOTTOM) / NOISE_MATRIX_CELL_WIDTH)
+        self.cols = math.floor((MAP_RIGHT - MAP_LEFT) / NOISE_MATRIX_CELL_LENGTH)
 
         self.drone_location_history = []
-
-        self.matrix = [
+        self.noise_matrix = [
             [
                 Cell(
                     row=r,
                     column=c,
                     centroid=Coordinate(
-                        northing=MAP_TOP - (r + 0.5) * self.cell_width,
-                        easting=MAP_LEFT + (c + 0.5) * self.cell_length,
+                        northing=MAP_TOP - (r + 0.5) * NOISE_MATRIX_CELL_WIDTH,
+                        easting=MAP_LEFT + (c + 0.5) * NOISE_MATRIX_CELL_LENGTH,
                     ),
                 )
                 for c in range(self.cols)
@@ -52,7 +47,7 @@ class DensityMatrix:
         self.drone_location_history.append(drone_locations)
 
     def calculate_noise_in_cell(self, drone_locations):
-        for row in self.matrix:
+        for row in self.noise_matrix:
             for cell in row:
                 squared_distances = [calculate_squared_distance(cell.centroid, drone_location)
                                      for drone_location in drone_locations]
@@ -66,24 +61,3 @@ class DensityMatrix:
             for drone_locations in self.drone_location_history:
                 self.calculate_noise_in_cell(drone_locations)
                 process_bar.update(1)
-
-    def get_cell(self, coordinate: Coordinate):
-        if not self.is_valid(coordinate.easting, coordinate.northing):
-            print(
-                f"WARNING: No cell is found at "
-                f"(easting:{coordinate.easting}, northing:{coordinate.northing})"
-            )
-            return None
-        row = math.floor((MAP_TOP - coordinate.northing) / self.cell_width)
-        col = math.floor((coordinate.easting - MAP_LEFT) / self.cell_length)
-        return self.matrix[row][col]
-
-    @staticmethod
-    def is_valid(easting, northing):
-        return (MAP_LEFT <= easting < MAP_RIGHT) and (MAP_BOTTOM <= northing < MAP_TOP)
-
-    def get_average_matrix(self, time_count):
-        return np.array([
-            [cell.total_noise / time_count for cell in row]
-            for row in self.matrix
-        ])

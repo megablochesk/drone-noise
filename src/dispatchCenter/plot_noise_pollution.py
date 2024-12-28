@@ -10,7 +10,7 @@ from matplotlib.colors import Normalize
 
 
 def read_data(result_path):
-    matrix_df = pd.read_csv(f'{result_path}/matrix.csv')
+    matrix_df = pd.read_csv(f'{result_path}/noise.csv')
     config_df = pd.read_csv(f'{result_path}/config.csv')
     drone_df = pd.read_csv(f'{result_path}/drone.csv')
     return matrix_df, config_df, drone_df

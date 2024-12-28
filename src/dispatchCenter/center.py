@@ -11,7 +11,7 @@ from common.math_utils import difference, find_nearest_warehouse_location
 from dispatchCenter.folium_plotter import FoliumPlotter
 from dispatchCenter.planner import PathPlanner
 from drones.dronegenerator import DroneGenerator
-from matrix.noise import DensityMatrix
+from noise.noise_tracker import NoiseTracker
 from orders.order_generator import OrderGenerator
 
 
@@ -30,7 +30,7 @@ class Center:
         self.init_orders(number_of_orders)
         self.init_drones(number_of_drones, self.warehouses)
 
-        self.matrix = DensityMatrix()
+        self.noise_tracker = NoiseTracker()
         self.planner = PathPlanner()
 
         if PLOT_SIMULATION:
@@ -125,7 +125,7 @@ class Center:
         self.waiting_planning_drones.extend([x for x in self.delivering_drones if x.need_planning is True])
 
     def track_drones(self):
-        self.matrix.track_drones(self.delivering_drones)
+        self.noise_tracker.track_drones(self.delivering_drones)
 
     def plot_drones(self):
         self.folium_plotter.plot(self.delivering_drones)
@@ -148,7 +148,7 @@ class Center:
         path = self.define_folder_path()
 
         if USE_DENSITY_MATRIX:
-            self.matrix.calculate_noise_matrix()
+            self.noise_tracker.calculate_noise_matrix()
             self.save_results(path)
 
         if PLOT_SIMULATION:
@@ -178,19 +178,19 @@ class Center:
         self.write_csv(drone_path, drone_fields, drone_data, 'drones data')
 
     def save_matrix_data(self, path):
-        matrix_path = f"{path}/matrix.csv"
+        matrix_path = f"{path}/noise.csv"
         matrix_fields = ['Row', 'Col', 'Average Noise', 'Maximum Noise', 'Time']
         matrix_data = [
             [
                 i, j,
-                self.matrix.matrix[i][j].total_noise / self.iteration_count,
-                self.matrix.matrix[i][j].max_noise,
+                self.noise_tracker.noise_matrix[i][j].total_noise / self.iteration_count,
+                self.noise_tracker.noise_matrix[i][j].max_noise,
                 self.iteration_count
             ]
-            for i in range(self.matrix.rows)
-            for j in range(self.matrix.cols)
+            for i in range(self.noise_tracker.rows)
+            for j in range(self.noise_tracker.cols)
         ]
-        self.write_csv(matrix_path, matrix_fields, matrix_data, 'matrix density matrix data')
+        self.write_csv(matrix_path, matrix_fields, matrix_data, 'noise data')
 
     def save_configuration_data(self, path):
         config_path = f"{path}/config.csv"
@@ -202,7 +202,7 @@ class Center:
             MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM,
             TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER,
             NOISE_MATRIX_CELL_LENGTH, NOISE_MATRIX_CELL_WIDTH,
-            self.matrix.rows, self.matrix.cols
+            self.noise_tracker.rows, self.noise_tracker.cols
         ]]
         self.write_csv(config_path, config_fields, config, 'configuration data')
 
