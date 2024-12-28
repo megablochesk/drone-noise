@@ -23,9 +23,8 @@ MAP_RIGHT = 562823.00
 MAP_TOP = 201205.00
 MAP_BOTTOM = 155489.00
 
-# Base path for saving/loading orders to/from the local
-ORDER_BASE_PATH = 'recourses/data/order/ne_drone_delivery_orders_1000.csv'
-# Base path for experiment results
+# Data paths
+ORDER_BASE_PATH = 'recourses/data/order/drone_delivery_orders_10000.csv'
 RESULT_BASE_PATH = 'recourses/results/experiments'
 
 LONDON_WAREHOUSES = [

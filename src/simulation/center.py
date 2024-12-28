@@ -7,7 +7,7 @@ from common.configuration import NOISE_MATRIX_CELL_WIDTH, NOISE_MATRIX_CELL_LENG
                                  TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, PRINT_MODEL_STATISTICS, MODEL_START_TIME, MODEL_TIME_STEP
 from common.coordinate import Coordinate
 from common.enum import DroneStatus
-from common.math_utils import difference, find_nearest_warehouse_location
+from common.math_utils import get_difference, find_nearest_warehouse_location
 from simulation.plotter import Plotter
 from simulation.planner import PathPlanner
 from drones.dronegenerator import DroneGenerator
@@ -34,7 +34,7 @@ class Center:
         self.planner = PathPlanner()
 
         if PLOT_SIMULATION:
-            self.plotter = Plotter()
+            self.plotter = Plotter(self.warehouses)
 
     def init_orders(self, number_of_orders):
         print("Start initializing orders...")
@@ -113,7 +113,7 @@ class Center:
             if drone not in self.delivering_drones:
                 self.delivering_drones.append(drone)
 
-        self.waiting_planning_drones = difference(self.waiting_planning_drones, self.delivering_drones)
+        self.waiting_planning_drones = get_difference(self.waiting_planning_drones, self.delivering_drones)
 
     def update_drones(self):
         for drone in self.delivering_drones:
@@ -128,7 +128,7 @@ class Center:
         self.noise_tracker.track_drones(self.delivering_drones)
 
     def plot_drones(self):
-        self.plotter.plot(self.delivering_drones)
+        self.plotter.plot_drones(self.delivering_drones)
 
     def should_end_simulation(self):
         return not (self.has_waiting_order() or self.has_delivering_drones() or self.has_planning_drone())
