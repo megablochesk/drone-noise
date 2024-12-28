@@ -8,8 +8,8 @@ from common.configuration import NOISE_MATRIX_CELL_WIDTH, NOISE_MATRIX_CELL_LENG
 from common.coordinate import Coordinate
 from common.enum import DroneStatus
 from common.math_utils import difference, find_nearest_warehouse_location
-from dispatchCenter.folium_plotter import FoliumPlotter
-from dispatchCenter.planner import PathPlanner
+from simulation.plotter import Plotter
+from simulation.planner import PathPlanner
 from drones.dronegenerator import DroneGenerator
 from noise.noise_tracker import NoiseTracker
 from orders.order_generator import OrderGenerator
@@ -34,7 +34,7 @@ class Center:
         self.planner = PathPlanner()
 
         if PLOT_SIMULATION:
-            self.folium_plotter = FoliumPlotter()
+            self.plotter = Plotter()
 
     def init_orders(self, number_of_orders):
         print("Start initializing orders...")
@@ -128,7 +128,7 @@ class Center:
         self.noise_tracker.track_drones(self.delivering_drones)
 
     def plot_drones(self):
-        self.folium_plotter.plot(self.delivering_drones)
+        self.plotter.plot(self.delivering_drones)
 
     def should_end_simulation(self):
         return not (self.has_waiting_order() or self.has_delivering_drones() or self.has_planning_drone())
@@ -152,7 +152,7 @@ class Center:
             self.save_results(path)
 
         if PLOT_SIMULATION:
-            self.folium_plotter.save_flight_map(path)
+            self.plotter.save_flight_map(path)
 
     def save_results(self, path):
         print("Saving results to the local:")

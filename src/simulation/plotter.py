@@ -12,10 +12,9 @@ from common.coordinate import Coordinate
 from drones.drone import Drone
 from matplotlib import cm
 from matplotlib.colors import Normalize
-from dispatchCenter.plot_noise_pollution import generate_density_matrix, read_data
 
 
-class FoliumPlotter:
+class Plotter:
     def __init__(self):
         center_northing = (MAP_BOTTOM + MAP_TOP) / 2
         center_easting = (MAP_LEFT + MAP_RIGHT) / 2
@@ -29,16 +28,33 @@ class FoliumPlotter:
         self.map.add_child(self.drone_group)
         self.map.add_child(self.order_group)
 
-        self.vmin = 25  # Minimum noise level for color scaling
-        self.vmax = 50  # Maximum noise level for color scaling
-        self.norm = Normalize(vmin=self.vmin, vmax=self.vmax)
+        self.min_scale_noise_level = 25
+        self.max_scale_noise_level = 50
+        self.norm = Normalize(vmin=self.min_scale_noise_level, vmax=self.max_scale_noise_level)
         self.colormap = cm.get_cmap('jet')
 
     @staticmethod
-    def calculate_avg_noise_map(result_path):
-        matrix_df, config_df, _ = read_data(result_path)
+    def read_data(result_path):
+        matrix_df = pd.read_csv(f'{result_path}/noise.csv')
+        config_df = pd.read_csv(f'{result_path}/config.csv')
 
-        avg_noises, _ = generate_density_matrix(matrix_df, config_df)
+        return matrix_df, config_df
+
+    @staticmethod
+    def generate_density_matrix(matrix_df, config_df):
+        config = config_df.iloc[0]
+        rows = int(config['Rows'])
+        cols = int(config['Cols'])
+
+        avg_noises = matrix_df['Average Noise'].to_numpy().reshape(rows, cols)
+        max_noises = matrix_df['Maximum Noise'].to_numpy().reshape(rows, cols)
+
+        return avg_noises, max_noises
+
+    def calculate_avg_noise_map(self, result_path):
+        matrix_df, config_df = self.read_data(result_path)
+
+        avg_noises, _ = self.generate_density_matrix(matrix_df, config_df)
         return avg_noises
 
     def plot_noise_pollution_overlay(self, avg_noise_map, img_file='avg_noises.png'):
@@ -69,8 +85,8 @@ class FoliumPlotter:
         colors_hex = [matplotlib.colors.rgb2hex(c) for c in colors]
         colormap = branca.colormap.LinearColormap(
             colors=colors_hex,
-            vmin=self.vmin,
-            vmax=self.vmax,
+            vmin=self.min_scale_noise_level,
+            vmax=self.max_scale_noise_level,
             caption='Average Noise (dB)'
         )
 

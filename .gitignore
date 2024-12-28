@@ -53,5 +53,5 @@ src/commons/configuration.py
 analysis/
 /src/.idea/*
 /src/drone_delivery_simulation.html
-/src/dispatchCenter/avg_noise_map.html
-/src/dispatchCenter/avg_noises.png
+/src/simulation/avg_noise_map.html
+/src/simulation/avg_noises.png

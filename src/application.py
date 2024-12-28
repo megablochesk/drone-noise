@@ -1,5 +1,5 @@
 from common.configuration import TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, LONDON_WAREHOUSES
-from dispatchCenter.center import Center
+from simulation.center import Center
 
 if __name__ == '__main__':
     center = Center(warehouses=LONDON_WAREHOUSES,
