@@ -18,10 +18,10 @@ MODEL_TIME_STEP = 30  # seconds
 DRONE_ALTITUTE = 100  # meters
 
 # Map boundary in British National Grid
-MAP_LEFT = 503700.00
-MAP_RIGHT = 562823.00
-MAP_TOP = 201205.00
-MAP_BOTTOM = 155489.00
+MAP_LEFT = 503568.18
+MAP_RIGHT = 561950.07
+MAP_TOP = 200930.56
+MAP_BOTTOM = 155850.78
 
 # Data paths
 ORDER_BASE_PATH = 'recourses/data/order/drone_delivery_orders_10000.csv'
