@@ -1,3 +1,5 @@
+# SOMETHING TO DO WITH LSOA
+
 import geopandas as gpd
 import pandas as pd
 

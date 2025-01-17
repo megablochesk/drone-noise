@@ -1,7 +1,15 @@
 from cityMap.citymap import CityMap
 from dispatchCenter.center import Center
 from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM
-from common.configuration import WAREHOUSES, ORDERS, DRONES, LONDON_WAREHOUSES
+from common.configuration import LONDON_WAREHOUSES, ORDERS, DRONES
+
+print('warehouses:')
+print(LONDON_WAREHOUSES)
+print('orders:')
+print(ORDERS)
+print('drones:')
+print(DRONES)
+
 
 if __name__ == '__main__':
     center = Center(warehouses=LONDON_WAREHOUSES,
