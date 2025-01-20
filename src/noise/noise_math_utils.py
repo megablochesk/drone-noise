@@ -27,3 +27,8 @@ def calculate_mixed_noise_level(sound_sources):
         linear_sum += math.exp(source * MATH_LOG_10_DIVIDED_BY_10)
 
     return 10.0 * math.log10(linear_sum)
+
+
+@staticmethod
+def add_two_decibel_levels(db1: float, db2: float) -> float:
+    return 10 * math.log10((10 ** (db1 / 10)) + (10 ** (db2 / 10)))

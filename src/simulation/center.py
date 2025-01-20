@@ -158,7 +158,7 @@ class Center:
         print("Saving results to the local:")
 
         self.save_drones_data(path)
-        self.save_matrix_data(path)
+        self.save_drone_noise_data(path)
         self.save_configuration_data(path)
 
         print("Results saved!")
@@ -177,15 +177,14 @@ class Center:
         ]
         self.write_csv(drone_path, drone_fields, drone_data, 'drones data')
 
-    def save_matrix_data(self, path):
+    def save_drone_noise_data(self, path):
         matrix_path = f"{path}/noise.csv"
-        matrix_fields = ['Row', 'Col', 'Average Noise', 'Maximum Noise', 'Time']
+        matrix_fields = ['row', 'col', 'avg_noise', 'max_noise']
         matrix_data = [
             [
                 i, j,
                 self.noise_tracker.noise_matrix[i][j].total_noise / self.iteration_count,
-                self.noise_tracker.noise_matrix[i][j].max_noise,
-                self.iteration_count
+                self.noise_tracker.noise_matrix[i][j].max_noise
             ]
             for i in range(self.noise_tracker.rows)
             for j in range(self.noise_tracker.cols)

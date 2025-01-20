@@ -14,6 +14,7 @@ from noise.noise_math_utils import (
     calculate_mixed_noise_level
 )
 
+
 @dataclass
 class Cell:
     row: int

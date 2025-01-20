@@ -6,8 +6,9 @@ import folium
 from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM
 from common.coordinate import Coordinate
 from drones.drone import Drone
-from noise.noise_data_processor import NoiseDataProcessor
-from noise.noise_overlay_generator import NoiseOverlayGenerator
+from noise.noise_data_processor import calculate_combined_noise_data
+
+from noise.noise_overlay_generator import get_color_scale, create_noise_layer
 
 
 class Plotter:
@@ -26,42 +27,12 @@ class Plotter:
         self.map.add_child(self.order_group)
         self.map.add_child(self.warehouse_group)
 
-        self.overlay_generator = NoiseOverlayGenerator()
         self.plot_warehouses(warehouses)
 
-    @staticmethod
-    def calculate_avg_noise_map(result_path: str):
-        matrix_df, config_df = NoiseDataProcessor.read_data(result_path)
-        avg_noises, _ = NoiseDataProcessor.generate_density_matrix(matrix_df, config_df)
+    def plot_combined_noise_pollution(self, combined_noise_df):
+        noise_layer, colormap = create_noise_layer(combined_noise_df)
 
-        return avg_noises
-
-    def plot_noise_pollution_overlay(self, avg_noise_map, img_file='avg_noises.png'):
-        self.overlay_generator.create_overlay_image(avg_noise_map, img_file)
-
-        bottom_left_corner = Coordinate(MAP_BOTTOM, MAP_LEFT).convert_to_latlon()
-        top_right_corner = Coordinate(MAP_TOP, MAP_RIGHT).convert_to_latlon()
-
-        folium.raster_layers.ImageOverlay(
-            name='Average Noise',
-            image=img_file,
-            bounds=[bottom_left_corner, top_right_corner],
-            opacity=0.6,
-            interactive=True,
-            cross_origin=False,
-            zindex=1
-        ).add_to(self.map)
-
-        os.remove(img_file)
-
-        color_scale = self.overlay_generator.get_color_scale()
-        colormap = branca.colormap.LinearColormap(
-            colors=color_scale,
-            vmin=self.overlay_generator.min_scale,
-            vmax=self.overlay_generator.max_scale,
-            caption='Average Noise (dB)'
-        )
-
+        noise_layer.add_to(self.map)
         colormap.add_to(self.map)
         folium.LayerControl().add_to(self.map)
 
@@ -100,8 +71,8 @@ class Plotter:
             ).add_to(self.order_group)
 
     def save_flight_map(self, path: str):
-        avg_noise_map = self.calculate_avg_noise_map(path)
-        self.plot_noise_pollution_overlay(avg_noise_map)
+        combined_noise_df = calculate_combined_noise_data(path)
+        self.plot_combined_noise_pollution(combined_noise_df)
 
         self.map.save('drone_delivery_simulation.html')
         print("Map has been saved to 'drone_delivery_simulation.html'")
