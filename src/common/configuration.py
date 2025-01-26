@@ -10,12 +10,12 @@ TOTAL_DRONE_NUMBER = 400
 NOISE_MATRIX_CELL_LENGTH = 500  # meters
 NOISE_MATRIX_CELL_WIDTH = 500  # meters
 
-DRONE_NOISE_AT_SOURCE = 90  # The central sound level of a flying drone (db)
+DRONE_NOISE_AT_SOURCE = 90.0  # The central sound level of a flying drone (db)
 DRONE_SPEED = 27  # metres per second, average drone speed
 
 MODEL_START_TIME = 36000  # 10 a.m. - model start time (10 * 60 * 60)
 MODEL_TIME_STEP = 30  # seconds
-DRONE_ALTITUTE = 100  # meters
+DRONE_ALTITUTE = 100.0  # meters
 
 # Map boundary in British National Grid
 MAP_LEFT = 503568.18
@@ -25,6 +25,7 @@ MAP_BOTTOM = 155850.78
 
 # Data paths
 ORDER_BASE_PATH = 'recourses/data/order/drone_delivery_orders_10000.csv'
+BASE_NOISE_PATH = f'recourses/data/base_noise/base_noise_london_map_{NOISE_MATRIX_CELL_LENGTH}.geojson'
 RESULT_BASE_PATH = 'recourses/results/experiments'
 
 LONDON_WAREHOUSES = [

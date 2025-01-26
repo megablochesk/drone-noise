@@ -1,12 +1,9 @@
+import branca
+import folium
 import matplotlib
 import numpy as np
-from PIL import Image
-from matplotlib import cm
-from matplotlib.colors import Normalize
-
-import folium
-import branca
 import pandas as pd
+from matplotlib import cm
 
 
 def get_color_scale():
@@ -16,24 +13,22 @@ def get_color_scale():
     return [matplotlib.colors.rgb2hex(c) for c in colors]
 
 
-def create_noise_layer(combined_noise_df: pd.DataFrame) -> folium.GeoJson:
-    min_val = combined_noise_df['combined_noise'].min()
-    max_val = combined_noise_df['combined_noise'].max()
-
-    colormap = branca.colormap.LinearColormap(
+def get_colormap(min_noise_level, max_noise_level, caption):
+    return branca.colormap.LinearColormap(
         colors=get_color_scale(),
-        vmin=min_val,
-        vmax=max_val,
-        caption='Average Noise (dB)'
+        vmin=min_noise_level,
+        vmax=max_noise_level,
+        caption=caption
     )
-    colormap.caption = "Noise Level (dB)"
 
+
+def create_noise_layer(dataframe, colormap) -> folium.GeoJson:
     feature_collection = {
         "type": "FeatureCollection",
         "features": []
     }
 
-    for _, row in combined_noise_df.iterrows():
+    for _, row in dataframe.iterrows():
         feature_collection["features"].append({
             "type": "Feature",
             "properties": {
@@ -51,10 +46,8 @@ def create_noise_layer(combined_noise_df: pd.DataFrame) -> folium.GeoJson:
             "weight": 0
         }
 
-    noise_layer = folium.GeoJson(
+    return folium.GeoJson(
         data=feature_collection,
         style_function=style_function,
-        name="Noise Map"
+        name="Noise Pollution Map"
     )
-
-    return noise_layer, colormap

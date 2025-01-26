@@ -60,7 +60,7 @@ def build_cell_matrix(rows, cols):
         row_cells = []
         for c in range(cols):
             centroid = Coordinate(
-                northing=MAP_TOP - (r + 0.5) * NOISE_MATRIX_CELL_WIDTH,
+                northing=MAP_BOTTOM + (r + 0.5) * NOISE_MATRIX_CELL_WIDTH,
                 easting=MAP_LEFT + (c + 0.5) * NOISE_MATRIX_CELL_LENGTH,
             )
             row_cells.append(Cell(r, c, centroid))

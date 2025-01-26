@@ -1,7 +1,7 @@
-import os
 import json
-import pandas as pd
+import os
 
+import pandas as pd
 from common.configuration import BASE_NOISE_PATH
 from noise.noise_math_utils import add_two_decibel_levels
 
@@ -56,6 +56,8 @@ def combine_noise_levels(drone_df: pd.DataFrame, base_noise_df: pd.DataFrame) ->
         lambda x: add_two_decibel_levels(x['average_noise'], x['noise_level']),
         axis=1
     )
+
+    merged_df['noise_difference'] = merged_df['combined_noise'] - merged_df['noise_level']
 
     return merged_df
 
