@@ -1,14 +1,16 @@
-from common.configuration import USE_DENSITY_MATRIX, PLOT_MAP, PLOT_STATISTICS, \
-    TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, PRINT_MODEL_STATISTICS, MODEL_START_TIME, MODEL_TIME_STEP
+from common.configuration import PLOT_MAP, PLOT_STATISTICS, PRINT_MODEL_STATISTICS, \
+    TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, MODEL_START_TIME, MODEL_TIME_STEP
 from common.coordinate import Coordinate
 from common.enum import DroneStatus
 from common.file_utils import save_drones_data, save_drone_noise_data, define_results_path
 from common.math_utils import get_difference, find_nearest_warehouse_location
 from drones.dronegenerator import DroneGenerator
+from noise.noise_data_processor import calculate_combined_noise_data
 from noise.noise_tracker import NoiseTracker
 from orders.order_generator import OrderGenerator
 from simulation.planner import PathPlanner
 from simulation.plotter import Plotter
+from simulation.statistics import plot_noise_difference_colormap
 
 
 class Center:
@@ -80,8 +82,7 @@ class Center:
         self.plan_drones_path()
         self.update_drones()
 
-        if USE_DENSITY_MATRIX:
-            self.track_drones()
+        self.track_drones()
 
         if PLOT_MAP:
             self.plot_drones()
@@ -134,11 +135,16 @@ class Center:
 
         path = define_results_path(TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER)
 
-        if USE_DENSITY_MATRIX:
-            self.noise_tracker.calculate_noise_matrix()
-            self.save_results(path)
+        self.noise_tracker.calculate_noise_matrix()
+        self.save_results(path)
+
+        combined_noise = calculate_combined_noise_data(path)
+
+        if PLOT_STATISTICS:
+            plot_noise_difference_colormap(combined_noise)
 
         if PLOT_MAP:
+            self.plotter.plot_combined_noise_pollution(combined_noise)
             self.plotter.save_flight_map(path)
 
     def save_results(self, path):

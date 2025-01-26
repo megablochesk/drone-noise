@@ -1,11 +1,9 @@
 from typing import List
 
 import folium
-from matplotlib import pyplot as plt
-from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM
+from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM, MAP_FILE_PATH
 from common.coordinate import Coordinate
 from drones.drone import Drone
-from noise.noise_data_processor import calculate_combined_noise_data
 from noise.noise_overlay_generator import create_noise_layer, get_colormap
 
 MIN_NOISE_LEVEL = 40
@@ -72,26 +70,9 @@ class Plotter:
         noise_layer.add_to(self.map)
         colormap.add_to(self.map)
 
-    @staticmethod
-    def plot_noise_difference_colormap(dataframe):
-        heatmap_data = dataframe.pivot(index='row', columns='col', values='noise_difference')
-
-        plt.figure(figsize=(10, 8))
-        plt.title('Noise Difference Colormap (dBs)', fontsize=16)
-        img = plt.imshow(heatmap_data, cmap='coolwarm', aspect='auto', origin='lower', vmin=0, vmax=3)
-        plt.colorbar(img, label='Noise Difference (0 to 3 dBs)')
-        plt.xlabel('Column')
-        plt.ylabel('Row')
-        plt.show()
-
-    def save_flight_map(self, path: str):
-        combined_noise_df = calculate_combined_noise_data(path)
-
-        self.plot_combined_noise_pollution(combined_noise_df)
-        self.plot_noise_difference_colormap(combined_noise_df)
-
+    def save_flight_map(self):
         folium.LayerControl().add_to(self.map)
 
-        map_file_name = 'drone_delivery_simulation.html'
-        self.map.save(map_file_name)
-        print(f"Map has been saved to {map_file_name}")
+        self.map.save(MAP_FILE_PATH)
+
+        print(f"Map has been saved to {MAP_FILE_PATH}")

@@ -1,7 +1,7 @@
 # Switches
 PRINT_DRONE_STATISTICS = False
 PRINT_MODEL_STATISTICS = True
-PLOT_MAP = True
+PLOT_MAP = False
 PLOT_STATISTICS = True
 USE_DENSITY_MATRIX = True
 
@@ -28,6 +28,7 @@ MAP_BOTTOM = 155850.78
 ORDER_BASE_PATH = 'recourses/data/order/drone_delivery_orders_10000.csv'
 BASE_NOISE_PATH = f'recourses/data/base_noise/base_noise_london_map_{NOISE_MATRIX_CELL_LENGTH}.geojson'
 RESULT_BASE_PATH = 'recourses/results/experiments'
+MAP_FILE_PATH = f'drone_delivery_simulation.html'
 
 LONDON_WAREHOUSES = [
     ('DBR1', (180193.93, 550041.28)),
