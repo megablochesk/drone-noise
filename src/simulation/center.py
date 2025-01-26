@@ -1,18 +1,14 @@
-import csv
-import os
-
-from common.configuration import NOISE_MATRIX_CELL_WIDTH, NOISE_MATRIX_CELL_LENGTH, \
-                                 MAP_LEFT, MAP_TOP, MAP_RIGHT, MAP_BOTTOM, \
-                                 RESULT_BASE_PATH, USE_DENSITY_MATRIX, PLOT_SIMULATION, DRONE_ALTITUTE, \
-                                 TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, PRINT_MODEL_STATISTICS, MODEL_START_TIME, MODEL_TIME_STEP
+from common.configuration import USE_DENSITY_MATRIX, PLOT_MAP, PLOT_STATISTICS, \
+    TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, PRINT_MODEL_STATISTICS, MODEL_START_TIME, MODEL_TIME_STEP
 from common.coordinate import Coordinate
 from common.enum import DroneStatus
+from common.file_utils import save_drones_data, save_drone_noise_data, define_results_path
 from common.math_utils import get_difference, find_nearest_warehouse_location
-from simulation.plotter import Plotter
-from simulation.planner import PathPlanner
 from drones.dronegenerator import DroneGenerator
 from noise.noise_tracker import NoiseTracker
 from orders.order_generator import OrderGenerator
+from simulation.planner import PathPlanner
+from simulation.plotter import Plotter
 
 
 class Center:
@@ -33,7 +29,7 @@ class Center:
         self.noise_tracker = NoiseTracker()
         self.planner = PathPlanner()
 
-        if PLOT_SIMULATION:
+        if PLOT_MAP:
             self.plotter = Plotter(self.warehouses)
 
     def init_orders(self, number_of_orders):
@@ -87,7 +83,7 @@ class Center:
         if USE_DENSITY_MATRIX:
             self.track_drones()
 
-        if PLOT_SIMULATION:
+        if PLOT_MAP:
             self.plot_drones()
 
     def process_orders(self):
@@ -133,86 +129,25 @@ class Center:
     def should_end_simulation(self):
         return not (self.has_waiting_order() or self.has_delivering_drones() or self.has_planning_drone())
 
-    @staticmethod
-    def define_folder_path():
-        path = RESULT_BASE_PATH + '/' + f"stat_o{TOTAL_ORDER_NUMBER}_d{TOTAL_DRONE_NUMBER}_alt{DRONE_ALTITUTE}"
-
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-        return path
-
     def end_simulation(self):
         print("All orders have been completed, no more new orders")
 
-        path = self.define_folder_path()
+        path = define_results_path(TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER)
 
         if USE_DENSITY_MATRIX:
             self.noise_tracker.calculate_noise_matrix()
             self.save_results(path)
 
-        if PLOT_SIMULATION:
+        if PLOT_MAP:
             self.plotter.save_flight_map(path)
 
     def save_results(self, path):
         print("Saving results to the local:")
 
-        self.save_drones_data(path)
-        self.save_drone_noise_data(path)
-        self.save_configuration_data(path)
+        save_drones_data(self.free_drones, path)
+        save_drone_noise_data(self.noise_tracker, self.iteration_count, path)
 
         print("Results saved!")
-
-    def save_drones_data(self, path):
-        drone_path = f"{path}/drone.csv"
-        drone_fields = ['Drone ID', 'Total Step', 'Total Distance', 'Total Orders']
-        drone_data = [
-            [
-                drone.drone_id,
-                drone.tracker.total_step(),
-                drone.tracker.total_distance(),
-                drone.tracker.total_orders()
-            ]
-            for drone in self.free_drones
-        ]
-        self.write_csv(drone_path, drone_fields, drone_data, 'drones data')
-
-    def save_drone_noise_data(self, path):
-        matrix_path = f"{path}/noise.csv"
-        matrix_fields = ['row', 'col', 'avg_noise', 'max_noise']
-        matrix_data = [
-            [
-                i, j,
-                self.noise_tracker.noise_matrix[i][j].total_noise / self.iteration_count,
-                self.noise_tracker.noise_matrix[i][j].max_noise
-            ]
-            for i in range(self.noise_tracker.rows)
-            for j in range(self.noise_tracker.cols)
-        ]
-        self.write_csv(matrix_path, matrix_fields, matrix_data, 'noise data')
-
-    def save_configuration_data(self, path):
-        config_path = f"{path}/config.csv"
-        config_fields = ['Left Longitude', 'Right Longitude', 'Top Latitude', 'Bottom Latitude',
-                         'Orders', 'Drones',
-                         'Cell Length', 'Cell Width',
-                         'Rows', 'Cols']
-        config = [[
-            MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM,
-            TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER,
-            NOISE_MATRIX_CELL_LENGTH, NOISE_MATRIX_CELL_WIDTH,
-            self.noise_tracker.rows, self.noise_tracker.cols
-        ]]
-        self.write_csv(config_path, config_fields, config, 'configuration data')
-
-    @staticmethod
-    def write_csv(file_path, headers, data, data_type):
-        with open(file_path, 'w') as f:
-            writer = csv.writer(f)
-            writer.writerow(headers)
-            writer.writerows(data)
-            print(f"Done writing {data_type}!")
-            f.flush()
 
     def has_free_drone(self):
         return bool(self.free_drones)
