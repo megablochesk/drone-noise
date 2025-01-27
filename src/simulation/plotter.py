@@ -74,5 +74,4 @@ class Plotter:
         folium.LayerControl().add_to(self.map)
 
         self.map.save(MAP_FILE_PATH)
-
-        print(f"Map has been saved to {MAP_FILE_PATH}")
+        print(f"Map saved!")

@@ -9,10 +9,8 @@ from shapely.geometry import shape, Point
 
 
 def load_orders(number_of_orders):
-    print(f"Loading orders data from {ORDER_BASE_PATH}")
     order_df = pd.read_csv(ORDER_BASE_PATH)
 
-    print("Initializing orders from local data...")
     limited_df = order_df.head(number_of_orders)
 
     orders = [
@@ -23,8 +21,6 @@ def load_orders(number_of_orders):
         )
         for _, row in limited_df.iterrows()
     ]
-
-    print("Done initializing orders")
 
     return orders
 

@@ -1,6 +1,5 @@
 from common.configuration import PLOT_MAP, PLOT_STATISTICS, PRINT_MODEL_STATISTICS, \
     TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, MODEL_START_TIME, MODEL_TIME_STEP
-from common.coordinate import Coordinate
 from common.enum import DroneStatus
 from common.file_utils import save_drones_data, save_drone_noise_data, define_results_path
 from common.math_utils import get_difference, find_nearest_warehouse_location
@@ -15,7 +14,7 @@ from simulation.statistics import plot_noise_difference_colormap
 
 class Center:
     def __init__(self, warehouses, number_of_orders, number_of_drones):
-        self.warehouses = [Coordinate(northing=coords[0], easting=coords[1]) for _, coords in warehouses]
+        self.warehouses = [location for _, location in warehouses]
         
         self.model_time = MODEL_START_TIME
         self.iteration_count = 0
@@ -35,14 +34,14 @@ class Center:
             self.plotter = Plotter(self.warehouses)
 
     def init_orders(self, number_of_orders):
-        print("Start initializing orders...")
+        print("Initialise orders...")
 
         orders = load_orders(number_of_orders)
 
         self.waiting_orders.extend(orders)
 
     def init_drones(self, number_of_drones, warehouses):
-        print("Start creating drones...")
+        print("Assign drones...")
 
         drone_generator = DroneGenerator(warehouses)
 
@@ -62,7 +61,7 @@ class Center:
         self.iteration_count += 1
 
     def run_center(self):
-        print("Simulation starts, running the center...")
+        print("Start the simulation...")
 
         while 1:
             if PRINT_MODEL_STATISTICS:
@@ -131,7 +130,7 @@ class Center:
         return not (self.has_waiting_order() or self.has_delivering_drones() or self.has_planning_drone())
 
     def end_simulation(self):
-        print("All orders have been completed, no more new orders")
+        print("Simulation completed")
 
         path = define_results_path(TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER)
 
@@ -148,7 +147,7 @@ class Center:
             self.plotter.save_flight_map()
 
     def save_results(self, path):
-        print("Saving results to the local:")
+        print("Save simulation results...")
 
         save_drones_data(self.free_drones, path)
         save_drone_noise_data(self.noise_tracker, self.iteration_count, path)
