@@ -7,7 +7,7 @@ from common.math_utils import get_difference, find_nearest_warehouse_location
 from drones.dronegenerator import DroneGenerator
 from noise.noise_data_processor import calculate_combined_noise_data
 from noise.noise_tracker import NoiseTracker
-from orders.order_generator import OrderGenerator
+from orders.order_generator import load_orders
 from simulation.planner import PathPlanner
 from simulation.plotter import Plotter
 from simulation.statistics import plot_noise_difference_colormap
@@ -37,7 +37,7 @@ class Center:
     def init_orders(self, number_of_orders):
         print("Start initializing orders...")
 
-        orders = OrderGenerator.load_orders(number_of_orders)
+        orders = load_orders(number_of_orders)
 
         self.waiting_orders.extend(orders)
 
@@ -145,7 +145,7 @@ class Center:
 
         if PLOT_MAP:
             self.plotter.plot_combined_noise_pollution(combined_noise)
-            self.plotter.save_flight_map(path)
+            self.plotter.save_flight_map()
 
     def save_results(self, path):
         print("Saving results to the local:")

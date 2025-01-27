@@ -3,7 +3,7 @@ PRINT_DRONE_STATISTICS = False
 PRINT_MODEL_STATISTICS = True
 PLOT_MAP = False
 PLOT_STATISTICS = True
-USE_DENSITY_MATRIX = True
+ORDER_DATASET_TYPE = 'random'  # can be 'closest', 'furthest', or 'random'
 
 TOTAL_ORDER_NUMBER = 50
 TOTAL_DRONE_NUMBER = 400
@@ -24,11 +24,14 @@ MAP_RIGHT = 561950.07
 MAP_TOP = 200930.56
 MAP_BOTTOM = 155850.78
 
+
+
 # Data paths
-ORDER_BASE_PATH = 'recourses/data/order/drone_delivery_orders_10000.csv'
+ORDER_BASE_PATH = f'recourses/data/order/drone_delivery_orders_10000_{ORDER_DATASET_TYPE}.csv'
 BASE_NOISE_PATH = f'recourses/data/base_noise/base_noise_london_map_{NOISE_MATRIX_CELL_LENGTH}.geojson'
 RESULT_BASE_PATH = 'recourses/results/experiments'
 MAP_FILE_PATH = f'drone_delivery_simulation.html'
+MSOA_POPULATION_PATH = 'recourses/data/MSOA_population_dataset_filtered.geojson'
 
 LONDON_WAREHOUSES = [
     ('DBR1', (180193.93, 550041.28)),
