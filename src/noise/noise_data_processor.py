@@ -30,17 +30,12 @@ def read_base_noise_data(file_path: str = BASE_NOISE_PATH) -> pd.DataFrame:
 
 
 def generate_drone_noise_df(matrix_df: pd.DataFrame) -> pd.DataFrame:
-    total_cells = len(matrix_df)
-    cols = len(matrix_df['col'].unique())
-    rows = total_cells // cols
+    renamed_df = matrix_df.rename(columns={
+        'avg_noise': 'average_noise',
+        'max_noise': 'maximum_noise'
+    })
 
-    idx = pd.MultiIndex.from_product([range(rows), range(cols)], names=['row', 'col'])
-    drone_df = pd.DataFrame({
-        'average_noise': matrix_df['avg_noise'].values,
-        'maximum_noise': matrix_df['max_noise'].values
-    }, index=idx).reset_index()
-
-    return drone_df
+    return renamed_df.set_index(['row', 'col'])
 
 
 def combine_noise_levels(drone_df: pd.DataFrame, base_noise_df: pd.DataFrame) -> pd.DataFrame:

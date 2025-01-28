@@ -31,15 +31,17 @@ def save_drones_data(drones, path):
 
 def save_drone_noise_data(noise_tracker, iteration_count, path):
     matrix_path = f"{path}/noise.csv"
+
     matrix_fields = ['row', 'col', 'avg_noise', 'max_noise']
+
     matrix_data = [
         [
-            i, j,
-            noise_tracker.noise_matrix[i][j].total_noise / iteration_count,
-            noise_tracker.noise_matrix[i][j].max_noise
+            cell.row,
+            cell.column,
+            cell.total_noise / iteration_count,
+            cell.max_noise
         ]
-        for i in range(noise_tracker.rows)
-        for j in range(noise_tracker.cols)
+        for cell in noise_tracker.noise_cells
     ]
 
     write_csv(matrix_path, matrix_fields, matrix_data, 'noise data')

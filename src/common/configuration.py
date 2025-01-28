@@ -1,4 +1,4 @@
-from common.coordinates import Coordinate
+from common.coordinate import Coordinate
 
 # Switches
 PRINT_DRONE_STATISTICS = False
@@ -33,6 +33,7 @@ BASE_NOISE_PATH = f'recourses/data/base_noise/base_noise_london_map_{NOISE_MATRI
 RESULT_BASE_PATH = 'recourses/results/experiments'
 MAP_FILE_PATH = f'drone_delivery_simulation.html'
 MSOA_POPULATION_PATH = 'recourses/data/MSOA_population_dataset_filtered.geojson'
+LONDON_BOUNDARIES_PATH = 'recourses/data/greater-london-boundaries.geo.json'
 
 LONDON_WAREHOUSES = [
     ('DBR1', Coordinate(180193.93, 550041.28)),
