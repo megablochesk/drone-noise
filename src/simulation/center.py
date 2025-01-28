@@ -9,7 +9,7 @@ from noise.noise_tracker import NoiseTracker
 from orders.order_generator import load_orders
 from simulation.planner import PathPlanner
 from simulation.plotter import Plotter
-from simulation.statistics import plot_noise_difference_colormap
+from simulation.statistics import plot_noise_difference_colormap, plot_noise_change_barchart, plot_graphs
 
 
 class Center:
@@ -141,6 +141,8 @@ class Center:
 
         if PLOT_STATISTICS:
             plot_noise_difference_colormap(combined_noise)
+            plot_noise_change_barchart(combined_noise)
+            plot_graphs()
 
         if PLOT_MAP:
             self.plotter.plot_combined_noise_pollution(combined_noise)
