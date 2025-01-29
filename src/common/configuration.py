@@ -5,7 +5,6 @@ PRINT_DRONE_STATISTICS = False
 PRINT_MODEL_STATISTICS = True
 PLOT_MAP = False
 PLOT_STATISTICS = True
-ORDER_DATASET_TYPE = 'random'  # can be 'closest', 'furthest', or 'random'
 
 TOTAL_ORDER_NUMBER = 1000
 TOTAL_DRONE_NUMBER = 400
@@ -28,7 +27,12 @@ MAP_BOTTOM = 155850.78
 
 
 # Data paths
-ORDER_BASE_PATH = f'recourses/data/order/drone_delivery_orders_10000_{ORDER_DATASET_TYPE}.csv'
+ORDER_BASE_PATH_FURTHEST = f'recourses/data/order/drone_delivery_orders_10000_furthest.csv'
+ORDER_BASE_PATH_RANDOM = f'recourses/data/order/drone_delivery_orders_10000_random.csv'
+ORDER_BASE_PATH_CLOSEST = f'recourses/data/order/drone_delivery_orders_10000_closest.csv'
+
+ORDER_BASE_PATH = ORDER_BASE_PATH_FURTHEST
+
 BASE_NOISE_PATH = f'recourses/data/base_noise/base_noise_london_map_{NOISE_MATRIX_CELL_LENGTH}.geojson'
 RESULT_BASE_PATH = 'recourses/results/experiments'
 MAP_FILE_PATH = f'drone_delivery_simulation.html'

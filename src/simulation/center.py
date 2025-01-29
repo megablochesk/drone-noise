@@ -19,7 +19,8 @@ class Center:
         self.model_time = MODEL_START_TIME
         self.iteration_count = 0
 
-        self.waiting_orders = []
+        self.pending_orders = []
+
         self.free_drones = []
         self.delivering_drones = []
         self.waiting_planning_drones = []
@@ -38,7 +39,7 @@ class Center:
 
         orders = load_orders(number_of_orders)
 
-        self.waiting_orders.extend(orders)
+        self.pending_orders.extend(orders)
 
     def init_drones(self, number_of_drones, warehouses):
         print("Assign drones...")
@@ -51,7 +52,7 @@ class Center:
 
     def print_drones_statistics(self):
         print(f"Drone Statistics at iteration {self.iteration_count}, time {self.model_time}:")
-        print(f"  Waiting Orders: {len(self.waiting_orders)}")
+        print(f"  Pending Orders: {len(self.pending_orders)}")
         print(f"  Free Drones: {len(self.free_drones)}")
         print(f"  Delivering Drones: {len(self.delivering_drones)}")
         print(f"  Waiting Planning Drones: {len(self.waiting_planning_drones)}\n")
@@ -88,7 +89,7 @@ class Center:
 
     def process_orders(self):
         while self.has_waiting_order() and self.has_free_drone():
-            order = self.waiting_orders.pop()
+            order = self.pending_orders.pop()
             drone = self.find_nearest_free_drone(order, self.free_drones)
             drone.accept_order(order)
 
@@ -163,7 +164,7 @@ class Center:
         return bool(self.delivering_drones)
 
     def has_waiting_order(self):
-        return bool(self.waiting_orders)
+        return bool(self.pending_orders)
 
     def has_planning_drone(self):
         return bool(self.waiting_planning_drones)
