@@ -8,8 +8,12 @@ from orders.order import Order
 from shapely.geometry import shape, Point
 
 
-def load_orders(number_of_orders):
-    order_df = pd.read_csv(ORDER_BASE_PATH)
+def load_all_orders(path):
+    return pd.read_csv(path)
+
+
+def load_orders(number_of_orders, path=ORDER_BASE_PATH):
+    order_df = load_all_orders(path)
 
     limited_df = order_df.head(number_of_orders)
 
@@ -113,21 +117,27 @@ def generate_random_population_based_point():
             return msoa_code, x, y
 
 
-def find_warehouse(point, comparison):
+def distance_between_points(warehouse, point):
+    wx, wy = warehouse
     x, y = point
-    best_warehouse = None
-    best_distance_sq = None
 
-    for name, (wx, wy) in LONDON_WAREHOUSES:
-        dx = wx - x
-        dy = wy - y
-        dist_sq = dx * dx + dy * dy
+    dx = wx - x
+    dy = wy - y
 
-        if best_distance_sq is None or comparison(dist_sq, best_distance_sq):
-            best_distance_sq = dist_sq
-            best_warehouse = (name, (wx, wy))
+    return dx * dx + dy * dy
 
-    return best_warehouse[1]
+
+def find_warehouse(destination_point, comparator):
+    chosen_coord = None
+    chosen_distance = None
+
+    for name, coord in LONDON_WAREHOUSES:
+        dist = distance_between_points(destination_point, (coord.easting, coord.northing))
+        if chosen_distance is None or comparator(dist, chosen_distance):
+            chosen_distance = dist
+            chosen_coord = coord
+
+    return chosen_coord.easting, chosen_coord.northing
 
 
 def find_closest_warehouse(point):
@@ -140,7 +150,7 @@ def find_furthest_warehouse(point):
 
 def choose_random_warehouse():
     warehouse = random.choice(LONDON_WAREHOUSES)
-    return warehouse[1]
+    return warehouse[1].easting, warehouse[1].northing
 
 
 def choose_warehouse(point, method):
@@ -154,10 +164,9 @@ def choose_warehouse(point, method):
         raise ValueError(f"Unknown warehouse selection method: {method}")
 
 
-def generate_order(order_id, selection_method):
-    _, destination_x, destination_y = generate_random_population_based_point()
+def generate_order(order_id, destination_point, selection_method):
+    _, destination_x, destination_y = destination_point
     warehouse_x, warehouse_y = choose_warehouse((destination_x, destination_y), selection_method)
-
     return {
         'Order ID': order_id,
         'Start Northing': warehouse_y,
@@ -167,14 +176,7 @@ def generate_order(order_id, selection_method):
     }
 
 
-def generate_orders(num_orders, selection_method):
-    orders = []
-    for order_id in range(1, num_orders + 1):
-        orders.append(generate_order(order_id, selection_method))
-    return orders
-
-
-def save_orders_to_csv(orders, filename='drone_delivery_orders.csv'):
+def save_orders_to_csv(orders, filename):
     orders_df = pd.DataFrame(orders)
     orders_df.to_csv(filename, index=False)
 
@@ -182,10 +184,15 @@ def save_orders_to_csv(orders, filename='drone_delivery_orders.csv'):
 MSOA_INDEX, MSOA_POPULATIONS = build_msoa_index()
 POPULATION_DISTRIBUTION = calculate_population_distribution(MSOA_POPULATIONS)
 
-if __name__ == "__main__":
-    number_of_deliveries = 10000
-    suffix = 'closest'  # can be 'closest', 'furthest', or 'random'
 
-    save_file_name = f'data/order/drone_delivery_orders_{number_of_deliveries}_{suffix}.csv'
-    delivery_orders = generate_orders(number_of_deliveries, suffix)
-    save_orders_to_csv(delivery_orders, save_file_name)
+def generate_datasets(number_of_deliveries=10000):
+    destinations = [generate_random_population_based_point() for _ in range(number_of_deliveries)]
+
+    for method in ['closest', 'furthest', 'random']:
+        orders = []
+        for order_id in range(1, number_of_deliveries + 1):
+            orders.append(generate_order(order_id, destinations[order_id - 1], method))
+
+        save_file_name = f'recourses/data/order/drone_delivery_orders_{number_of_deliveries}_{method}.csv'
+
+        save_orders_to_csv(orders, save_file_name)
