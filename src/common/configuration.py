@@ -9,8 +9,7 @@ PLOT_STATISTICS = True
 TOTAL_ORDER_NUMBER = 1000
 TOTAL_DRONE_NUMBER = 400
 
-NOISE_MATRIX_CELL_LENGTH = 500  # meters
-NOISE_MATRIX_CELL_WIDTH = 500  # meters
+NOISE_GRID_CELL_SIZE_METERS = 500
 
 DRONE_NOISE_AT_SOURCE = 90.0  # The central sound level of a flying drone (db)
 DRONE_SPEED = 27  # metres per second, average drone speed
@@ -19,11 +18,13 @@ MODEL_START_TIME = 36000  # 10 a.m. - model start time (10 * 60 * 60)
 MODEL_TIME_STEP = 30  # seconds
 DRONE_ALTITUTE = 100.0  # meters
 
+
 # Map boundary in British National Grid
-MAP_LEFT = 503568.18
-MAP_RIGHT = 561950.07
-MAP_TOP = 200930.56
-MAP_BOTTOM = 155850.78
+class MapBoundaries:
+    LEFT = 503568.18
+    RIGHT = 561950.07
+    TOP = 200930.56
+    BOTTOM = 155850.78
 
 
 # Data paths
@@ -33,7 +34,7 @@ ORDER_BASE_PATH_CLOSEST = f'recourses/data/order/drone_delivery_orders_10000_clo
 
 ORDER_BASE_PATH = ORDER_BASE_PATH_FURTHEST
 
-BASE_NOISE_PATH = f'recourses/data/base_noise/base_noise_london_map_{NOISE_MATRIX_CELL_LENGTH}.geojson'
+BASE_NOISE_PATH = f'recourses/data/base_noise/base_noise_london_map_{NOISE_GRID_CELL_SIZE_METERS}.geojson'
 RESULT_BASE_PATH = 'recourses/results/experiments'
 MAP_FILE_PATH = f'drone_delivery_simulation.html'
 MSOA_POPULATION_PATH = 'recourses/data/MSOA_population_dataset_filtered.geojson'

@@ -1,7 +1,6 @@
-from datetime import datetime
 from typing import List
 
-from common.configuration import PRINT_DRONE_STATISTICS, MAP_TOP, MAP_LEFT, MAP_RIGHT, MAP_BOTTOM
+from common.configuration import PRINT_DRONE_STATISTICS, MapBoundaries as Map
 from common.coordinate import Coordinate
 from common.enum import DroneStatus
 from common.math_utils import find_nearest_warehouse, calculate_distance
@@ -29,7 +28,7 @@ class Drone:
         self.destination = self.order.start_location
 
         if PRINT_DRONE_STATISTICS:
-            print(f"Drone '{self.drone_id}' accepted order '{self.order.order_id}' and is flying to {self.destination}")
+            print(f"Drone {self.drone_id} accepted order {self.order.order_id} and is flying to {self.destination}")
     
     def collect_parcel(self):
         self.order.mark_as_en_route()
@@ -37,7 +36,7 @@ class Drone:
         self.destination = self.order.end_location
 
         if PRINT_DRONE_STATISTICS:
-            print(f"Drone '{self.drone_id}' collected order '{self.order.order_id}' and is flying to {self.destination}")
+            print(f"Drone '{self.drone_id}' collected order {self.order.order_id} and is flying to {self.destination}")
     
     def complete_delivering(self):
         self.order.mark_as_delivered()
@@ -45,7 +44,7 @@ class Drone:
         self.destination = find_nearest_warehouse(self.warehouses, self.location)
 
         if PRINT_DRONE_STATISTICS:
-            print(f"Drone '{self.drone_id}' delivered order '{self.order.order_id} and is flying to {self.destination}")
+            print(f"Drone {self.drone_id} delivered order {self.order.order_id} and is flying to {self.destination}")
     
     def return_to_warehouse(self):
         self.status = DroneStatus.WAITING
@@ -54,7 +53,7 @@ class Drone:
         self.tracker.record()
 
         if PRINT_DRONE_STATISTICS:
-            print(f"Drone '{self.drone_id}' returned to the nearest warehouse and start to recharge")
+            print(f"Drone {self.drone_id} returned to the nearest warehouse and start to recharge")
 
     def update_position(self):
         # Drone's status will change: COLLECTING -> DELIVERING -> RETURNING -> WAITING
@@ -63,7 +62,7 @@ class Drone:
         elif self.drone_has_path():
             self.follow_path()
         else:
-            self.handle_no_path()
+            self.handle_missing_path()
 
     def handle_out_of_boundary(self):
         if PRINT_DRONE_STATISTICS:
@@ -72,7 +71,7 @@ class Drone:
 
         self.abort_mission()
 
-    def handle_no_path(self):
+    def handle_missing_path(self):
         if PRINT_DRONE_STATISTICS:
             print(f"WARNING: {self} has no path")
 
@@ -83,12 +82,13 @@ class Drone:
             self.update_status_on_reach()
 
     def update_status_on_reach(self):
-        if self.status is DroneStatus.COLLECTING:
-            self.collect_parcel()
-        elif self.status is DroneStatus.DELIVERING:
-            self.complete_delivering()
-        elif self.status is DroneStatus.RETURNING:
-            self.return_to_warehouse()
+        match self.status:
+            case DroneStatus.COLLECTING:
+                self.collect_parcel()
+            case DroneStatus.DELIVERING:
+                self.complete_delivering()
+            case DroneStatus.RETURNING:
+                self.return_to_warehouse()
 
     def abort_mission(self):
         self.order = None
@@ -98,7 +98,7 @@ class Drone:
         self.send_to_nearest_warehouse()
 
     def send_to_nearest_warehouse(self):
-        self.location = nearest_neighbor(neighbors=self.warehouses, target=self.location)
+        self.location = find_nearest_warehouse(neighbors=self.warehouses, target=self.location)
     
     def receive_path(self, path):
         self.path = path
@@ -114,8 +114,8 @@ class Drone:
         self.tracker.increment_step()
     
     def is_outside_map_boundary(self):
-        return not (MAP_BOTTOM <= self.location.northing <= MAP_TOP and
-                    MAP_LEFT <= self.location.easting <= MAP_RIGHT)
+        return not (Map.BOTTOM <= self.location.northing <= Map.TOP and
+                    Map.LEFT <= self.location.easting <= Map.RIGHT)
     
     def drone_has_path(self):
         return bool(self.path)

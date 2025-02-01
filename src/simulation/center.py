@@ -1,5 +1,5 @@
 from common.configuration import PLOT_MAP, PLOT_STATISTICS, PRINT_MODEL_STATISTICS, \
-    TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, MODEL_START_TIME, MODEL_TIME_STEP
+    TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, MODEL_START_TIME, MODEL_TIME_STEP, LONDON_WAREHOUSES
 from common.enum import DroneStatus
 from common.file_utils import save_drones_data, save_drone_noise_data, define_results_path
 from common.math_utils import get_difference, find_nearest_warehouse_location
@@ -13,8 +13,8 @@ from simulation.statistics import plot_noise_difference_colormap, plot_noise_cha
 
 
 class Center:
-    def __init__(self, warehouses, number_of_orders, number_of_drones):
-        self.warehouses = [location for _, location in warehouses]
+    def __init__(self, number_of_orders, number_of_drones, order_dataset):
+        self.warehouses = [location for _, location in LONDON_WAREHOUSES]
         
         self.model_time = MODEL_START_TIME
         self.iteration_count = 0
@@ -25,19 +25,21 @@ class Center:
         self.delivering_drones = []
         self.waiting_planning_drones = []
 
-        self.init_orders(number_of_orders)
+        self.init_orders(number_of_orders, order_dataset)
         self.init_drones(number_of_drones, self.warehouses)
 
         self.noise_tracker = NoiseTracker()
         self.planner = PathPlanner()
 
+        self.noise_impact = None
+
         if PLOT_MAP:
             self.plotter = Plotter(self.warehouses)
 
-    def init_orders(self, number_of_orders):
+    def init_orders(self, number_of_orders, order_dataset):
         print("Initialise orders...")
 
-        orders = load_orders(number_of_orders)
+        orders = load_orders(number_of_orders, order_dataset)
 
         self.pending_orders.extend(orders)
 
@@ -64,18 +66,16 @@ class Center:
     def run_center(self):
         print("Start the simulation...")
 
-        while 1:
+        while self.has_pending_deliveries():
             if PRINT_MODEL_STATISTICS:
                 self.print_drones_statistics()
 
-            if self.has_waiting_order() or self.has_delivering_drones():
+            if self.has_pending_order() or self.has_delivering_drones():
                 self.process_iteration()
 
             self.update_model_time()
 
-            if self.should_end_simulation():
-                self.end_simulation()
-                break
+        self.end_simulation()
 
     def process_iteration(self):
         self.process_orders()
@@ -88,7 +88,7 @@ class Center:
             self.plot_drones()
 
     def process_orders(self):
-        while self.has_waiting_order() and self.has_free_drone():
+        while self.has_pending_order() and self.has_free_drone():
             order = self.pending_orders.pop()
             drone = self.find_nearest_free_drone(order, self.free_drones)
             drone.accept_order(order)
@@ -127,8 +127,8 @@ class Center:
     def plot_drones(self):
         self.plotter.plot_drones(self.delivering_drones)
 
-    def should_end_simulation(self):
-        return not (self.has_waiting_order() or self.has_delivering_drones() or self.has_planning_drone())
+    def has_pending_deliveries(self):
+        return self.has_pending_order() or self.has_delivering_drones() or self.has_planning_drone()
 
     def end_simulation(self):
         print("Simulation completed")
@@ -138,15 +138,15 @@ class Center:
         self.noise_tracker.calculate_noise_cells()
         self.save_results(path)
 
-        combined_noise = calculate_combined_noise_data(path)
+        self.noise_impact = calculate_combined_noise_data(path)
 
         if PLOT_STATISTICS:
-            plot_noise_difference_colormap(combined_noise)
-            plot_noise_change_barchart(combined_noise)
+            plot_noise_difference_colormap(self.noise_impact)
+            plot_noise_change_barchart(self.noise_impact)
             plot_graphs()
 
         if PLOT_MAP:
-            self.plotter.plot_combined_noise_pollution(combined_noise)
+            self.plotter.plot_combined_noise_pollution(self.noise_impact)
             self.plotter.save_flight_map()
 
     def save_results(self, path):
@@ -163,7 +163,7 @@ class Center:
     def has_delivering_drones(self):
         return bool(self.delivering_drones)
 
-    def has_waiting_order(self):
+    def has_pending_order(self):
         return bool(self.pending_orders)
 
     def has_planning_drone(self):

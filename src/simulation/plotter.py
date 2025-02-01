@@ -1,7 +1,7 @@
 from typing import List
 
 import folium
-from common.configuration import MAP_LEFT, MAP_RIGHT, MAP_TOP, MAP_BOTTOM, MAP_FILE_PATH
+from common.configuration import MapBoundaries as Map, MAP_FILE_PATH
 from common.coordinate import Coordinate
 from drones.drone import Drone
 from noise.noise_overlay_generator import create_noise_layer, get_colormap
@@ -12,8 +12,8 @@ MAX_NOISE_LEVEL = 100
 
 class Plotter:
     def __init__(self, warehouses: List[Coordinate]):
-        center_northing = (MAP_BOTTOM + MAP_TOP) / 2
-        center_easting = (MAP_LEFT + MAP_RIGHT) / 2
+        center_northing = (Map.BOTTOM + Map.TOP) / 2
+        center_easting = (Map.LEFT + Map.RIGHT) / 2
         center_latlon = Coordinate(center_northing, center_easting).convert_to_latlon()
 
         self.map = folium.Map(location=center_latlon, zoom_start=13)
