@@ -1,6 +1,7 @@
 import csv
 import os
 
+import pandas as pd
 from common.configuration import RESULT_BASE_PATH
 
 
@@ -54,3 +55,12 @@ def write_csv(file_path, headers, data, data_type):
         writer.writerows(data)
         print(f"Done writing {data_type}!")
         f.flush()
+
+
+def save_dataframe_to_pickle(dataframe, path):
+    dataframe.to_pickle(path)
+    print(f"Results saved to {path}")
+
+
+def load_dataframe_from_pickle(path):
+    return pd.read_pickle(path)

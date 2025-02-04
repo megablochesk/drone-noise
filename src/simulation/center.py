@@ -1,5 +1,5 @@
-from common.configuration import PLOT_MAP, PLOT_STATISTICS, PRINT_MODEL_STATISTICS, \
-    TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, MODEL_START_TIME, MODEL_TIME_STEP, LONDON_WAREHOUSES
+from common.configuration import PLOT_MAP, PRINT_MODEL_STATISTICS, \
+    TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, MODEL_START_TIME, MODEL_TIME_STEP, MODEL_END_TIME, LONDON_WAREHOUSES
 from common.enum import DroneStatus
 from common.file_utils import save_drones_data, save_drone_noise_data, define_results_path
 from common.math_utils import get_difference, find_nearest_warehouse_location
@@ -9,24 +9,21 @@ from noise.noise_tracker import NoiseTracker
 from orders.order_generator import load_orders
 from simulation.planner import PathPlanner
 from simulation.plotter import Plotter
-from simulation.statistics import plot_noise_difference_colormap, plot_noise_change_barchart, plot_graphs
 
 
 class Center:
     def __init__(self, number_of_orders, number_of_drones, order_dataset):
         self.warehouses = [location for _, location in LONDON_WAREHOUSES]
+        self.undelivered_orders_number = number_of_orders
         
         self.model_time = MODEL_START_TIME
         self.iteration_count = 0
 
-        self.pending_orders = []
+        self.pending_orders = self.init_orders(number_of_orders, order_dataset)
+        self.free_drones = self.init_drones(number_of_drones, self.warehouses)
 
-        self.free_drones = []
         self.delivering_drones = []
         self.waiting_planning_drones = []
-
-        self.init_orders(number_of_orders, order_dataset)
-        self.init_drones(number_of_drones, self.warehouses)
 
         self.noise_tracker = NoiseTracker()
         self.planner = PathPlanner()
@@ -36,25 +33,25 @@ class Center:
         if PLOT_MAP:
             self.plotter = Plotter(self.warehouses)
 
-    def init_orders(self, number_of_orders, order_dataset):
+    @staticmethod
+    def init_orders(number_of_orders, order_dataset):
         print("Initialise orders...")
 
-        orders = load_orders(number_of_orders, order_dataset)
+        return load_orders(number_of_orders, order_dataset)
 
-        self.pending_orders.extend(orders)
-
-    def init_drones(self, number_of_drones, warehouses):
+    @staticmethod
+    def init_drones(number_of_drones, warehouses):
         print("Assign drones...")
 
-        drone_generator = DroneGenerator(warehouses)
+        return DroneGenerator(warehouses).generate_drones(number_of_drones)
 
-        drones = drone_generator.generate_drones(number_of_drones)
-
-        self.free_drones.extend(drones)
+    def get_delivered_orders_number(self):
+        return self.undelivered_orders_number - len(self.pending_orders) - len(self.delivering_drones)
 
     def print_drones_statistics(self):
         print(f"Drone Statistics at iteration {self.iteration_count}, time {self.model_time}:")
         print(f"  Pending Orders: {len(self.pending_orders)}")
+        print(f"  Delivered Orders: {self.get_delivered_orders_number()}")
         print(f"  Free Drones: {len(self.free_drones)}")
         print(f"  Delivering Drones: {len(self.delivering_drones)}")
         print(f"  Waiting Planning Drones: {len(self.waiting_planning_drones)}\n")
@@ -74,6 +71,9 @@ class Center:
                 self.process_iteration()
 
             self.update_model_time()
+
+            if self.model_time >= MODEL_END_TIME:
+                break
 
         self.end_simulation()
 
@@ -139,11 +139,6 @@ class Center:
         self.save_results(path)
 
         self.noise_impact = calculate_combined_noise_data(path)
-
-        if PLOT_STATISTICS:
-            plot_noise_difference_colormap(self.noise_impact)
-            plot_noise_change_barchart(self.noise_impact)
-            plot_graphs()
 
         if PLOT_MAP:
             self.plotter.plot_combined_noise_pollution(self.noise_impact)

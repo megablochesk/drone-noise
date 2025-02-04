@@ -4,9 +4,9 @@ from common.coordinate import Coordinate
 PRINT_DRONE_STATISTICS = False
 PRINT_MODEL_STATISTICS = True
 PLOT_MAP = False
-PLOT_STATISTICS = True
+PLOT_STATISTICS = False
 
-TOTAL_ORDER_NUMBER = 1000
+TOTAL_ORDER_NUMBER = 100000
 TOTAL_DRONE_NUMBER = 400
 
 NOISE_GRID_CELL_SIZE_METERS = 500
@@ -15,6 +15,7 @@ DRONE_NOISE_AT_SOURCE = 90.0  # The central sound level of a flying drone (db)
 DRONE_SPEED = 27  # metres per second, average drone speed
 
 MODEL_START_TIME = 36000  # 10 a.m. - model start time (10 * 60 * 60)
+MODEL_END_TIME = 72000  # 8 p.m.
 MODEL_TIME_STEP = 30  # seconds
 DRONE_ALTITUTE = 100.0  # meters
 
@@ -28,9 +29,9 @@ class MapBoundaries:
 
 
 # Data paths
-ORDER_BASE_PATH_FURTHEST = f'recourses/data/order/drone_delivery_orders_10000_furthest.csv'
-ORDER_BASE_PATH_RANDOM = f'recourses/data/order/drone_delivery_orders_10000_random.csv'
-ORDER_BASE_PATH_CLOSEST = f'recourses/data/order/drone_delivery_orders_10000_closest.csv'
+ORDER_BASE_PATH_FURTHEST = f'recourses/data/order/drone_delivery_orders_100000_furthest.csv'
+ORDER_BASE_PATH_RANDOM = f'recourses/data/order/drone_delivery_orders_100000_random.csv'
+ORDER_BASE_PATH_CLOSEST = f'recourses/data/order/drone_delivery_orders_100000_closest.csv'
 
 ORDER_BASE_PATH = ORDER_BASE_PATH_FURTHEST
 

@@ -74,9 +74,18 @@ def calculate_delivery_distance_statistics():
     width = 0.25
 
     fig, ax = plt.subplots(figsize=(8, 6))
-    ax.bar(x - width, furthest_vals, width, label='Furthest')
-    ax.bar(x, random_vals, width, label='Random')
-    ax.bar(x + width, closest_vals, width, label='Closest')
+    bars_furthest = ax.bar(x - width, furthest_vals, width, label='Furthest')
+    bars_random = ax.bar(x, random_vals, width, label='Random')
+    bars_closest = ax.bar(x + width, closest_vals, width, label='Closest')
+
+    def add_value_labels(bars):
+        for bar in bars:
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width() / 2, height, f'{height:.0f}', ha='center', va='bottom', fontsize=10)
+
+    add_value_labels(bars_furthest)
+    add_value_labels(bars_random)
+    add_value_labels(bars_closest)
 
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
@@ -86,7 +95,6 @@ def calculate_delivery_distance_statistics():
     ax.legend()
 
     plt.tight_layout()
-    plt.show()
 
 
 def plot_graphs():
