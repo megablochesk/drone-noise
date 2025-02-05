@@ -4,6 +4,7 @@ from common.configuration import (
     ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
 )
 from simulation.center import Center
+from common.file_utils import save_dataframe_to_pickle
 
 ORDER_DATASETS = {
     'furthest': ORDER_BASE_PATH_FURTHEST,
@@ -11,7 +12,7 @@ ORDER_DATASETS = {
     'closest': ORDER_BASE_PATH_CLOSEST
 }
 
-NUMBER_OF_DRONES_CASES = [250, 500, 750, 1000, 1250]
+NUMBER_OF_DRONES_CASES = [100, 250, 500, 750, 1000, 1250]
 NUMBER_OF_ORDERS = 100000
 
 

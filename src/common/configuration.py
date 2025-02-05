@@ -16,6 +16,7 @@ DRONE_SPEED = 27  # metres per second, average drone speed
 
 MODEL_START_TIME = 36000  # 10 a.m. - model start time (10 * 60 * 60)
 MODEL_END_TIME = 72000  # 8 p.m.
+NUMBER_OF_HOURS = (MODEL_END_TIME - MODEL_START_TIME) / 3600
 MODEL_TIME_STEP = 30  # seconds
 DRONE_ALTITUTE = 100.0  # meters
 
@@ -39,6 +40,7 @@ BASE_NOISE_PATH = f'recourses/data/base_noise/base_noise_london_map_{NOISE_GRID_
 RESULT_BASE_PATH = 'recourses/results/experiments'
 MAP_FILE_PATH = f'drone_delivery_simulation.html'
 MSOA_POPULATION_PATH = 'recourses/data/MSOA_population_dataset_filtered.geojson'
+CELL_POPULATION_PATH = f'recourses/data/cell_population_{NOISE_GRID_CELL_SIZE_METERS}.pkl'
 LONDON_BOUNDARIES_PATH = 'recourses/data/greater-london-boundaries.geo.json'
 
 LONDON_WAREHOUSES = [
