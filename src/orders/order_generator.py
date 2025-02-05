@@ -154,14 +154,15 @@ def choose_random_warehouse():
 
 
 def choose_warehouse(point, method):
-    if method == 'closest':
-        return find_closest_warehouse(point)
-    elif method == 'furthest':
-        return find_furthest_warehouse(point)
-    elif method == 'random':
-        return choose_random_warehouse()
-    else:
-        raise ValueError(f"Unknown warehouse selection method: {method}")
+    match method:
+        case 'closest':
+            return find_closest_warehouse(point)
+        case 'furthest':
+            return find_furthest_warehouse(point)
+        case 'random':
+            return choose_random_warehouse()
+        case _:
+            raise ValueError(f"Unknown warehouse selection method: {method}")
 
 
 def generate_order(order_id, destination_point, selection_method):
