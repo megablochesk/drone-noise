@@ -63,7 +63,7 @@ class Center:
     def run_center(self):
         print("Start the simulation...")
 
-        while self.has_pending_deliveries():
+        while self.has_pending_deliveries() and not self.reached_model_end_time():
             if PRINT_MODEL_STATISTICS:
                 self.print_drones_statistics()
 
@@ -72,10 +72,10 @@ class Center:
 
             self.update_model_time()
 
-            if self.model_time >= MODEL_END_TIME:
-                break
-
         self.end_simulation()
+
+    def reached_model_end_time(self):
+        return self.model_time >= MODEL_END_TIME
 
     def process_iteration(self):
         self.process_orders()
@@ -115,7 +115,7 @@ class Center:
     def update_drones(self):
         for drone in self.delivering_drones:
             drone.update_position()
-            if drone.status is DroneStatus.WAITING:
+            if drone.status is DroneStatus.FREE:
                 self.free_drones.append(drone)
 
         self.delivering_drones = [x for x in self.delivering_drones if x not in self.free_drones]
@@ -135,7 +135,8 @@ class Center:
 
         path = define_results_path(TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER)
 
-        self.noise_tracker.calculate_noise_cells()
+        self.noise_tracker.calculate_noise_cells(False)
+        self.noise_tracker.calculate_noise_cells(True)
         self.save_results(path)
 
         self.noise_impact = calculate_combined_noise_data(path)

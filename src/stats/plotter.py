@@ -186,47 +186,22 @@ def plot_cell_population():
     plt.gca().invert_yaxis()
 
 
-NUM_ROWS = 87
-NUM_COLS = 112
-
-
-def create_heatmap_matrix(group_df):
-    heatmap_data = group_df.pivot(index="row", columns="col", values="population")
-
-    row_range = np.arange(NUM_ROWS)
-    col_range = np.arange(NUM_COLS)
-    heatmap_data = heatmap_data.reindex(index=row_range, columns=col_range)
-
-    return heatmap_data
-
-
 def plot_cells_impacted_by_noise(main_df, threshold=55):
     df = get_cells_impacted_by_noise(main_df, threshold)
 
     for (dataset_name, num_drones), group_df in df.groupby(['dataset_name', 'num_drones']):
-        heatmap_data = create_heatmap_matrix(group_df)
+        heatmap_data = group_df.pivot(index="row", columns="col", values="population")
 
         plot_heatmap(heatmap_data, dataset_name, num_drones)
 
 
 def plot_heatmap(heatmap_data, dataset_name, num_drones):
     plt.figure(figsize=(8, 6))
-
-    plt.imshow(
-        heatmap_data,
-        cmap="viridis",
-        interpolation="nearest",
-        origin='lower',
-        aspect="auto"
-    )
-
-    cbar = plt.colorbar()
-    cbar.set_label("Population", rotation=270, labelpad=15)
-
-    plt.title(f"Population Heatmap {dataset_name} with {num_drones} drones")
+    sns.heatmap(heatmap_data, cmap="viridis", annot=False, cbar=True)
+    plt.title("Population Heatmap")
     plt.xlabel("Column")
     plt.ylabel("Row")
-    plt.grid(visible=False)
+    plt.gca().invert_yaxis()
 
 
 def plot_show():

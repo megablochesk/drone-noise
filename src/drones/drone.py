@@ -15,7 +15,7 @@ class Drone:
         self.location = start_location
 
         self.order = None
-        self.status = DroneStatus.WAITING
+        self.status = DroneStatus.FREE
         self.destination = None
         self.need_planning = True
         self.path = []
@@ -47,7 +47,7 @@ class Drone:
             print(f"Drone {self.drone_id} delivered order {self.order.order_id} and is flying to {self.destination}")
     
     def return_to_warehouse(self):
-        self.status = DroneStatus.WAITING
+        self.status = DroneStatus.FREE
         self.order = None
         self.destination = None
         self.tracker.record()
@@ -56,7 +56,7 @@ class Drone:
             print(f"Drone {self.drone_id} returned to the nearest warehouse and start to recharge")
 
     def update_position(self):
-        # Drone's status will change: COLLECTING -> DELIVERING -> RETURNING -> WAITING
+        # Drone's status will change: COLLECTING -> DELIVERING -> RETURNING -> FREE
         if self.is_outside_map_boundary():
             self.handle_out_of_boundary()
         elif self.drone_has_path():
@@ -93,12 +93,12 @@ class Drone:
     def abort_mission(self):
         self.order = None
         self.destination = None
-        self.status = DroneStatus.UNASSIGNED
+        self.status = DroneStatus.FREE
 
         self.send_to_nearest_warehouse()
 
     def send_to_nearest_warehouse(self):
-        self.location = find_nearest_warehouse(neighbors=self.warehouses, target=self.location)
+        self.location = find_nearest_warehouse(self.warehouses, self.location)
     
     def receive_path(self, path):
         self.path = path

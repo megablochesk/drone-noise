@@ -8,7 +8,7 @@ def find_nearest_warehouse(warehouses: List[Coordinate], current_location: Coord
     return warehouses[find_nearest_warehouse_location(warehouses, current_location)]
 
 
-def find_nearest_warehouse_location(warehouses: List[Coordinate], current_location: Coordinate) -> int:
+def find_nearest_warehouse_location(warehouses: List[Coordinate], current_location: Coordinate):
     distances = []
 
     for warehouse in warehouses:
