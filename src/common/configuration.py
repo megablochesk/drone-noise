@@ -16,7 +16,7 @@ DRONE_SPEED = 27  # metres per second, average drone speed
 
 MODEL_START_TIME = 36000  # 10 a.m. - model start time (10 * 60 * 60)
 MODEL_END_TIME = 72000  # 8 p.m.
-NUMBER_OF_HOURS = (MODEL_END_TIME - MODEL_START_TIME) / 3600
+NUMBER_OF_HOURS = int((MODEL_END_TIME - MODEL_START_TIME) / 3600)
 MODEL_TIME_STEP = 30  # seconds
 DRONE_ALTITUTE = 100.0  # meters
 

@@ -16,19 +16,17 @@ class DroneGenerator:
         for _ in range(quantity):
             drone = self._create_drone()
             drones.append(drone)
-            self._advance_warehouse_pointer()
+            self._advance_warehouse_pointer_by_round_robin()
         return drones
 
     def _create_drone(self) -> Drone:
         start_location = copy.deepcopy(self.warehouses[self._warehouse_index])
         drone = Drone(
             drone_id=self._next_drone_id,
-            warehouses=self.warehouses,
             start_location=start_location
         )
         self._next_drone_id += 1
         return drone
 
-    def _advance_warehouse_pointer(self):
-        """Advance the warehouse pointer to the next warehouse in a Round Robin manner."""
+    def _advance_warehouse_pointer_by_round_robin(self):
         self._warehouse_index = (self._warehouse_index + 1) % len(self.warehouses)

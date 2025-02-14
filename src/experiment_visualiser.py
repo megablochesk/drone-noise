@@ -10,7 +10,7 @@ from stats.cell_population_calculator import calculate_cell_matrix_population
 FROM_FILE = True
 
 if __name__ == '__main__':
-    results_file = "results 72000 5.pkl"
+    results_file = "results 72000 6.pkl"
 
     if FROM_FILE:
         experiment_results = load_dataframe_from_pickle(results_file)

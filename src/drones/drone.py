@@ -1,18 +1,16 @@
-from typing import List
-
-from common.configuration import PRINT_DRONE_STATISTICS, MapBoundaries as Map
+from common.configuration import PRINT_DRONE_STATISTICS
 from common.coordinate import Coordinate
 from common.enum import DroneStatus
-from common.math_utils import find_nearest_warehouse, calculate_distance
+from common.math_utils import calculate_distance
 from drones.tracker import Tracker
 from orders.order import Order
 
 
 class Drone:
-    def __init__(self, drone_id, warehouses: List[Coordinate], start_location: Coordinate):
+    def __init__(self, drone_id, start_location: Coordinate):
         self.drone_id = drone_id
-        self.warehouses = warehouses
         self.location = start_location
+        self.return_location = start_location
 
         self.order = None
         self.status = DroneStatus.FREE
@@ -20,6 +18,10 @@ class Drone:
         self.need_planning = True
         self.path = []
         self.tracker = Tracker()
+        
+    def receive_path(self, path):
+        self.path = path
+        self.need_planning = False
     
     def accept_order(self, order: Order):
         self.order = order
@@ -41,7 +43,7 @@ class Drone:
     def complete_delivering(self):
         self.order.mark_as_delivered()
         self.status = DroneStatus.RETURNING
-        self.destination = find_nearest_warehouse(self.warehouses, self.location)
+        self.destination = self.return_location
 
         if PRINT_DRONE_STATISTICS:
             print(f"Drone {self.drone_id} delivered order {self.order.order_id} and is flying to {self.destination}")
@@ -54,32 +56,21 @@ class Drone:
 
         if PRINT_DRONE_STATISTICS:
             print(f"Drone {self.drone_id} returned to the nearest warehouse and start to recharge")
+    
+    def drone_has_path(self):
+        return bool(self.path)
+                
+    def move_to_next_waypoint(self):
+        next_location = self.path.pop(0)
+        distance = calculate_distance(self.location, next_location)
 
-    def update_position(self):
-        # Drone's status will change: COLLECTING -> DELIVERING -> RETURNING -> FREE
-        if self.is_outside_map_boundary():
-            self.handle_out_of_boundary()
-        elif self.drone_has_path():
-            self.follow_path()
-        else:
-            self.handle_missing_path()
+        self.location = next_location
 
-    def handle_out_of_boundary(self):
-        if PRINT_DRONE_STATISTICS:
-            print(f"ERROR: {self} is out of boundary, {self.order} failed to be delivered, "
-                  f"{self} has been sent to the nearest warehouse")
-
-        self.abort_mission()
-
-    def handle_missing_path(self):
-        if PRINT_DRONE_STATISTICS:
-            print(f"WARNING: {self} has no path")
-
-    def follow_path(self):
-        self.fly_to_next_coordinate()
-        if self.has_reached_destination():
-            self.need_planning = True
-            self.update_status_on_reach()
+        self.tracker.increment_distance(distance)
+        self.tracker.increment_step()
+    
+    def has_reached_destination(self):
+        return self.destination is not None and self.location == self.destination        
 
     def update_status_on_reach(self):
         match self.status:
@@ -89,36 +80,10 @@ class Drone:
                 self.complete_delivering()
             case DroneStatus.RETURNING:
                 self.return_to_warehouse()
-
-    def abort_mission(self):
-        self.order = None
-        self.destination = None
-        self.status = DroneStatus.FREE
-
-        self.send_to_nearest_warehouse()
-
-    def send_to_nearest_warehouse(self):
-        self.location = find_nearest_warehouse(self.warehouses, self.location)
-    
-    def receive_path(self, path):
-        self.path = path
-        self.need_planning = False
-    
-    def fly_to_next_coordinate(self):
-        next_location = self.path.pop(0)
-        distance = calculate_distance(self.location, next_location)
-
-        self.location = next_location
-
-        self.tracker.increment_distance(distance)
-        self.tracker.increment_step()
-    
-    def is_outside_map_boundary(self):
-        return not (Map.BOTTOM <= self.location.northing <= Map.TOP and
-                    Map.LEFT <= self.location.easting <= Map.RIGHT)
-    
-    def drone_has_path(self):
-        return bool(self.path)
-
-    def has_reached_destination(self):
-        return self.destination is not None and self.location == self.destination
+                
+    def update_position(self):
+        if self.drone_has_path():
+            self.move_to_next_waypoint()
+            if self.has_reached_destination():
+                self.need_planning = True
+                self.update_status_on_reach()

@@ -135,8 +135,7 @@ class Center:
 
         path = define_results_path(TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER)
 
-        self.noise_tracker.calculate_noise_cells(False)
-        self.noise_tracker.calculate_noise_cells(True)
+        self.noise_tracker.calculate_noise_cells()
         self.save_results(path)
 
         self.noise_impact = calculate_combined_noise_data(path)
