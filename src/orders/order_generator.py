@@ -99,15 +99,6 @@ def calculate_population_distribution(msoa_populations):
     return distribution
 
 
-def generate_random_points(num_points):
-    generated_points = []
-
-    for _ in range(num_points):
-        generated_points.append(generate_random_population_based_point())
-
-    return generated_points
-
-
 def generate_random_population_based_point():
     r = random.random()
 

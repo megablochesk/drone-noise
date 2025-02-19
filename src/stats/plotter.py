@@ -198,7 +198,7 @@ def plot_cells_impacted_by_noise(main_df, threshold=55):
 def plot_heatmap(heatmap_data, dataset_name, num_drones):
     plt.figure(figsize=(8, 6))
     sns.heatmap(heatmap_data, cmap="viridis", annot=False, cbar=True)
-    plt.title("Population Heatmap")
+    plt.title(f"Population Heatmap {dataset_name}, {num_drones}")
     plt.xlabel("Column")
     plt.ylabel("Row")
     plt.gca().invert_yaxis()
@@ -206,3 +206,9 @@ def plot_heatmap(heatmap_data, dataset_name, num_drones):
 
 def plot_show():
     plt.show()
+
+
+def save_figures():
+    for i in plt.get_fignums():
+        fig = plt.figure(i)
+        fig.savefig(f"figures/figure_{i}.tiff", dpi=300, format="tiff")
