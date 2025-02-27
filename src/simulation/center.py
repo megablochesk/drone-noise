@@ -1,8 +1,10 @@
+from collections import defaultdict, deque
+
 from common.configuration import PLOT_MAP, PRINT_MODEL_STATISTICS, \
     TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, MODEL_START_TIME, MODEL_TIME_STEP, MODEL_END_TIME, LONDON_WAREHOUSES
 from common.enum import DroneStatus
 from common.file_utils import save_drones_data, save_drone_noise_data, define_results_path
-from common.math_utils import get_difference, find_nearest_warehouse_location
+from common.math_utils import get_difference
 from drones.dronegenerator import DroneGenerator
 from noise.noise_data_processor import calculate_combined_noise_data
 from noise.noise_tracker import NoiseTracker
@@ -88,23 +90,44 @@ class Center:
             self.plot_drones()
 
     def process_orders(self):
-        while self.has_pending_order() and self.has_free_drone():
-            order = self.pending_orders.pop()
-            drone = self.find_nearest_free_drone(order, self.free_drones)
-            drone.accept_order(order)
+        if not self.pending_orders or not self.free_drones:
+            return
 
-            self.free_drones.remove(drone)
-            self.waiting_planning_drones.append(drone)
+        drones_by_location = defaultdict(deque)
+        for drone in self.free_drones:
+            location_key = drone.current_location
+            drones_by_location[location_key].append(drone)
 
-    @staticmethod
-    def find_nearest_free_drone(order, free_drones):
-        return free_drones[find_nearest_warehouse_location(
-            warehouses=[x.location for x in free_drones],
-            current_location=order.start_location)]
+        new_pending_orders = []
+
+        for order in self.pending_orders:
+            location_key = order.start_location
+
+            candidate_drones = drones_by_location.get(location_key)
+            if candidate_drones:
+                drone = candidate_drones.pop()
+                if not candidate_drones:
+                    del drones_by_location[location_key]
+
+                drone.accept_order(order)
+
+                self.waiting_planning_drones.append(drone)
+            else:
+                new_pending_orders.append(order)
+
+        updated_free_drones = []
+        for remaining_list in drones_by_location.values():
+            updated_free_drones.extend(remaining_list)
+
+        self.free_drones = updated_free_drones
+        self.pending_orders = new_pending_orders
+
+    def find_available_drone(self, location):
+        return next((d for d in self.free_drones if d.current_location == location), None)
 
     def plan_drones_path(self):
         for drone in self.waiting_planning_drones:
-            path = self.planner.plan(start=drone.location, end=drone.destination)
+            path = self.planner.plan(start=drone.current_location, end=drone.destination)
             drone.receive_path(path)
 
             if drone not in self.delivering_drones:

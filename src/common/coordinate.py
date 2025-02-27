@@ -14,6 +14,14 @@ class Coordinate:
     def __str__(self):
         return f"[no={self.northing}, ea={self.easting}]"
 
+    def __hash__(self):
+        return hash((self.northing, self.easting))
+
+    def __eq__(self, other):
+        if not isinstance(other, Coordinate):
+            return NotImplemented
+        return self.northing == other.northing and self.easting == other.easting
+
     def convert_to_latlon(self):
         longitude, latitude = OSGB36_TO_WGS84.transform(self.easting, self.northing)
         return latitude, longitude

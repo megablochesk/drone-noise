@@ -43,7 +43,7 @@ class Plotter:
     def plot_drones(self, drones: List[Drone]):
         for drone in drones:
             folium.CircleMarker(
-                location=drone.location.convert_to_latlon(),
+                location=drone.current_location.convert_to_latlon(),
                 radius=3,
                 color='red',
                 fill=True,

@@ -10,6 +10,6 @@ class OrderStatus(Enum):
 
 class DroneStatus(Enum):
     FREE = 1
-    COLLECTING = 2
+    PREPARING = 2
     DELIVERING = 3
     RETURNING = 4

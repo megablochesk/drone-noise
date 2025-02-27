@@ -34,7 +34,7 @@ class NoiseTracker:
         self.noise_cells = build_cell_matrix()
 
     def track_drones(self, drones):
-        self.drone_location_history.append([drone.location for drone in drones])
+        self.drone_location_history.append([drone.current_location for drone in drones])
 
     def calculate_noise_cells(self):
         cell_northings = np.array([cell.centroid.northing for cell in self.noise_cells], dtype=np.float64)
