@@ -4,21 +4,21 @@ from common.coordinate import Coordinate
 PRINT_DRONE_STATISTICS = False
 PRINT_MODEL_STATISTICS = True
 PLOT_MAP = False
-PLOT_STATISTICS = True
+PLOT_STATISTICS = False
 
-TOTAL_ORDER_NUMBER = 100000
-TOTAL_DRONE_NUMBER = 400
+TOTAL_ORDER_NUMBER = 100_000
+TOTAL_DRONE_NUMBER = 100
 
 NOISE_GRID_CELL_SIZE_METERS = 500
 
 DRONE_NOISE_AT_SOURCE = 90.0  # The central sound level of a flying drone (db)
 DRONE_SPEED = 27  # metres per second, average drone speed
 
-MODEL_START_TIME = 36000  # 10 a.m. - model start time (10 * 60 * 60)
-MODEL_END_TIME = 72000  # 8 p.m.
+MODEL_START_TIME = 36_000  # 10 a.m. - model start time (10 * 60 * 60)
+MODEL_END_TIME = 72_000  # 8 p.m.
 NUMBER_OF_HOURS = int((MODEL_END_TIME - MODEL_START_TIME) / 3600)
 MODEL_TIME_STEP = 30  # seconds
-DRONE_ALTITUTE = 100.0  # meters
+DRONE_ALTITUDE = 100.0  # meters
 
 
 # Map boundary in British National Grid
