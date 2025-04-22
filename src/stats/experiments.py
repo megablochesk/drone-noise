@@ -1,4 +1,5 @@
 import pandas as pd
+import time
 
 from common.configuration import (
     ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
@@ -19,12 +20,17 @@ NUMBER_OF_ORDERS = 100000
 def unlimited_orders_limited_time_experiment(results_path):
     results = []
     for dataset_name, dataset_path in ORDER_DATASETS.items():
-
         for number_of_drones in NUMBER_OF_DRONES_CASES:
             print(dataset_name, number_of_drones, NUMBER_OF_ORDERS)
 
+            start_time = time.time()
+
             center = Center(NUMBER_OF_ORDERS, number_of_drones, dataset_path)
             center.run_center()
+
+            elapsed_time = time.time() - start_time
+
+            print(f"Time: {elapsed_time} seconds")
 
             delivered_orders = center.get_delivered_orders_number()
             noise_impact_df = center.noise_impact
@@ -36,7 +42,8 @@ def unlimited_orders_limited_time_experiment(results_path):
                 'num_orders': NUMBER_OF_ORDERS,
                 'avg_noise_diff': avg_noise_diff,
                 'noise_impact_df': noise_impact_df,
-                'delivered_orders_number': delivered_orders
+                'delivered_orders_number': delivered_orders,
+                'execution_time_seconds': elapsed_time
             })
 
     results_df = pd.DataFrame(results)

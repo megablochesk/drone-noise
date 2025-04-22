@@ -90,7 +90,7 @@ class Center:
             self.plot_drones()
 
     def process_orders(self):
-        if not self.pending_orders or not self.free_drones:
+        if not self.has_pending_order() or not self.has_free_drone():
             return
 
         drones_by_location = defaultdict(deque)

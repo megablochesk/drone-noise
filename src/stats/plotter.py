@@ -212,3 +212,14 @@ def plot_cells_impacted_by_noise(main_df, threshold=55):
                      xlabel='Column',
                      ylabel='Row',
                      filename=f'{metric}_{dataset_name}_{num_drones}')
+
+
+def plot_execution_time_barchart(results_df):
+    return plot_barchart_stats(
+        results_df,
+        value_column='execution_time_seconds',
+        xlabel='Number of Drones',
+        ylabel='Execution Time, seconds',
+        filename='exec_time',
+        decimal_places=2
+    )
