@@ -13,11 +13,11 @@ def get_color_map(dataset_types):
     return {ds: cmap(i) for i, ds in enumerate(dataset_types)}
 
 
-def annotate_barchart_data_points(ax, bar, value, decimal_places=2):
+def annotate_barchart_data_points(ax, bar, value, decimal_places=2, offset=2):
     ax.annotate(f'{value:.{decimal_places}f}' if isinstance(value, (float, int)) else f'{value}',
                 xy=(bar[0].get_x() + bar[0].get_width() / 2, value),
-                xytext=(0, 3), textcoords="offset points",
-                ha='center', va='bottom', fontsize=10)
+                xytext=(0, offset), textcoords="offset points",
+                ha='center', va='bottom', fontsize=14)
 
 
 def annotate_linegraph_data_points(ax, x, y):
@@ -26,7 +26,7 @@ def annotate_linegraph_data_points(ax, x, y):
         ax.annotate(annotation,
                     xy=(xi, yi),
                     xytext=(0, 3), textcoords='offset points',
-                    ha='center', va='bottom', fontsize=10)
+                    ha='center', va='bottom', fontsize=12)
 
 
 def extract_x_y_values(results_df, dataset, value_column):
@@ -57,9 +57,22 @@ def plot_heatmap(dataframe, index, columns, values, vmin=None, vmax=None, xlabel
     fig.filename = filename
 
 
-def plot_multiple_heatmaps(dataframe, axes, index, columns, values, titles,
-                           vmin=None, vmax=None, xlabel=None, ylabel=None, invert_yaxis=True):
+def plot_multiple_heatmaps_from_same_df(dataframe, axes, index, columns, values, titles,
+                                        vmin=None, vmax=None, xlabel=None, ylabel=None, invert_yaxis=True):
     for ax, value, title in zip(axes, values, titles):
+        heatmap_data = dataframe.pivot(index=index, columns=columns, values=value)
+        sns.heatmap(heatmap_data, cmap=COLORMAP, annot=False, cbar=True, vmin=vmin, vmax=vmax, ax=ax)
+        ax.set_title(title)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+
+        if invert_yaxis:
+            ax.invert_yaxis()
+
+
+def plot_multiple_heatmaps_from_different_dfs(dataframes, axes, index, columns, values, titles,
+                                              vmin=None, vmax=None, xlabel=None, ylabel=None, invert_yaxis=True):
+    for dataframe, ax, value, title in zip(dataframes, axes, values, titles):
         heatmap_data = dataframe.pivot(index=index, columns=columns, values=value)
         sns.heatmap(heatmap_data, cmap=COLORMAP, annot=False, cbar=True, vmin=vmin, vmax=vmax, ax=ax)
         ax.set_title(title)
@@ -80,4 +93,14 @@ def save_figures():
 
         filename = fig.filename if hasattr(fig, "filename") else f'figure_{i}'
 
-        fig.savefig(f"figures/{filename}.eps", dpi=300, format="eps")
+        fig.savefig(f"figures/{filename}.eps", dpi=300, format="eps", bbox_inches='tight')
+
+
+def add_font_style():
+    plt.rcParams.update({
+        "font.size": 15,
+        "axes.titlesize": 15,
+        "axes.labelsize": 15,
+        "xtick.labelsize": 15,
+        "ytick.labelsize": 15,
+    })

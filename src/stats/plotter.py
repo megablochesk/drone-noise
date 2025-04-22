@@ -14,7 +14,13 @@ from stats.plot_utils import (
 matplotlib.use('Qt5Agg')
 
 
-DATASET_TYPE_BAR_ORDER = ['closest', 'furthest', 'random']
+DATASET_TYPE_BAR_ORDER = ['furthest', 'closest', 'random']
+
+DATASET_TYPE_TO_LEGEND = {
+    'furthest': 'worst',
+    'closest': 'best',
+    'random': 'random'
+}
 
 
 def prepare_barchart_data(results_df):
@@ -48,7 +54,7 @@ def extract_sorted_values(results_df, dataset_types, num_drones, value_column):
 
 def plot_multiple_datasets_barchart(x, num_drones_list, dataset_types, results_df, value_column, xlabel, ylabel, color_map,
                                     title=None, decimal_places=2, filename=None):
-    width = 0.2
+    width = 0.27
     fig, ax = plt.subplots(figsize=(13, 6))
     fig.filename = filename
     added_labels = set()
@@ -59,9 +65,10 @@ def plot_multiple_datasets_barchart(x, num_drones_list, dataset_types, results_d
 
         for j, (ds, value) in enumerate(ds_values):
             bar_position = x[i] - width * (num_datasets - 1) / 2 + j * width
-            label = ds if ds not in added_labels else ""
-            if ds not in added_labels:
-                added_labels.add(ds)
+            legend_label = DATASET_TYPE_TO_LEGEND.get(ds, ds)
+            label = legend_label if legend_label not in added_labels else ""
+            if legend_label not in added_labels:
+                added_labels.add(legend_label)
 
             bar = ax.bar(bar_position, value, width, color=color_map[ds], label=label)
             annotate_barchart_data_points(ax, bar, value, decimal_places)
@@ -97,8 +104,8 @@ def plot_avg_noise_barchart(results_df):
         results_df,
         value_column='avg_noise_diff',
         xlabel='Number of Drones',
-        ylabel='Average Noise Difference, dBs',
-        title='Average Noise Difference by Drone Number and Dataset',
+        ylabel='Average Noise Increase (dB)',
+        # title='Average Noise Difference by Drone Number and Dataset',
         filename='del_noise'
     )
 
@@ -109,7 +116,7 @@ def plot_avg_noise_linegraph(results_df):
         value_column='avg_noise_diff',
         xlabel='Number of Drones',
         ylabel='Average Noise Difference, dBs',
-        title='Average Noise Difference by Drone Number and Dataset'
+        # title='Average Noise Difference by Drone Number and Dataset'
     )
 
 
@@ -118,7 +125,7 @@ def plot_delivered_orders_barchart(results_df):
         results_df,
         value_column='delivered_orders_number',
         xlabel='Number of Drones',
-        ylabel=f'Number of Delivered Orders over Period of {NUMBER_OF_HOURS} Hours',
+        ylabel=f'Number of Orders Delivered in {NUMBER_OF_HOURS} Hours',
         # title='Delivered Orders by Drone Number and Dataset',
         filename='del_orders'
     )
@@ -129,7 +136,7 @@ def plot_delivered_orders_linegraph(results_df):
         results_df,
         value_column='delivered_orders_number',
         xlabel='Number of Drones',
-        ylabel=f'Number of Delivered Orders over Period of {NUMBER_OF_HOURS} Hours',
+        ylabel=f'Number of Orders Delivered in {NUMBER_OF_HOURS} Hours',
         # title='Delivered Orders by Drone Number and Dataset'
     )
 
@@ -167,7 +174,7 @@ def analyze_and_plot_population_impact(main_df, threshold=55):
         summary_df,
         value_column='impacted_population',
         xlabel='Number of Drones',
-        ylabel=f'Population Impacted by Noise over {threshold} dB',
+        ylabel=f'Extra Population Exposed to Noise over {threshold} dB',
         # title=f'Population Affected by Combined Noise > {threshold} dB',
         decimal_places=0,
         filename='del_pop_imp'

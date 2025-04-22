@@ -74,9 +74,9 @@ def _compute_distance_stats(delivery_dataset):
 
 def compute_all_distance_stats():
     order_paths = {
-        'Furthest': ORDER_BASE_PATH_FURTHEST,
-        'Random': ORDER_BASE_PATH_RANDOM,
-        'Closest': ORDER_BASE_PATH_CLOSEST
+        'worst': ORDER_BASE_PATH_FURTHEST,
+        'random': ORDER_BASE_PATH_RANDOM,
+        'best': ORDER_BASE_PATH_CLOSEST
     }
 
     return {label: _compute_distance_stats(load_orders(TOTAL_ORDER_NUMBER, path)) for label, path in
@@ -92,7 +92,7 @@ def plot_delivery_distance_barchart(ax, x, stats, width):
     def add_value_labels(bar_set):
         for bar in bar_set:
             height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width() / 2, height, f'{height:.0f}', ha='center', va='bottom', fontsize=10)
+            ax.text(bar.get_x() + bar.get_width() / 2, height, f'{height:.0f}', ha='center', va='bottom', fontsize=12)
 
     for bar_set in bars.values():
         add_value_labels(bar_set)
@@ -106,7 +106,7 @@ def plot_delivery_distance_statistics():
     x = np.arange(len(labels))
     width = 0.25
 
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=(10, 6))
     fig.filename = f'delivery_distance'
     plot_delivery_distance_barchart(ax, x, stats, width)
 
