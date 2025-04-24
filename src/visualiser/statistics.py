@@ -7,7 +7,7 @@ from common.configuration import (
 )
 from common.coordinate import calculate_distance
 from orders.order_generator import load_orders
-from stats.plot_utils import plot_heatmap
+from visualiser.plot_utils import plot_standalone_heatmap
 
 matplotlib.use('Qt5Agg')
 
@@ -20,15 +20,16 @@ def plot_noise_colormap(dataframe, noise_metric):
     min_level = int(np.floor(dataframe[noise_metric].min()))
     max_level = int(np.ceil(dataframe[noise_metric].max()))
 
-    plot_heatmap(dataframe,
-                 index='row',
-                 columns='col',
-                 values=noise_metric,
-                 vmin=min_level,
-                 vmax=max_level,
-                 xlabel='Column',
-                 ylabel='Row',
-                 filename='dr_nois_imp')
+    plot_standalone_heatmap(
+        dataframe,
+        index='row',
+        columns='col',
+        values=noise_metric,
+        vmin=min_level,
+        vmax=max_level,
+        xlabel='Column',
+        ylabel='Row',
+        filename='dr_noise_imp')
 
 
 def prepare_noise_data(dataframe, noise_metric='noise_difference', bin_gap=0.5):

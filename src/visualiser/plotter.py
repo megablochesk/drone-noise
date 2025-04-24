@@ -4,11 +4,11 @@ import numpy as np
 import pandas as pd
 
 from common.configuration import NUMBER_OF_HOURS
-from stats.cell_population_calculator import (
+from visualiser.cell_population_calculator import (
     calculate_population_impacted_by_noise, CELL_POPULATION, get_cells_impacted_by_noise
 )
-from stats.plot_utils import (
-    plot_heatmap, plot_multiple_datasets_linegraph, get_color_map, annotate_barchart_data_points
+from visualiser.plot_utils import (
+    plot_standalone_heatmap, plot_multiple_datasets_linegraph, get_color_map, annotate_barchart_data_points
 )
 
 matplotlib.use('Qt5Agg')
@@ -186,15 +186,15 @@ def plot_cell_population():
 
     metric = 'population'
 
-    plot_heatmap(population_df,
-                 index='row',
-                 columns='col',
-                 values=metric,
-                 vmin=None,
-                 vmax=None,
-                 xlabel='Column',
-                 ylabel='Row',
-                 filename=metric)
+    plot_standalone_heatmap(population_df,
+                            index='row',
+                            columns='col',
+                            values=metric,
+                            vmin=None,
+                            vmax=None,
+                            xlabel='Column',
+                            ylabel='Row',
+                            filename=metric)
 
 
 def plot_cells_impacted_by_noise(main_df, threshold=55):
@@ -203,15 +203,15 @@ def plot_cells_impacted_by_noise(main_df, threshold=55):
     metric = 'population'
 
     for (dataset_name, num_drones), group_df in df.groupby(['dataset_name', 'num_drones']):
-        plot_heatmap(group_df,
-                     index='row',
-                     columns='col',
-                     values=metric,
-                     vmin=None,
-                     vmax=None,
-                     xlabel='Column',
-                     ylabel='Row',
-                     filename=f'{metric}_{dataset_name}_{num_drones}')
+        plot_standalone_heatmap(group_df,
+                                index='row',
+                                columns='col',
+                                values=metric,
+                                vmin=None,
+                                vmax=None,
+                                xlabel='Column',
+                                ylabel='Row',
+                                filename=f'{metric}_{dataset_name}_{num_drones}')
 
 
 def plot_execution_time_barchart(results_df):

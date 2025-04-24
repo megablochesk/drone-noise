@@ -1,5 +1,4 @@
 import matplotlib
-import numpy as np
 import seaborn as sns
 from matplotlib import pyplot as plt
 
@@ -41,11 +40,8 @@ def plot_multiple_datasets_linegraph(ax, results_df, dataset_types, color_map, v
         annotate_linegraph_data_points(ax, x, y)
 
 
-def plot_heatmap(dataframe, index, columns, values, vmin=None, vmax=None, xlabel=None, ylabel=None,
-                 filename='', invert_yaxis=True):
+def prepare_heatmap(dataframe, index, columns, values, vmin, vmax, xlabel, ylabel, invert_yaxis):
     heatmap_data = dataframe.pivot(index=index, columns=columns, values=values)
-
-    fig = plt.figure(figsize=(10, 8))
     sns.heatmap(heatmap_data, cmap=COLORMAP, annot=False, cbar=True, vmin=vmin, vmax=vmax)
 
     plt.xlabel(xlabel)
@@ -54,33 +50,23 @@ def plot_heatmap(dataframe, index, columns, values, vmin=None, vmax=None, xlabel
     if invert_yaxis:
         plt.gca().invert_yaxis()
 
+
+def plot_standalone_heatmap(dataframe, index, columns, values, vmin=None, vmax=None, xlabel=None, ylabel=None,
+                            filename='', invert_yaxis=True):
+    fig = plt.figure(figsize=(10, 8))
+    prepare_heatmap(dataframe, index, columns, values, vmin, vmax, xlabel, ylabel, invert_yaxis)
     fig.filename = filename
 
 
-def plot_multiple_heatmaps_from_same_df(dataframe, axes, index, columns, values, titles,
-                                        vmin=None, vmax=None, xlabel=None, ylabel=None, invert_yaxis=True):
-    for ax, value, title in zip(axes, values, titles):
-        heatmap_data = dataframe.pivot(index=index, columns=columns, values=value)
-        sns.heatmap(heatmap_data, cmap=COLORMAP, annot=False, cbar=True, vmin=vmin, vmax=vmax, ax=ax)
-        ax.set_title(title)
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
+def plot_multiple_heatmaps(dataframes, axes, index, columns, values, titles,
+                           vmin=None, vmax=None, xlabel=None, ylabel=None, invert_yaxis=True):
+    if not isinstance(dataframes, list):
+        dataframes = [dataframes] * len(values)
 
-        if invert_yaxis:
-            ax.invert_yaxis()
-
-
-def plot_multiple_heatmaps_from_different_dfs(dataframes, axes, index, columns, values, titles,
-                                              vmin=None, vmax=None, xlabel=None, ylabel=None, invert_yaxis=True):
     for dataframe, ax, value, title in zip(dataframes, axes, values, titles):
-        heatmap_data = dataframe.pivot(index=index, columns=columns, values=value)
-        sns.heatmap(heatmap_data, cmap=COLORMAP, annot=False, cbar=True, vmin=vmin, vmax=vmax, ax=ax)
+        plt.sca(ax)
+        prepare_heatmap(dataframe, index, columns, value, vmin, vmax, xlabel, ylabel, invert_yaxis)
         ax.set_title(title)
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-
-        if invert_yaxis:
-            ax.invert_yaxis()
 
 
 def plot_figures():
