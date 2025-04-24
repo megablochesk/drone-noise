@@ -2,7 +2,10 @@ import json
 import random
 
 import pandas as pd
-from common.configuration import ORDER_BASE_PATH, LONDON_WAREHOUSES, MSOA_POPULATION_PATH
+from common.configuration import (
+    ORDER_BASE_PATH, LONDON_WAREHOUSES, MSOA_POPULATION_PATH,
+    get_mixed_order_dataset_pattern
+)
 from common.coordinate import Coordinate
 from orders.order import Order
 from shapely.geometry import shape, Point
@@ -177,7 +180,7 @@ MSOA_INDEX, MSOA_POPULATIONS = build_msoa_index()
 POPULATION_DISTRIBUTION = calculate_population_distribution(MSOA_POPULATIONS)
 
 
-def generate_datasets(number_of_deliveries=10000):
+def generate_datasets(number_of_deliveries=10_000):
     destinations = [generate_random_population_based_point() for _ in range(number_of_deliveries)]
 
     for method in ['closest', 'furthest', 'random']:
@@ -188,3 +191,25 @@ def generate_datasets(number_of_deliveries=10000):
         save_file_name = f'recourses/data/order/drone_delivery_orders_{number_of_deliveries}_{method}.csv'
 
         save_orders_to_csv(orders, save_file_name)
+
+def generate_mixed_stocking_datasets(number_of_deliveries=10_000):
+    ratios = [(i, 100 - i) for i in range(90, 0, -10)]  # (random%, closest%)
+
+    destinations = [generate_random_population_based_point() for _ in range(number_of_deliveries)]
+
+    for random_pct, closest_pct in ratios:
+        num_random = number_of_deliveries * random_pct // 100
+
+        orders = []
+        for i in range(1, num_random + 1):
+            orders.append(generate_order(i, destinations[i - 1], 'random'))
+
+        for i in range(num_random + 1, number_of_deliveries + 1):
+            orders.append(generate_order(i, destinations[i - 1], 'closest'))
+
+        random.shuffle(orders)
+
+        save_file_name = get_mixed_order_dataset_pattern(random_pct, closest_pct, number_of_deliveries)
+
+        save_orders_to_csv(orders, save_file_name)
+

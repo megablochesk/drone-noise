@@ -34,7 +34,12 @@ ORDER_BASE_PATH_FURTHEST = f'recourses/data/order/drone_delivery_orders_100000_f
 ORDER_BASE_PATH_RANDOM = f'recourses/data/order/drone_delivery_orders_100000_random.csv'
 ORDER_BASE_PATH_CLOSEST = f'recourses/data/order/drone_delivery_orders_100000_closest.csv'
 
-ORDER_BASE_PATH = ORDER_BASE_PATH_FURTHEST
+ORDER_BASE_PATH_MIXED_50_50 = f'recourses/data/order/mixed_stocking_100000_random50_closest50.csv'
+
+def get_mixed_order_dataset_pattern(random_ratio, closest_ratio, stocking_number=TOTAL_ORDER_NUMBER):
+    return f'recourses/data/order/mixed_stocking_{stocking_number}_random{random_ratio}_closest{closest_ratio}.csv'
+
+ORDER_BASE_PATH = ORDER_BASE_PATH_MIXED_50_50
 
 BASE_NOISE_PATH = f'recourses/data/base_noise/base_noise_london_map_{NOISE_GRID_CELL_SIZE_METERS}.geojson'
 RESULT_BASE_PATH = 'recourses/results/experiments'
