@@ -193,7 +193,7 @@ def generate_datasets(number_of_deliveries=10_000):
         save_orders_to_csv(orders, save_file_name)
 
 def generate_mixed_stocking_datasets(number_of_deliveries=10_000):
-    ratios = [(i, 100 - i) for i in range(90, 0, -10)]  # (random%, closest%)
+    ratios = [(i, 100 - i) for i in range(100, 0, -10)]  # (random%, closest%)
 
     destinations = [generate_random_population_based_point() for _ in range(number_of_deliveries)]
 
