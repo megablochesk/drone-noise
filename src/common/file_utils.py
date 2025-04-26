@@ -14,6 +14,10 @@ def define_results_path(order_number, drone_number):
     return path
 
 
+def get_experiment_results_full_file_path(file_name):
+    return f'recouses/experiment_results/{file_name}.pkl'
+
+
 def save_drones_data(drones, path):
     drone_path = f"{path}/drone.csv"
     drone_fields = ['Drone ID', 'Total Step', 'Total Distance', 'Total Orders']

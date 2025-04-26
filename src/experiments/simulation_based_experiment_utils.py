@@ -2,26 +2,52 @@ import time
 
 import pandas as pd
 
-from common.file_utils import load_dataframe_from_pickle
+from common.file_utils import (
+    load_dataframe_from_pickle, get_experiment_results_full_file_path, save_dataframe_to_pickle
+)
 from simulation.center import Center
 from visualiser.plot_utils import save_figures, plot_figures, add_font_style
 
 
-def run_complex_experiment(result_file, from_file, experiment_function, post_processing_func=None):
-    if from_file:
-        print(f"Loading results from file: {result_file}")
-        experiment_results = load_dataframe_from_pickle(result_file)
+def convert_results_to_dataframe(results):
+    return pd.DataFrame(results)
+
+
+def load_or_run_experiment(result_file_name, load_saved_results, experiment_function):
+    file_path = get_experiment_results_full_file_path(result_file_name)
+
+    if load_saved_results:
+        print(f"Loading results from file: {result_file_name}")
+        return load_dataframe_from_pickle(file_path)
     else:
-        print(f"Running experiment and saving results to: {result_file}")
-        experiment_results = experiment_function(result_file)
+        print(f"Running experiment and saving results to: {result_file_name}")
+        raw_results = experiment_function()
+        results = convert_results_to_dataframe(raw_results)
 
-    if post_processing_func:
-        print("Running post-processing on experiment results...")
-        post_processing_func(experiment_results)
+        save_dataframe_to_pickle(results, file_path)
 
+        return results
+
+
+def finalise_visualisation():
     add_font_style()
     save_figures()
     plot_figures()
+
+
+def visualise_results(results, visualisation_function=None):
+    if visualisation_function:
+        print("Running visualisation on experiment results...")
+        visualisation_function(results)
+
+        finalise_visualisation()
+
+
+def run_complex_experiment(result_file_name, load_saved_results, experiment_function, visualisation_function=None):
+    results = load_or_run_experiment(result_file_name, load_saved_results, experiment_function)
+
+    visualise_results(results, visualisation_function)
+
 
 
 def run_atomic_experiment(dataset_name, dataset_path, num_orders, num_drones):
@@ -51,27 +77,23 @@ def run_atomic_experiment(dataset_name, dataset_path, num_orders, num_drones):
         'execution_time_seconds': elapsed_time
     }
 
-def process_all_datasets(datasets_description, num_orders, number_of_drones):
+
+def process_all_datasets(datasets_description, order_number, number_of_drones):
     results = []
 
     for dataset_name, dataset_path in datasets_description:
-        result = run_atomic_experiment(dataset_name, dataset_path, num_orders, number_of_drones)
+        result = run_atomic_experiment(dataset_name, dataset_path, order_number, number_of_drones)
         results.append(result)
 
     return results
 
-def process_datasets_and_drone_number_combinations(datasets_description, num_orders, drone_number_cases):
+
+def process_datasets_and_drone_number_combinations(datasets_description, order_number, drone_number_cases):
     results = []
 
     for dataset_name, dataset_path in datasets_description:
         for number_of_drones in drone_number_cases:
-            result = run_atomic_experiment(dataset_name, dataset_path, num_orders, number_of_drones)
+            result = run_atomic_experiment(dataset_name, dataset_path, order_number, number_of_drones)
             results.append(result)
 
     return results
-
-def convert_results_to_dataframe(results):
-    return pd.DataFrame(results)
-
-
-

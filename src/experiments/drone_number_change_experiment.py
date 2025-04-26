@@ -1,9 +1,7 @@
 from common.configuration import (
     ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
 )
-from common.file_utils import save_dataframe_to_pickle
 from experiments.simulation_based_experiment_utils import (
-    convert_results_to_dataframe,
     process_datasets_and_drone_number_combinations,
     run_complex_experiment
 )
@@ -15,25 +13,22 @@ from visualiser.plotter import (
     plot_execution_time_barchart
 )
 
+NUMBER_OF_DRONES_CASES = [100, 250, 500, 750, 1000, 1250]
+NUMBER_OF_ORDERS = 100000
+
 ORDER_DATASETS = {
     'furthest': ORDER_BASE_PATH_FURTHEST,
     'random': ORDER_BASE_PATH_RANDOM,
     'closest': ORDER_BASE_PATH_CLOSEST
 }
 
-NUMBER_OF_DRONES_CASES = [100, 250, 500, 750, 1000, 1250]
-NUMBER_OF_ORDERS = 100000
 
-
-def unlimited_orders_limited_time_experiment(results_path):
-    datasets = ORDER_DATASETS.items()
-    results = process_datasets_and_drone_number_combinations(datasets, NUMBER_OF_ORDERS, NUMBER_OF_DRONES_CASES)
-
-    results_df = convert_results_to_dataframe(results)
-
-    save_dataframe_to_pickle(results_df, results_path)
-
-    return results_df
+def unlimited_orders_limited_time_experiment():
+    return process_datasets_and_drone_number_combinations(
+        ORDER_DATASETS.items(),
+        NUMBER_OF_ORDERS,
+        NUMBER_OF_DRONES_CASES
+    )
 
 
 def plot_all_statistics(experiment_results):
@@ -49,12 +44,9 @@ def plot_all_statistics(experiment_results):
 
 
 def run_drone_number_change_experiment():
-    results_file = "noise_maps_df_1.pkl"
-    from_file = True
-
     run_complex_experiment(
-        results_file,
-        from_file,
-        unlimited_orders_limited_time_experiment,
-        plot_all_statistics
+        load_saved_results=True,
+        result_file_name="noise_maps_df_1",
+        experiment_function=unlimited_orders_limited_time_experiment,
+        visualisation_function=plot_all_statistics
     )
