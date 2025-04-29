@@ -11,7 +11,7 @@ ORDER_DATASETS = {
 }
 
 
-def unlimited_orders_limited_time_mixed_datasets_experiment():
+def mixed_random_and_best_stocking_experiment():
     return process_all_datasets(
         ORDER_DATASETS.items(),
         NUMBER_OF_ORDERS,
@@ -30,10 +30,10 @@ def plot_mixed_datasets_noise_maps(results_df):
         filename='mixed_datasets_noise_maps')
 
 
-def run_drone_number_change_experiment():
+def run_mixed_random_and_best_stocking_experiment(load_saved_results=False):
     run_complex_experiment(
-        load_saved_results=True,
-        result_file_name="results 72000 mixed",
-        experiment_function=unlimited_orders_limited_time_mixed_datasets_experiment,
+        load_saved_results=load_saved_results,
+        result_file_name="mixed_random_and_best_stocking",
+        experiment_function=mixed_random_and_best_stocking_experiment,
         visualisation_function=plot_mixed_datasets_noise_maps
     )

@@ -1,23 +1,15 @@
-from common.configuration import TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, ORDER_BASE_PATH, PLOT_STATISTICS
-from simulation.center import Center
-import stats.statistics as stats
-from stats.plot_utils import plot_figures, save_figures
-from stats.plot_noise_level_comparison import plot_noise_level_comparison
-from stats.different_noise_map_experiment import run_different_dataset_noise_maps
+from orders.order_generator import generate_mixed_stocking_datasets
+from experiments.drone_noise_from_mixed_stocking_experiment import run_mixed_random_and_best_stocking_experiment
+from experiments.drone_number_change_experiment import run_drone_number_change_experiment
+from experiments.avg_noise_impact_by_stocking_experiment import run_avg_noise_for_different_stocking_experiment
+from experiments.simple_experiment import run_standard_experiment
+
 
 if __name__ == '__main__':
-    #center = Center(TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, ORDER_BASE_PATH)
+    run_standard_experiment()
 
-    #center.run_center()
+    #run_avg_noise_for_different_stocking_experiment()
+    #run_mixed_random_and_best_stocking_experiment()
+    #run_drone_number_change_experiment()
 
-    #if PLOT_STATISTICS:
-        # plot_noise_difference_colormap(center.noise_impact)
-        # plot_noise_change_barchart(center.noise_impact)
-
-        #plot_noise_level_comparison(center.noise_impact)
-
-        #save_figures()
-
-        #plot_figures()
-
-    run_different_dataset_noise_maps()
+    # generate_mixed_stocking_datasets(100_000)

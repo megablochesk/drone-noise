@@ -23,7 +23,7 @@ ORDER_DATASETS = {
 }
 
 
-def unlimited_orders_limited_time_experiment():
+def drone_number_change_experiment():
     return process_datasets_and_drone_number_combinations(
         ORDER_DATASETS.items(),
         NUMBER_OF_ORDERS,
@@ -43,10 +43,10 @@ def plot_all_statistics(experiment_results):
     [analyze_and_plot_population_impact(experiment_results, db) for db in range(55, 60, 5)]
 
 
-def run_drone_number_change_experiment():
+def run_drone_number_change_experiment(load_saved_results=False):
     run_complex_experiment(
-        load_saved_results=True,
-        result_file_name="noise_maps_df_1",
-        experiment_function=unlimited_orders_limited_time_experiment,
+        load_saved_results=load_saved_results,
+        result_file_name="drone_number_change",
+        experiment_function=drone_number_change_experiment,
         visualisation_function=plot_all_statistics
     )

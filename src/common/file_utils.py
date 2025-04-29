@@ -15,7 +15,7 @@ def define_results_path(order_number, drone_number):
 
 
 def get_experiment_results_full_file_path(file_name):
-    return f'recouses/experiment_results/{file_name}.pkl'
+    return f'recourses/experiment_results/{file_name}.pkl'
 
 
 def save_drones_data(drones, path):

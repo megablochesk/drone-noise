@@ -14,7 +14,7 @@ ORDER_DATASETS = {
 }
 
 
-def unlimited_orders_limited_time_experiment():
+def avg_noise_for_different_stocking_experiment():
     return process_all_datasets(
         ORDER_DATASETS.items(),
         NUMBER_OF_ORDERS,
@@ -34,10 +34,10 @@ def plot_noise_comparison_for_different_stocking(results_df):
         vmax=45)
 
 
-def run_avg_noise_for_different_stocking_experiment():
+def run_avg_noise_for_different_stocking_experiment(load_saved_experiment=False):
     run_complex_experiment(
-        load_saved_results=True,
-        result_file_name='noise_maps_df_1',
-        experiment_function=run_avg_noise_for_different_stocking_experiment,
+        load_saved_results=load_saved_experiment,
+        result_file_name='avg_noise_for_different_stocking',
+        experiment_function=avg_noise_for_different_stocking_experiment,
         visualisation_function=plot_noise_comparison_for_different_stocking
     )
