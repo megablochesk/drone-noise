@@ -127,8 +127,8 @@ class Center:
 
     def plan_drones_path(self):
         for drone in self.waiting_planning_drones:
-            path = self.planner.plan(start=drone.current_location, end=drone.destination)
-            drone.receive_path(path)
+            path, altitudes = self.planner.plan(start=drone.current_location, end=drone.destination)
+            drone.assign_route(path, altitudes)
 
             if drone not in self.delivering_drones:
                 self.delivering_drones.append(drone)

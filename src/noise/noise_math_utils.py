@@ -1,16 +1,22 @@
 import numpy as np
 from numba import njit
-from common.configuration import DRONE_NOISE_AT_SOURCE, DRONE_ALTITUDE
 
-DRONE_ALTITUDE_SQUARED = DRONE_ALTITUDE ** 2
-BASELINE_NOISE_AT_ALTITUDE = DRONE_NOISE_AT_SOURCE - 20.0 * np.log10(DRONE_ALTITUDE)
+from common.configuration import DRONE_NOISE_AT_SOURCE, DRONE_FLIGHT_ALTITUDE
+
+DRONE_ALTITUDE_SQUARED = DRONE_FLIGHT_ALTITUDE ** 2
+BASELINE_NOISE_AT_ALTITUDE = DRONE_NOISE_AT_SOURCE - 20.0 * np.log10(DRONE_FLIGHT_ALTITUDE)
 MATH_LOG_10_DIVIDED_BY_10 = np.log(10.0) / 10.0
 ZERO_NOISE_SQUARED_DISTANCE = (10.0 ** (0.1 * DRONE_NOISE_AT_SOURCE)) - DRONE_ALTITUDE_SQUARED
 
 
 @njit
+def calculate_distance(delta_northing: float, delta_easting: float, altitude: float) -> float:
+    return delta_northing ** 2 + delta_easting ** 2 + altitude ** 2
+
+
+@njit
 def calculate_noise_at_distance(squared_distance: float) -> float:
-    return DRONE_NOISE_AT_SOURCE - 10.0 * np.log10(squared_distance + DRONE_ALTITUDE_SQUARED)
+    return DRONE_NOISE_AT_SOURCE - 10.0 * np.log10(squared_distance)
 
 
 @njit

@@ -11,16 +11,20 @@ class Drone:
 
         self.current_location = start_location
         self.return_location = start_location
+        self.current_altitude = 0
         self.destination = None
 
         self.order = None
         self.status = DroneStatus.FREE
         self.need_planning = True
-        self.path = []
+        self.route = []
+        self.altitudes = []
         self.tracker = Tracker()
         
-    def receive_path(self, path):
-        self.path = path
+    def assign_route(self, route, altitudes):
+        self.route = route
+        self.altitudes = altitudes
+
         self.need_planning = False
     
     def accept_order(self, order: Order):
@@ -56,20 +60,21 @@ class Drone:
         if PRINT_DRONE_STATISTICS:
             print(f"Drone {self.drone_id} returned to the nearest warehouse and start to recharge")
     
-    def drone_has_path(self):
-        return bool(self.path)
+    def drone_has_route(self):
+        return bool(self.route)
                 
     def move_to_next_waypoint(self):
-        next_location = self.path.pop(0)
-        distance = calculate_distance(self.current_location, next_location)
-
+        next_location = self.route.pop(0)
         self.current_location = next_location
+        self.current_altitude = self.altitudes.pop(0)
+
+        distance = calculate_distance(self.current_location, next_location)
 
         self.tracker.increment_distance(distance)
         self.tracker.increment_step()
     
     def has_reached_destination(self):
-        return self.destination is not None and self.current_location == self.destination
+        return self.destination is not None and not self.route
 
     def update_status_on_reach(self):
         match self.status:
@@ -81,7 +86,7 @@ class Drone:
                 self.return_to_warehouse()
                 
     def update_position(self):
-        if self.drone_has_path():
+        if self.drone_has_route():
             self.move_to_next_waypoint()
             if self.has_reached_destination():
                 self.need_planning = True
