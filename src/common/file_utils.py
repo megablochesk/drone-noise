@@ -18,22 +18,6 @@ def get_experiment_results_full_file_path(file_name):
     return f'recourses/experiment_results/{file_name}.pkl'
 
 
-def save_drones_data(drones, path):
-    drone_path = f"{path}/drone.csv"
-    drone_fields = ['Drone ID', 'Total Step', 'Total Distance', 'Total Orders']
-    drone_data = [
-        [
-            drone.drone_id,
-            drone.tracker.total_step(),
-            drone.tracker.total_distance(),
-            drone.tracker.total_orders()
-        ]
-        for drone in drones
-    ]
-
-    write_csv(drone_path, drone_fields, drone_data, 'drones data')
-
-
 def save_drone_noise_data(noise_tracker, iteration_count, path):
     matrix_path = f"{path}/noise.csv"
 

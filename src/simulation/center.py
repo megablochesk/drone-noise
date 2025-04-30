@@ -3,7 +3,7 @@ from collections import defaultdict, deque
 from common.configuration import PLOT_MAP, PRINT_MODEL_STATISTICS, \
     TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, MODEL_START_TIME, MODEL_TIME_STEP, MODEL_END_TIME, LONDON_WAREHOUSES
 from common.enum import DroneStatus
-from common.file_utils import save_drones_data, save_drone_noise_data, define_results_path
+from common.file_utils import save_drone_noise_data, define_results_path
 from common.math_utils import get_difference
 from drones.dronegenerator import DroneGenerator
 from noise.noise_data_processor import calculate_combined_noise_data
@@ -170,7 +170,6 @@ class Center:
     def save_results(self, path):
         print("Save simulation results...")
 
-        save_drones_data(self.free_drones, path)
         save_drone_noise_data(self.noise_tracker, self.iteration_count, path)
 
         print("Results saved!")

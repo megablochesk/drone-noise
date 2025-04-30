@@ -1,7 +1,6 @@
 from common.configuration import PRINT_DRONE_STATISTICS
 from common.coordinate import Coordinate, calculate_distance
 from common.enum import DroneStatus
-from drones.tracker import Tracker
 from orders.order import Order
 
 
@@ -19,7 +18,6 @@ class Drone:
         self.need_planning = True
         self.route = []
         self.altitudes = []
-        self.tracker = Tracker()
         
     def assign_route(self, route, altitudes):
         self.route = route
@@ -55,7 +53,6 @@ class Drone:
         self.status = DroneStatus.FREE
         self.order = None
         self.destination = None
-        self.tracker.record()
 
         if PRINT_DRONE_STATISTICS:
             print(f"Drone {self.drone_id} returned to the nearest warehouse and start to recharge")
@@ -64,14 +61,8 @@ class Drone:
         return bool(self.route)
                 
     def move_to_next_waypoint(self):
-        next_location = self.route.pop(0)
-        self.current_location = next_location
+        self.current_location = self.route.pop(0)
         self.current_altitude = self.altitudes.pop(0)
-
-        distance = calculate_distance(self.current_location, next_location)
-
-        self.tracker.increment_distance(distance)
-        self.tracker.increment_step()
     
     def has_reached_destination(self):
         return self.destination is not None and not self.route
