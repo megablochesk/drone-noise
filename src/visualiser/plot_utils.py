@@ -60,13 +60,17 @@ def plot_standalone_heatmap(dataframe, index, columns, values, vmin=None, vmax=N
 
 def plot_multiple_heatmaps(dataframes, axes, index, columns, values, titles,
                            vmin=None, vmax=None, xlabel=None, ylabel=None, invert_yaxis=True):
-    if not isinstance(dataframes, list):
-        dataframes = [dataframes] * len(values)
+    dataframes = ensure_list_length(dataframes, len(values))
+    vmin = ensure_list_length(vmin, len(values))
+    vmax = ensure_list_length(vmax, len(values))
 
-    for dataframe, ax, value, title in zip(dataframes, axes, values, titles):
-        plt.sca(ax)
-        prepare_heatmap(dataframe, index, columns, value, vmin, vmax, xlabel, ylabel, invert_yaxis)
-        ax.set_title(title)
+    for i in range(len(values)):
+        plt.sca(axes[i])
+        prepare_heatmap(
+            dataframes[i], index, columns, values[i],
+            vmin[i], vmax[i], xlabel, ylabel, invert_yaxis
+        )
+        axes[i].set_title(titles[i])
 
 
 def plot_figures():
@@ -90,3 +94,8 @@ def add_font_style():
         "xtick.labelsize": 15,
         "ytick.labelsize": 15,
     })
+
+def ensure_list_length(input_value, reference_list_length):
+    if not isinstance(input_value, list):
+        return [input_value] * reference_list_length
+    return input_value

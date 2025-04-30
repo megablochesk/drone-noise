@@ -19,7 +19,11 @@ def plot_all_statistics(experiment_results):
 
     plot_noise_change_barchart(noise_impact_df)
 
-    plot_noise_level_comparison(noise_impact_df)
+    plot_noise_level_comparison(
+        noise_impact_df,
+        vmin=[40, 25, 0],
+        vmax=[115, 60, 10]
+    )
 
     plot_figures()
 
