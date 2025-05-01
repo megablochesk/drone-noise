@@ -3,7 +3,7 @@ import math
 
 # Switches
 PRINT_DRONE_STATISTICS = False
-PRINT_MODEL_STATISTICS = True
+PRINT_MODEL_STATISTICS = False
 PLOT_MAP = False
 PLOT_STATISTICS = False
 
