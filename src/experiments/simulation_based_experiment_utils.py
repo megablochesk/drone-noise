@@ -5,8 +5,9 @@ import pandas as pd
 from common.file_utils import (
     load_dataframe_from_pickle, get_experiment_results_full_file_path, save_dataframe_to_pickle
 )
-from simulation.center import Center
+from simulation.model import Model
 from visualiser.plot_utils import save_figures, plot_figures, add_font_style
+from simulation.timer import Timer
 
 
 def convert_results_to_dataframe(results):
@@ -56,7 +57,7 @@ def run_atomic_experiment(dataset_name, dataset_path, num_orders, num_drones):
     start_time = time.time()
 
     # Initialize and run the center
-    center = Center(num_orders, num_drones, dataset_path)
+    center = Model(num_orders, num_drones, dataset_path, Timer())
     center.run_center()
 
     elapsed_time = time.time() - start_time

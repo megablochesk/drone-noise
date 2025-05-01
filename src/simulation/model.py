@@ -1,7 +1,7 @@
 from collections import defaultdict, deque
 
 from common.configuration import PLOT_MAP, PRINT_MODEL_STATISTICS, \
-    TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, MODEL_START_TIME, MODEL_TIME_STEP, MODEL_END_TIME, LONDON_WAREHOUSES
+    TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, LONDON_WAREHOUSES
 from common.enum import DroneStatus
 from common.file_utils import save_drone_noise_data, define_results_path
 from common.math_utils import get_difference
@@ -10,16 +10,15 @@ from noise.noise_data_processor import calculate_combined_noise_data
 from noise.noise_tracker import NoiseTracker
 from orders.order_generator import load_orders
 from simulation.planner import PathPlanner
-from simulation.plotter import Plotter
+from visualiser.folium_plotter import FoliumPlotter
 
 
-class Center:
-    def __init__(self, number_of_orders, number_of_drones, order_dataset):
+class Model:
+    def __init__(self, number_of_orders, number_of_drones, order_dataset, timer):
         self.warehouses = [location for _, location in LONDON_WAREHOUSES]
         self.undelivered_orders_number = number_of_orders
-        
-        self.model_time = MODEL_START_TIME
-        self.iteration_count = 0
+
+        self.timer = timer
 
         self.pending_orders = self.init_orders(number_of_orders, order_dataset)
         self.free_drones = self.init_drones(number_of_drones, self.warehouses)
@@ -33,7 +32,7 @@ class Center:
         self.noise_impact = None
 
         if PLOT_MAP:
-            self.plotter = Plotter(self.warehouses)
+            self.plotter = FoliumPlotter(self.warehouses)
 
     @staticmethod
     def init_orders(number_of_orders, order_dataset):
@@ -51,33 +50,26 @@ class Center:
         return self.undelivered_orders_number - len(self.pending_orders) - len(self.delivering_drones)
 
     def print_drones_statistics(self):
-        print(f"Drone Statistics at iteration {self.iteration_count}, time {self.model_time}:")
+        print(f"Drone Statistics at iteration {self.timer.iteration}, time {self.timer.now}:")
         print(f"  Pending Orders: {len(self.pending_orders)}")
         print(f"  Delivered Orders: {self.get_delivered_orders_number()}")
         print(f"  Free Drones: {len(self.free_drones)}")
         print(f"  Delivering Drones: {len(self.delivering_drones)}")
         print(f"  Waiting Planning Drones: {len(self.waiting_planning_drones)}\n")
 
-    def update_model_time(self):
-        self.model_time += MODEL_TIME_STEP
-        self.iteration_count += 1
-
     def run_center(self):
         print("Start the simulation...")
 
-        while self.has_pending_deliveries() and not self.reached_model_end_time():
+        while self.has_pending_deliveries() and self.timer.running:
             if PRINT_MODEL_STATISTICS:
                 self.print_drones_statistics()
 
             if self.has_pending_order() or self.has_delivering_drones():
                 self.process_iteration()
 
-            self.update_model_time()
+            self.timer.advance()
 
         self.end_simulation()
-
-    def reached_model_end_time(self):
-        return self.model_time >= MODEL_END_TIME
 
     def process_iteration(self):
         self.process_orders()
@@ -170,7 +162,7 @@ class Center:
     def save_results(self, path):
         print("Save simulation results...")
 
-        save_drone_noise_data(self.noise_tracker, self.iteration_count, path)
+        save_drone_noise_data(self.noise_tracker, self.timer.iteration, path)
 
         print("Results saved!")
 

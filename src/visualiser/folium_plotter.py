@@ -10,7 +10,7 @@ MIN_NOISE_LEVEL = 40
 MAX_NOISE_LEVEL = 100
 
 
-class Plotter:
+class FoliumPlotter:
     def __init__(self, warehouses: List[Coordinate]):
         center_northing = (Map.BOTTOM + Map.TOP) / 2
         center_easting = (Map.LEFT + Map.RIGHT) / 2
