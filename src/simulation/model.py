@@ -1,24 +1,25 @@
 from collections import defaultdict, deque
 
-from common.configuration import PLOT_MAP, PRINT_MODEL_STATISTICS, \
-    TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, LONDON_WAREHOUSES
+from common.configuration import PLOT_MAP, PRINT_MODEL_STATISTICS, LONDON_WAREHOUSES
 from common.enum import DroneStatus
-from common.file_utils import save_drone_noise_data, define_results_path
+from common.file_utils import define_results_path
 from common.math_utils import get_difference
 from drones.dronegenerator import DroneGenerator
-from noise.noise_data_processor import calculate_combined_noise_data
-from noise.noise_tracker import NoiseTracker
 from orders.order_generator import load_orders
 from simulation.planner import PathPlanner
 from visualiser.folium_plotter import FoliumPlotter
 
 
 class Model:
-    def __init__(self, number_of_orders, number_of_drones, order_dataset, timer):
+    def __init__(self, number_of_orders, number_of_drones, order_dataset, timer, noise_monitor):
         self.warehouses = [location for _, location in LONDON_WAREHOUSES]
         self.undelivered_orders_number = number_of_orders
 
+        self.number_of_orders = number_of_orders
+        self.number_of_drones = number_of_drones
+
         self.timer = timer
+        self.noise_monitor = noise_monitor
 
         self.pending_orders = self.init_orders(number_of_orders, order_dataset)
         self.free_drones = self.init_drones(number_of_drones, self.warehouses)
@@ -26,10 +27,7 @@ class Model:
         self.delivering_drones = []
         self.waiting_planning_drones = []
 
-        self.noise_tracker = NoiseTracker()
         self.planner = PathPlanner()
-
-        self.noise_impact = None
 
         if PLOT_MAP:
             self.plotter = FoliumPlotter(self.warehouses)
@@ -76,7 +74,7 @@ class Model:
         self.plan_drones_path()
         self.update_drones()
 
-        self.track_drones()
+        self.noise_monitor.capture(self.delivering_drones)
 
         if PLOT_MAP:
             self.plot_drones()
@@ -136,9 +134,6 @@ class Model:
         self.delivering_drones = [x for x in self.delivering_drones if x not in self.free_drones]
         self.waiting_planning_drones.extend([x for x in self.delivering_drones if x.need_planning is True])
 
-    def track_drones(self):
-        self.noise_tracker.track_drones(self.delivering_drones)
-
     def plot_drones(self):
         self.plotter.plot_drones(self.delivering_drones)
 
@@ -146,25 +141,17 @@ class Model:
         return self.has_pending_order() or self.has_delivering_drones() or self.has_planning_drone()
 
     def end_simulation(self):
-        print("Simulation completed")
+        print("Simulation completed!")
 
-        path = define_results_path(TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER)
+        path = define_results_path(self.number_of_orders, self.number_of_drones)
 
-        self.noise_tracker.calculate_noise_cells()
-        self.save_results(path)
+        self.noise_monitor.finish(self.timer.iteration, path)
 
-        self.noise_impact = calculate_combined_noise_data(path)
+        print("Simulation results saved!")
 
         if PLOT_MAP:
-            self.plotter.plot_combined_noise_pollution(self.noise_impact)
+            self.plotter.plot_combined_noise_pollution(self.noise_monitor.impact)
             self.plotter.save_flight_map()
-
-    def save_results(self, path):
-        print("Save simulation results...")
-
-        save_drone_noise_data(self.noise_tracker, self.timer.iteration, path)
-
-        print("Results saved!")
 
     def has_free_drone(self):
         return bool(self.free_drones)
