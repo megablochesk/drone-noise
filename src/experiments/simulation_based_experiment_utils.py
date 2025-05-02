@@ -2,13 +2,19 @@ import time
 
 import pandas as pd
 
+from common.configuration import LONDON_WAREHOUSES
 from common.file_utils import (
     load_dataframe_from_pickle, get_experiment_results_full_file_path, save_dataframe_to_pickle
 )
 from noise.monitor import NoiseMonitor
-from simulation.model import Model
+from simulation.dispatcher import Dispatcher
+from simulation.fleet import Fleet
+from simulation.plotter import Plotter
+from simulation.simulator import Simulator
 from simulation.timer import Timer
 from visualiser.plot_utils import save_figures, plot_figures, add_font_style
+
+WAREHOUSES = [location for _, location in LONDON_WAREHOUSES]
 
 
 def convert_results_to_dataframe(results):
@@ -57,16 +63,21 @@ def run_atomic_experiment(dataset_name, dataset_path, num_orders, num_drones):
 
     start_time = time.time()
 
-    # Initialize and run the center
-    center = Model(num_orders, num_drones, dataset_path, Timer(), NoiseMonitor())
-    center.run_center()
+    simulator = Simulator(
+        num_orders,
+        Timer(),
+        NoiseMonitor(num_drones, num_orders),
+        Fleet(num_drones, WAREHOUSES),
+        Dispatcher(num_orders, dataset_path),
+        Plotter(WAREHOUSES)
+    )
+    simulator.run()
 
     elapsed_time = time.time() - start_time
     print(f"Time: {elapsed_time} seconds")
 
-    # Gather results
-    delivered_orders = center.get_delivered_orders_number()
-    noise_impact_df = center.noise_monitor.impact
+    delivered_orders = simulator.delivered_orders_number
+    noise_impact_df = simulator.noise_monitor.impact
     avg_noise_diff = noise_impact_df['noise_difference'].mean()
 
     return {
