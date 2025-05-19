@@ -20,7 +20,11 @@ def plot_noise_level_comparison(dataframe, file_name='noise_level_comparison',
         metrics = METRICS
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 5), constrained_layout=True)
-    fig.filename = f'{file_name}_{vmin[0] or "min"}_{vmax[0] or "max"}'
+
+    if isinstance(vmin, list):
+        fig.filename = f'{file_name}_{vmin[0] or "min"}_{vmax[0] or "max"}'
+    else:
+        fig.filename = f'{file_name}_{vmin or "min"}_{vmax or "max"}'
 
     plot_multiple_heatmaps(
         dataframe,
