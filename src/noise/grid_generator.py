@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import geopandas as gpd
 from common.configuration import (
-    MapBoundaries as Map, NOISE_GRID_CELL_SIZE_METERS as CELL_SIZE, LONDON_BOUNDARIES_PATH
+    MapBoundaries as Map, NOISE_GRID_CELL_SIZE as CELL_SIZE, LONDON_BOUNDARIES_PATH
 )
 from common.coordinate import Coordinate
 from shapely.geometry import box

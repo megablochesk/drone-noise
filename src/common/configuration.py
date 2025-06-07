@@ -7,15 +7,16 @@ PRINT_MODEL_STATISTICS = False
 PLOT_MAP = False
 PLOT_STATISTICS = False
 
-TAKE_INTO_ACCOUNT_LANDING = True
+TAKE_INTO_ACCOUNT_LANDING = False
 
 TOTAL_ORDER_NUMBER = 100_000
 TOTAL_DRONE_NUMBER = 500
 
-NOISE_GRID_CELL_SIZE_METERS = 500
+NOISE_GRID_CELL_SIZE = 500 # meters
+NAVIGATION_GRID_CELL_SIZE = 100 # meters
 
-DRONE_NOISE_AT_SOURCE = 90.0  # The central sound level of a flying drone (db)
-DRONE_SPEED = 27  # metres per second, average drone speed
+DRONE_NOISE_AT_SOURCE = 90.0  # The central sound level of a drone (dB)
+DRONE_SPEED = 27  # metres per second
 
 MODEL_START_TIME = 36_000  # 10 a.m. - model start time (10 * 60 * 60)
 MODEL_END_TIME = 72_000  # 8 p.m.
@@ -42,22 +43,25 @@ class MapBoundaries:
 
 
 # Data paths
-ORDER_BASE_PATH_FURTHEST = f'recourses/data/order/drone_delivery_orders_100000_furthest.csv'
-ORDER_BASE_PATH_RANDOM = f'recourses/data/order/drone_delivery_orders_100000_random.csv'
-ORDER_BASE_PATH_CLOSEST = f'recourses/data/order/drone_delivery_orders_100000_closest.csv'
+ORDER_FOLDER = 'recourses/data/order/'
 
-ORDER_BASE_PATH_MIXED_50_50 = f'recourses/data/order/mixed_stocking_100000_random50_closest50.csv'
+ORDER_BASE_PATH_FURTHEST = ORDER_FOLDER + 'drone_delivery_orders_100000_furthest.csv'
+ORDER_BASE_PATH_RANDOM = ORDER_FOLDER + 'drone_delivery_orders_100000_random.csv'
+ORDER_BASE_PATH_CLOSEST = ORDER_FOLDER + 'drone_delivery_orders_100000_closest.csv'
+
+ORDER_BASE_PATH_MIXED_50_50 = ORDER_FOLDER + 'mixed_stocking_100000_random50_closest50.csv'
 
 def get_mixed_order_dataset_pattern(random_ratio, closest_ratio, stocking_number=TOTAL_ORDER_NUMBER):
-    return f'recourses/data/order/mixed_stocking_{stocking_number}_random{random_ratio}_closest{closest_ratio}.csv'
+    return ORDER_FOLDER + f'mixed_stocking_{stocking_number}_random{random_ratio}_closest{closest_ratio}.csv'
 
 ORDER_BASE_PATH = ORDER_BASE_PATH_MIXED_50_50
 
-BASE_NOISE_PATH = f'recourses/data/base_noise/base_noise_london_map_{NOISE_GRID_CELL_SIZE_METERS}.geojson'
+BASE_NOISE_PATH = f'recourses/data/base_noise/base_noise_london_map_{NOISE_GRID_CELL_SIZE}.geojson'
+NAVIGATION_BASE_NOISE_PATH = f'recourses/data/base_noise/base_noise_london_map_{NAVIGATION_GRID_CELL_SIZE}.geojson'
 RESULT_BASE_PATH = 'recourses/results/experiments'
-MAP_FILE_PATH = f'drone_delivery_simulation.html'
+MAP_FILE_PATH = 'drone_delivery_simulation.html'
 MSOA_POPULATION_PATH = 'recourses/data/MSOA_population_dataset_filtered.geojson'
-CELL_POPULATION_PATH = f'recourses/data/cell_population_{NOISE_GRID_CELL_SIZE_METERS}.pkl'
+CELL_POPULATION_PATH = f'recourses/data/cell_population_{NOISE_GRID_CELL_SIZE}.pkl'
 LONDON_BOUNDARIES_PATH = 'recourses/data/greater-london-boundaries.geo.json'
 
 LONDON_WAREHOUSES = [
