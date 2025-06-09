@@ -1,15 +1,14 @@
 import json
-import os
 from pathlib import Path
 
+import matplotlib
 import networkx as nx
 import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
 from scipy.spatial import cKDTree
 from shapely.geometry import shape
-from matplotlib import pyplot as plt
 
-import matplotlib
 matplotlib.use("TkAgg")
 
 
@@ -92,9 +91,9 @@ def build_noise_graph(df: pd.DataFrame) -> nx.Graph:
     return G
 
 
-def build_kdtree(G: nx.Graph):
-    pts = np.array([G.nodes[n]["pos"] for n in G.nodes])
-    return cKDTree(pts), list(G.nodes)
+def build_kdtree(graph: nx.Graph):
+    pts = np.array([graph.nodes[n]["pos"] for n in graph.nodes])
+    return cKDTree(pts), list(graph.nodes)
 
 
 def nearest_node(tree: cKDTree, nodes: list, point: tuple) -> tuple:
@@ -103,11 +102,11 @@ def nearest_node(tree: cKDTree, nodes: list, point: tuple) -> tuple:
 
 
 def shortest_path(
-    G: nx.Graph, tree: cKDTree, nodes: list, start_pt: tuple, end_pt: tuple
+    graph: nx.Graph, tree: cKDTree, nodes: list, start_pt: tuple, end_pt: tuple
 ):
     start = nearest_node(tree, nodes, start_pt)
     end = nearest_node(tree, nodes, end_pt)
-    return nx.shortest_path(G, start, end, weight="weight")
+    return nx.shortest_path(graph, start, end, weight="weight")
 
 
 def plot_noise_graph(G, path, figsize=(10, 10)):
@@ -134,20 +133,20 @@ def main():
     graphml_path = '../' + NAVIGATION_BASE_NOISE_PATH.replace(".geojson", ".graphml")
 
     if Path(graphml_path).exists():
-        G = load_graphml(graphml_path)
+        graph = load_graphml(graphml_path)
     else:
         df = read_base_noise_data(NAVIGATION_BASE_NOISE_PATH)
-        G = build_noise_graph(df)
-        save_graphml(G, graphml_path)
+        graph = build_noise_graph(df)
+        save_graphml(graph, graphml_path)
 
-    tree, nodes = build_kdtree(G)
+    tree, nodes = build_kdtree(graph)
 
     A = (0.160277, 51.200773)
     B = (-0.447186, 51.653594)
 
-    path = shortest_path(G, tree, nodes, A, B)
+    path = shortest_path(graph, tree, nodes, A, B)
 
-    plot_noise_graph(G, path, (10, 10))
+    plot_noise_graph(graph, path, (10, 10))
 
     print("Path length:", len(path))
 

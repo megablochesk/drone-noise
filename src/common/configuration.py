@@ -8,6 +8,7 @@ PLOT_MAP = False
 PLOT_STATISTICS = False
 
 TAKE_INTO_ACCOUNT_LANDING = False
+NOISE_BASED_ROUTING = True
 
 TOTAL_ORDER_NUMBER = 100_000
 TOTAL_DRONE_NUMBER = 500
@@ -56,8 +57,12 @@ def get_mixed_order_dataset_pattern(random_ratio, closest_ratio, stocking_number
 
 ORDER_BASE_PATH = ORDER_BASE_PATH_MIXED_50_50
 
-BASE_NOISE_PATH = f'recourses/data/base_noise/base_noise_london_map_{NOISE_GRID_CELL_SIZE}.geojson'
-NAVIGATION_BASE_NOISE_PATH = f'recourses/data/base_noise/base_noise_london_map_{NAVIGATION_GRID_CELL_SIZE}.geojson'
+BASE_NOISE_FOLDER = 'recourses/data/base_noise/'
+
+BASE_NOISE_PATH = BASE_NOISE_FOLDER + f'base_noise_london_map_{NOISE_GRID_CELL_SIZE}.geojson'
+NAVIGATION_BASE_NOISE_PATH = BASE_NOISE_FOLDER + f'base_noise_london_map_{NAVIGATION_GRID_CELL_SIZE}.geojson'
+NAVIGATION_GRAPH_PATH = BASE_NOISE_FOLDER + f'navigation_graph_{NAVIGATION_GRID_CELL_SIZE}.graphml'
+
 RESULT_BASE_PATH = 'recourses/results/experiments'
 MAP_FILE_PATH = 'drone_delivery_simulation.html'
 MSOA_POPULATION_PATH = 'recourses/data/MSOA_population_dataset_filtered.geojson'
