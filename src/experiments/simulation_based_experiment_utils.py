@@ -18,6 +18,9 @@ WAREHOUSES = [location for _, location in LONDON_WAREHOUSES]
 
 
 def convert_results_to_dataframe(results):
+    if isinstance(results, dict):
+        return pd.DataFrame([results])
+
     return pd.DataFrame(results)
 
 

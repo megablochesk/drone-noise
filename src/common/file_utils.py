@@ -1,7 +1,6 @@
 import csv
 import os
 import pickle
-import re
 
 import osmnx as ox
 import pandas as pd
