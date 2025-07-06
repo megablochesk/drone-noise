@@ -6,7 +6,7 @@ from common.configuration import LONDON_WAREHOUSES
 from common.file_utils import (
     load_dataframe_from_pickle, get_experiment_results_full_file_path, save_dataframe_to_pickle
 )
-from noise.monitor import NoiseMonitor
+from simulation.noise_monitor import NoiseMonitor
 from simulation.dispatcher import Dispatcher
 from simulation.fleet import Fleet
 from simulation.plotter import Plotter

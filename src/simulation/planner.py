@@ -6,7 +6,7 @@ from common.configuration import (
     NAVIGATION_BASE_NOISE_PATH, NOISE_BASED_ROUTING, NAVIGATION_GRID_CELL_SIZE
 )
 from common.coordinate import Coordinate, calculate_distance
-from noise.noise_navigation_graph_utils import (
+from noise.noise_graph_navigator import (
     build_graph, get_optimal_noise_based_route,
     generate_tree_from_graph, get_list_of_nodes_in_graph
 )
