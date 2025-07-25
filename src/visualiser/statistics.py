@@ -43,24 +43,29 @@ def prepare_noise_data(dataframe, noise_metric='noise_difference', bin_gap=0.5):
     return x_labels, noise_counts
 
 
-def plot_barchart(x_labels, counts, title, xlabel, ylabel, figsize=(10, 6)):
+def plot_barchart(x_labels, counts, title, xlabel, ylabel, filename='barchart_default', figsize=(10, 6)):
     fig, ax = plt.subplots(figsize=figsize)
+    fig.filename = filename
+
     bars = ax.bar(x_labels, counts, color='skyblue', edgecolor='black')
+
     ax.bar_label(bars, fmt='{:,.0f}')
     ax.set_title(title, fontsize=16)
     ax.set_xlabel(xlabel, fontsize=12)
     ax.set_ylabel(ylabel, fontsize=12)
     ax.grid(axis='y', linestyle='--', alpha=0.7)
+
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
 
 
-def plot_noise_change_barchart(dataframe, bin_gap=0.5):
+def plot_noise_change_barchart(dataframe, bin_gap=0.5, file_name='noise_change_barchart'):
     x_labels, noise_counts = prepare_noise_data(dataframe, bin_gap=bin_gap)
     plot_barchart(x_labels, noise_counts,
                   title='Number of Cells by Noise Level Difference',
                   xlabel='Noise Difference, dBs',
-                  ylabel='Number of Cells')
+                  ylabel='Number of Cells',
+                  filename=file_name)
 
 
 def _compute_distance_stats(delivery_dataset):

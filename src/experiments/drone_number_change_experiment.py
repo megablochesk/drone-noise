@@ -32,7 +32,7 @@ def drone_number_change_experiment():
 
 
 def plot_all_statistics(experiment_results):
-    plot_cells_impacted_by_noise(experiment_results, 55)
+    # plot_cells_impacted_by_noise(experiment_results, 55)
 
     plot_execution_time_barchart(experiment_results)
 
