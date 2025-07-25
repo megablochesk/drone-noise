@@ -117,3 +117,6 @@ def load_graph_from_pickle_or_graphml(file_path):
 
 def load_graph(graph_file_path):
     return load_graph_from_pickle_or_graphml(graph_file_path)
+
+def path_exists(path):
+    return os.path.exists(path)

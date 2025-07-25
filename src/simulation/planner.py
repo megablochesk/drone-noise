@@ -3,11 +3,11 @@ import numpy as np
 from common.configuration import (
     DRONE_SPEED, MODEL_TIME_STEP, TAKE_INTO_ACCOUNT_LANDING, DRONE_FLIGHT_ALTITUDE,
     NUMBER_OF_LANDING_STEPS, INTERMEDIATE_ALTITUDES_ASCENDING, INTERMEDIATE_ALTITUDES_DESCENDING,
-    NAVIGATION_BASE_NOISE_PATH, NOISE_BASED_ROUTING, NAVIGATION_GRID_CELL_SIZE
+    NOISE_BASED_ROUTING, NAVIGATION_GRID_CELL_SIZE
 )
 from common.coordinate import Coordinate, calculate_distance
 from noise.noise_graph_navigator import (
-    build_graph, get_optimal_noise_based_route,
+    get_navigation_graph, get_optimal_noise_based_route,
     generate_tree_from_graph, get_list_of_nodes_in_graph
 )
 
@@ -18,7 +18,7 @@ class PathPlanner:
         self.step_time = MODEL_TIME_STEP
 
         if NOISE_BASED_ROUTING:
-            self.graph = build_graph(NAVIGATION_BASE_NOISE_PATH)
+            self.graph = get_navigation_graph()
             self.tree = generate_tree_from_graph(self.graph)
             self.nodes = get_list_of_nodes_in_graph(self.graph)
 

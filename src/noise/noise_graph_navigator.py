@@ -7,7 +7,7 @@ from shapely.geometry import shape
 
 from common.configuration import NAVIGATION_GRID_CELL_SIZE, NAVIGATION_BASE_NOISE_PATH, NAVIGATION_GRAPH_PATH
 from common.coordinate import Coordinate
-from common.file_utils import load_graph, save_graph
+from common.file_utils import load_graph, save_graph, path_exists
 
 _WGS84_TO_BNG = Transformer.from_crs(4326, 27700, always_xy=True)
 
@@ -47,14 +47,14 @@ def build_graph(path=NAVIGATION_BASE_NOISE_PATH):
     return graph
 
 
-def get_navigation_graph(load_graph_from_file=False):
-    if load_graph_from_file:
+def get_navigation_graph():
+    if path_exists(NAVIGATION_GRAPH_PATH):
         return load_graph(NAVIGATION_GRAPH_PATH)
-    else:
-        graph = build_graph()
-        save_graph(graph, NAVIGATION_GRAPH_PATH)
 
-        return graph
+    graph = build_graph()
+    save_graph(graph, NAVIGATION_GRAPH_PATH)
+
+    return graph
 
 def generate_tree_from_graph(graph):
     return cKDTree([graph.nodes[n]["pos"] for n in graph])
