@@ -6,10 +6,7 @@ from common.configuration import (
     NOISE_BASED_ROUTING, NAVIGATION_GRID_CELL_SIZE
 )
 from common.coordinate import Coordinate, calculate_distance
-from noise.noise_graph_navigator import (
-    get_navigation_graph, get_optimal_noise_based_route,
-    generate_tree_from_graph, get_list_of_nodes_in_graph
-)
+from noise.noise_graph_navigator import NoiseGraphNavigator
 
 
 class PathPlanner:
@@ -18,9 +15,7 @@ class PathPlanner:
         self.step_time = MODEL_TIME_STEP
 
         if NOISE_BASED_ROUTING:
-            self.graph = get_navigation_graph()
-            self.tree = generate_tree_from_graph(self.graph)
-            self.nodes = get_list_of_nodes_in_graph(self.graph)
+            self.navigator = NoiseGraphNavigator()
 
     def plan(self, start: Coordinate, end: Coordinate):
         distance = calculate_distance(start, end)
@@ -37,16 +32,9 @@ class PathPlanner:
         return route, altitudes
 
     def plan_noise_impact_based_route(self, start: Coordinate, end: Coordinate):
-        path_nodes = get_optimal_noise_based_route(
-            self.graph, self.tree, self.nodes,
-            start, end
-        )
-
-        route = self.sample_route_by_steps(path_nodes)
-
-        route = [Coordinate(northing=self.graph.nodes[n]['pos'][1],
-                            easting=self.graph.nodes[n]['pos'][0])
-                 for n in route]
+        path_nodes = self.navigator.get_optimal_route(start, end)
+        sampled_nodes = self.sample_route_by_steps(path_nodes)
+        route = self.navigator.nodes_to_coordinates(sampled_nodes)
 
         if route[0] != start:
             route.insert(0, start)
