@@ -61,13 +61,15 @@ BASE_NOISE_FOLDER = 'recourses/data/base_noise/'
 
 BASE_NOISE_PATH = BASE_NOISE_FOLDER + f'base_noise_london_map_{NOISE_GRID_CELL_SIZE}.geojson'
 NAVIGATION_BASE_NOISE_PATH = BASE_NOISE_FOLDER + f'base_noise_london_map_{NAVIGATION_GRID_CELL_SIZE}.geojson'
-NAVIGATION_GRAPH_PATH = BASE_NOISE_FOLDER + f'navigation_graph_{NAVIGATION_GRID_CELL_SIZE}.graphml'
+NAVIGATION_GRAPH_PATH = BASE_NOISE_FOLDER + f'navigation_graph_{NAVIGATION_GRID_CELL_SIZE}'
 
-RESULT_BASE_PATH = 'recourses/results/experiments'
+RESULT_BASE_PATH = 'recourses/results/experiments/'
 MAP_FILE_PATH = 'drone_delivery_simulation.html'
 MSOA_POPULATION_PATH = 'recourses/data/MSOA_population_dataset_filtered.geojson'
 CELL_POPULATION_PATH = f'recourses/data/cell_population_{NOISE_GRID_CELL_SIZE}.pkl'
 LONDON_BOUNDARIES_PATH = 'recourses/data/greater-london-boundaries.geo.json'
+
+EXPERIMENT_RESULTS_PATH = 'recourses/experiment_results/'
 
 LONDON_WAREHOUSES = [
     ('DBR1', Coordinate(180193.93, 550041.28)),
