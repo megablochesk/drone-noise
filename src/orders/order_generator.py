@@ -3,8 +3,8 @@ import random
 
 import pandas as pd
 from common.configuration import (
-    ORDER_BASE_PATH, LONDON_WAREHOUSES, MSOA_POPULATION_PATH,
-    get_mixed_order_dataset_pattern
+    ORDER_BASE_PATH, ORDER_DATASET_TYPES, LONDON_WAREHOUSES, MSOA_POPULATION_PATH,
+    get_mixed_order_dataset_pattern, get_single_type_order_dataset_pattern
 )
 from common.coordinate import Coordinate
 from orders.order import Order
@@ -183,12 +183,12 @@ POPULATION_DISTRIBUTION = calculate_population_distribution(MSOA_POPULATIONS)
 def generate_datasets(number_of_deliveries=10_000):
     destinations = [generate_random_population_based_point() for _ in range(number_of_deliveries)]
 
-    for method in ['closest', 'furthest', 'random']:
+    for method in ORDER_DATASET_TYPES:
         orders = []
         for order_id in range(1, number_of_deliveries + 1):
             orders.append(generate_order(order_id, destinations[order_id - 1], method))
 
-        save_file_name = f'recourses/data/order/drone_delivery_orders_{number_of_deliveries}_{method}.csv'
+        save_file_name = get_single_type_order_dataset_pattern(method, number_of_deliveries)
 
         save_orders_to_csv(orders, save_file_name)
 

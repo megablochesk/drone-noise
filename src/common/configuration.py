@@ -45,15 +45,18 @@ class MapBoundaries:
 
 # Data paths
 ORDER_FOLDER = 'recourses/data/order/'
+ORDER_DATASET_TYPES = ['furthest', 'random', 'closest']
 
-ORDER_BASE_PATH_FURTHEST = ORDER_FOLDER + 'drone_delivery_orders_100000_furthest.csv'
-ORDER_BASE_PATH_RANDOM = ORDER_FOLDER + 'drone_delivery_orders_100000_random.csv'
-ORDER_BASE_PATH_CLOSEST = ORDER_FOLDER + 'drone_delivery_orders_100000_closest.csv'
-
-ORDER_BASE_PATH_MIXED_50_50 = ORDER_FOLDER + 'mixed_stocking_100000_random50_closest50.csv'
+def get_single_type_order_dataset_pattern(order_dataset_type, stocking_number=TOTAL_ORDER_NUMBER):
+    return ORDER_FOLDER + f'drone_delivery_orders_{stocking_number}_{order_dataset_type}.csv'
 
 def get_mixed_order_dataset_pattern(random_ratio, closest_ratio, stocking_number=TOTAL_ORDER_NUMBER):
     return ORDER_FOLDER + f'mixed_stocking_{stocking_number}_random{random_ratio}_closest{closest_ratio}.csv'
+
+ORDER_BASE_PATH_FURTHEST = get_single_type_order_dataset_pattern('furthest', 100_000)
+ORDER_BASE_PATH_RANDOM = get_single_type_order_dataset_pattern('random', 100_000)
+ORDER_BASE_PATH_CLOSEST = get_single_type_order_dataset_pattern('closest', 100_000)
+ORDER_BASE_PATH_MIXED_50_50 = get_mixed_order_dataset_pattern(50, 50, 100_000)
 
 ORDER_BASE_PATH = ORDER_BASE_PATH_MIXED_50_50
 
