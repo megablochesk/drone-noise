@@ -3,6 +3,7 @@ import os
 import pickle
 
 import osmnx as ox
+import networkx as nx
 import pandas as pd
 
 from common.configuration import RESULT_BASE_PATH, EXPERIMENT_RESULTS_PATH
@@ -63,7 +64,7 @@ def save_graph_as_pickle(graph_to_save, file_path):
 
 
 def save_graph_as_graphml(graph_to_save, file_path):
-    ox.save_graphml(graph_to_save, file_path)
+    nx.write_graphml(graph_to_save, file_path)
 
 
 def save_graph(graph, file_path):
@@ -119,8 +120,11 @@ def load_graph(graph_file_path):
     return _load_graph_from_pickle_or_graphml(graph_file_path)
 
 
-def path_exists(path):
-    return os.path.exists(path)
+def path_exists(path, suffixes=None):
+    if os.path.exists(path):
+        return True
+
+    return any(os.path.exists(path + suffix) for suffix in suffixes)
 
 
 def ensure_suffix(line, suffix):

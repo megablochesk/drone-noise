@@ -20,7 +20,7 @@ class NoiseGraphNavigator:
 
         self.graph = self._load_or_build_graph()
 
-        self.tree = cKDTree([self.graph.nodes[node]["pos"] for node in self.graph])
+        self.tree = cKDTree([(self.graph.nodes[node]["easting"], self.graph.nodes[node]["northing"]) for node in self.graph])
         self.nodes = list(self.graph.nodes)
 
     @staticmethod
@@ -47,7 +47,12 @@ class NoiseGraphNavigator:
     def _add_nodes_from_records(graph: nx.Graph, records):
         for row, column, noise, (longitude, latitude) in records:
             easting, northing = _WGS84_TO_BNG.transform(longitude, latitude)
-            graph.add_node((row, column), noise=noise, pos=(easting, northing))
+            graph.add_node(
+                (row, column),
+                noise=noise,
+                easting=easting,
+                northing=northing
+            )
 
     @staticmethod
     def _connect_adjacent_cells(graph: nx.Graph):
@@ -59,12 +64,13 @@ class NoiseGraphNavigator:
                 if neighbor_node in graph and not graph.has_edge(node, neighbor_node):
                     noise_1 = graph.nodes[node]["noise"]
                     noise_2 = graph.nodes[neighbor_node]["noise"]
+
                     average_noise_between_cells = (noise_1 + noise_2) / 2
                     weight = NAVIGATION_GRID_CELL_SIZE / average_noise_between_cells
                     graph.add_edge(node, neighbor_node, weight=weight)
 
     def _load_or_build_graph(self):
-        if path_exists(self.graph_path):
+        if path_exists(self.graph_path, suffixes=(".pkl", ".graphml")):
             return load_graph(self.graph_path)
 
         graph = self._build_graph()
@@ -85,8 +91,8 @@ class NoiseGraphNavigator:
     def nodes_to_coordinates(self, nodes):
         return [
             Coordinate(
-                northing=self.graph.nodes[node]["pos"][1],
-                easting=self.graph.nodes[node]["pos"][0],
+                northing=self.graph.nodes[node]["northing"],
+                easting=self.graph.nodes[node]["easting"],
             )
             for node in nodes
         ]
