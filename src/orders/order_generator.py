@@ -176,11 +176,20 @@ def save_orders_to_csv(orders, filename):
     orders_df.to_csv(filename, index=False)
 
 
-MSOA_INDEX, MSOA_POPULATIONS = build_msoa_index()
-POPULATION_DISTRIBUTION = calculate_population_distribution(MSOA_POPULATIONS)
+MSOA_INDEX = None
+MSOA_POPULATIONS = None
+POPULATION_DISTRIBUTION = None
+
+
+def init_constants():
+    global MSOA_INDEX, MSOA_POPULATIONS, POPULATION_DISTRIBUTION
+    MSOA_INDEX, MSOA_POPULATIONS = build_msoa_index()
+    POPULATION_DISTRIBUTION = calculate_population_distribution(MSOA_POPULATIONS)
 
 
 def generate_datasets(number_of_deliveries=10_000):
+    init_constants()
+
     destinations = [generate_random_population_based_point() for _ in range(number_of_deliveries)]
 
     for method in ORDER_DATASET_TYPES:
@@ -193,6 +202,8 @@ def generate_datasets(number_of_deliveries=10_000):
         save_orders_to_csv(orders, save_file_name)
 
 def generate_mixed_stocking_datasets(number_of_deliveries=10_000):
+    init_constants()
+
     ratios = [(i, 100 - i) for i in range(100, 0, -10)]  # (random%, closest%)
 
     destinations = [generate_random_population_based_point() for _ in range(number_of_deliveries)]
