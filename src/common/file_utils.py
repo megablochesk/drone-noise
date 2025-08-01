@@ -2,8 +2,8 @@ import csv
 import os
 import pickle
 
-import osmnx as ox
 import networkx as nx
+import osmnx as ox
 import pandas as pd
 
 from common.configuration import RESULT_BASE_PATH, EXPERIMENT_RESULTS_PATH
@@ -37,15 +37,15 @@ def save_drone_noise_data(noise_tracker, iteration_count, results_path):
         for cell in noise_tracker.noise_cells
     ]
 
-    write_csv(matrix_path, matrix_fields, matrix_data, 'noise data')
+    write_csv(matrix_path, matrix_fields, matrix_data)
 
 
-def write_csv(file_path, headers, data, data_type):
+def write_csv(file_path, headers, data):
     with open(file_path, 'w') as f:
         writer = csv.writer(f)
         writer.writerow(headers)
         writer.writerows(data)
-        print(f"Done writing {data_type}!")
+        print(f"Done writing {file_path}!")
         f.flush()
 
 
