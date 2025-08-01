@@ -57,10 +57,18 @@ def save_dataframe_to_pickle(dataframe, path):
 def load_dataframe_from_pickle(path):
     return pd.read_pickle(path)
 
+def load_data_from_pickle(file_path):
+    with open(file_path, 'rb') as file:
+        return pickle.load(file)
+
 
 def save_graph_as_pickle(graph_to_save, file_path):
+    save_data_as_pickle(graph_to_save, file_path, pickle.HIGHEST_PROTOCOL)
+
+
+def save_data_as_pickle(data, file_path, protocol=None):
     with open(file_path, 'wb') as file:
-        pickle.dump(graph_to_save, file=file, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(data, file=file, protocol=protocol)
 
 
 def save_graph_as_graphml(graph_to_save, file_path):
