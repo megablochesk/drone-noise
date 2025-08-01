@@ -2,21 +2,22 @@ import json
 import random
 
 import pandas as pd
+from shapely.geometry import shape, Point
+
 from common.configuration import (
     ORDER_BASE_PATH, ORDER_DATASET_TYPES, LONDON_WAREHOUSES, MSOA_POPULATION_PATH,
     get_mixed_order_dataset_pattern, get_single_type_order_dataset_pattern
 )
 from common.coordinate import Coordinate
 from orders.order import Order
-from shapely.geometry import shape, Point
 
 
-def load_all_orders(path):
+def load_raw_orders(path):
     return pd.read_csv(path)
 
 
 def load_orders(number_of_orders, path=ORDER_BASE_PATH):
-    order_df = load_all_orders(path)
+    order_df = load_raw_orders(path)
 
     limited_df = order_df.head(number_of_orders)
 

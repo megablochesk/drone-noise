@@ -64,7 +64,11 @@ BASE_NOISE_FOLDER = 'recourses/data/base_noise/'
 
 BASE_NOISE_PATH = BASE_NOISE_FOLDER + f'base_noise_london_map_{NOISE_GRID_CELL_SIZE}.geojson'
 NAVIGATION_BASE_NOISE_PATH = BASE_NOISE_FOLDER + f'base_noise_london_map_{NAVIGATION_GRID_CELL_SIZE}.geojson'
-NAVIGATION_GRAPH_PATH = BASE_NOISE_FOLDER + f'navigation_graph_{NAVIGATION_GRID_CELL_SIZE}'
+
+NOISE_GRAPH_NAVIGATION_FOLDER = 'recourses/data/noise_graph_navigation/'
+
+NAVIGATION_GRAPH_PATH = NOISE_GRAPH_NAVIGATION_FOLDER + f'navigation_graph_{NAVIGATION_GRID_CELL_SIZE}'
+WAREHOUSE_PATHS_CACHE = NOISE_GRAPH_NAVIGATION_FOLDER + "warehouse_paths_cache.pkl"
 
 RESULT_BASE_PATH = 'recourses/results/experiments/'
 MAP_FILE_PATH = 'drone_delivery_simulation.html'
