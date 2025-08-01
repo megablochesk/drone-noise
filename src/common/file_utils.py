@@ -40,13 +40,14 @@ def save_drone_noise_data(noise_tracker, iteration_count, results_path):
     write_csv(matrix_path, matrix_fields, matrix_data)
 
 
-def write_csv(file_path, headers, data):
-    with open(file_path, 'w') as f:
-        writer = csv.writer(f)
+def write_csv(file_path, headers, data, delimiter=','):
+    with open(file_path, 'w', newline='') as f:
+        writer = csv.writer(f, delimiter=delimiter)
         writer.writerow(headers)
         writer.writerows(data)
-        print(f"Done writing {file_path}!")
         f.flush()
+
+    print(f"Done writing {file_path}!")
 
 
 def save_dataframe_to_pickle(dataframe, path):
@@ -62,8 +63,8 @@ def load_data_from_pickle(file_path):
         return pickle.load(file)
 
 
-def save_graph_as_pickle(graph_to_save, file_path):
-    save_data_as_pickle(graph_to_save, file_path, pickle.HIGHEST_PROTOCOL)
+def save_data_as_pickle_highest_protocol(data, file_path):
+    save_data_as_pickle(data, file_path, pickle.HIGHEST_PROTOCOL)
 
 
 def save_data_as_pickle(data, file_path, protocol=None):
@@ -81,7 +82,7 @@ def save_graph(graph, file_path):
 
     try:
         save_graph_as_graphml(graph, graphml_file)
-        save_graph_as_pickle(graph, pickle_file)
+        save_data_as_pickle_highest_protocol(graph, pickle_file)
 
         print(f"Graph saved to '{file_path}' successfully.")
     except Exception as e:
@@ -119,7 +120,7 @@ def _load_graph_from_pickle_or_graphml(file_path):
     graph = load_graphml_graph(graphml_path)
 
     if graph is not None:
-        save_graph_as_pickle(graph, pickle_path)
+        save_data_as_pickle_highest_protocol(graph, pickle_path)
 
     return graph
 

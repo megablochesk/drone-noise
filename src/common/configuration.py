@@ -1,5 +1,6 @@
-from common.coordinate import Coordinate
 import math
+
+from common.coordinate import Coordinate
 
 # Switches
 PRINT_DRONE_STATISTICS = False
@@ -57,6 +58,9 @@ ORDER_BASE_PATH_FURTHEST = get_single_type_order_dataset_pattern('furthest', 100
 ORDER_BASE_PATH_RANDOM = get_single_type_order_dataset_pattern('random', 100_000)
 ORDER_BASE_PATH_CLOSEST = get_single_type_order_dataset_pattern('closest', 100_000)
 ORDER_BASE_PATH_MIXED_50_50 = get_mixed_order_dataset_pattern(50, 50, 100_000)
+
+def get_noise_navigation_route_orders_file(file_path):
+    return file_path.replace('.csv', '_routes.pkl')
 
 ORDER_BASE_PATH = ORDER_BASE_PATH_MIXED_50_50
 
