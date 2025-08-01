@@ -6,36 +6,23 @@ from scipy.spatial import cKDTree
 from common.configuration import LONDON_WAREHOUSES, WAREHOUSE_PATHS_CACHE
 from common.coordinate import Coordinate
 from common.file_utils import save_data_as_pickle, load_data_from_pickle, path_exists
-from noise.noise_graph_builder import load_or_build_graph
+from noise.navigator.base import BaseNavigator
 
 
-class NoiseGraphNavigator:
-    def __init__(self, heavy_mode=True):
-        self.graph = load_or_build_graph()
+class HeavyNavigator(BaseNavigator):
+    def __init__(self):
+        super().__init__()
+
         self.nodes = list(self.graph.nodes)
-        self.heavy_mode = heavy_mode
+        self.tree = self._build_kdtree()
 
-        if heavy_mode:
-            self.tree = self._build_kdtree()
+        self._warehouse_node_cache = {
+            coord: self._query_kdtree(coord)
+            for _, coord in LONDON_WAREHOUSES
+        }
 
-            self._warehouse_node_cache = {
-                coord: self._query_kdtree(coord)
-                for _, coord in LONDON_WAREHOUSES
-            }
-
-            self._route_cache = {}
-            self._warehouse_paths = self._load_or_compute_warehouse_paths()
-
-            print("Warehouse paths loaded!")
-
-    def nodes_to_coordinates(self, nodes):
-        return [
-            Coordinate(
-                northing=self.graph.nodes[node]["northing"],
-                easting=self.graph.nodes[node]["easting"],
-            )
-            for node in nodes
-        ]
+        self._route_cache = {}
+        self._warehouse_paths = self._load_or_compute_warehouse_paths()
 
     def find_nearest_node(self, point: Coordinate) -> tuple:
         cached = self._warehouse_node_cache.get(point)
@@ -45,11 +32,6 @@ class NoiseGraphNavigator:
 
 
     def get_optimal_route(self, start: Coordinate, end: Coordinate):
-        if self.heavy_mode:
-            return self.calculate_optimal_route(end, start)
-        return None
-
-    def calculate_optimal_route(self, end, start):
         start_node = self.find_nearest_node(start)
         end_node = self.find_nearest_node(end)
 
@@ -101,6 +83,9 @@ class NoiseGraphNavigator:
 
         computed = self._compute_warehouse_paths()
         self._save_paths_to_cache(computed)
+
+        print("Warehouse paths loaded!")
+
         return computed
 
     def _get_or_compute_route(self, start_node, end_node):

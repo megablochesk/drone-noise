@@ -2,11 +2,11 @@ from pathlib import Path
 
 from common.configuration import ORDER_FOLDER
 from common.file_utils import save_data_as_pickle_highest_protocol
-from noise.noise_graph_navigator import NoiseGraphNavigator
+from noise.navigator.heavy import HeavyNavigator
 from orders.order_generator import load_orders
 
 NUMBER_OF_ORDERS = -1  # all
-NOISE_GRAPH_NAVIGATOR = NoiseGraphNavigator()
+NOISE_GRAPH_NAVIGATOR = HeavyNavigator()
 
 
 def get_list_of_csv_files():
@@ -24,11 +24,11 @@ def get_list_of_csv_files():
 
 
 def calculate_routes(orders):
-    return [
-        (order.start_location, order.end_location,
-         NOISE_GRAPH_NAVIGATOR.get_optimal_route(order.start_location, order.end_location))
+    return {
+        (order.start_location, order.end_location):
+        NOISE_GRAPH_NAVIGATOR.get_optimal_route(order.start_location, order.end_location)
         for order in orders
-    ]
+    }
 
 
 def main():

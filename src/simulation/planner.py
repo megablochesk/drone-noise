@@ -3,10 +3,10 @@ import numpy as np
 from common.configuration import (
     DRONE_SPEED, MODEL_TIME_STEP, TAKE_INTO_ACCOUNT_LANDING, DRONE_FLIGHT_ALTITUDE,
     NUMBER_OF_LANDING_STEPS, INTERMEDIATE_ALTITUDES_ASCENDING, INTERMEDIATE_ALTITUDES_DESCENDING,
-    NOISE_BASED_ROUTING, NAVIGATION_GRID_CELL_SIZE
+    NAVIGATOR_TYPE, NAVIGATION_GRID_CELL_SIZE
 )
 from common.coordinate import Coordinate, calculate_distance
-from noise.noise_graph_navigator import NoiseGraphNavigator
+from noise.navigator import get_navigator
 
 
 class PathPlanner:
@@ -14,15 +14,14 @@ class PathPlanner:
         self.speed = DRONE_SPEED
         self.step_time = MODEL_TIME_STEP
 
-        if NOISE_BASED_ROUTING:
-            self.navigator = NoiseGraphNavigator()
+        self.navigator = get_navigator(NAVIGATOR_TYPE)
 
     def plan(self, start: Coordinate, end: Coordinate):
         distance = calculate_distance(start, end)
         if distance == 0:
             return self.plan_for_zero_distance(start)
 
-        if NOISE_BASED_ROUTING:
+        if NAVIGATOR_TYPE != "straight":
             route = self.plan_noise_impact_based_route(start, end)
         else:
             route = self.plan_straight_route(start, end, distance)
