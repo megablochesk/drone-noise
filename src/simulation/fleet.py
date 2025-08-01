@@ -4,12 +4,12 @@ from simulation.planner import PathPlanner
 
 
 class Fleet:
-    def __init__(self, number_of_drones, warehouse_locations):
+    def __init__(self, number_of_drones, dataset_path, warehouse_locations):
         self.free_drones = DroneGenerator(warehouse_locations).generate_drones(number_of_drones)
         self.waiting_planning_drones = []
         self.delivering_drones = []
 
-        self.planner = PathPlanner()
+        self.planner = PathPlanner(dataset_path)
 
     @property
     def has_free_drone(self):

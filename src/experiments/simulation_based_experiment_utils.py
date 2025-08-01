@@ -2,19 +2,11 @@ import time
 
 import pandas as pd
 
-from common.configuration import LONDON_WAREHOUSES
 from common.file_utils import (
     load_dataframe_from_pickle, get_experiment_results_full_file_path, save_dataframe_to_pickle
 )
-from simulation.noise_monitor import NoiseMonitor
-from simulation.dispatcher import Dispatcher
-from simulation.fleet import Fleet
-from simulation.plotter import Plotter
 from simulation.simulator import Simulator
-from simulation.timer import Timer
-from visualiser.plot_utils import save_figures, plot_figures, add_font_style
-
-WAREHOUSES = [location for _, location in LONDON_WAREHOUSES]
+from visualiser.plot_utils import finalise_visualisation
 
 
 def convert_results_to_dataframe(results):
@@ -40,12 +32,6 @@ def load_or_run_experiment(result_file_name, load_saved_results, experiment_func
         return results
 
 
-def finalise_visualisation():
-    add_font_style()
-    save_figures()
-    plot_figures()
-
-
 def visualise_results(results, visualisation_function=None):
     if visualisation_function:
         print("Running visualisation on experiment results...")
@@ -68,11 +54,8 @@ def run_atomic_experiment(dataset_name, dataset_path, num_orders, num_drones):
 
     simulator = Simulator(
         num_orders,
-        Timer(),
-        NoiseMonitor(num_drones, num_orders),
-        Fleet(num_drones, WAREHOUSES),
-        Dispatcher(num_orders, dataset_path),
-        Plotter(WAREHOUSES)
+        num_drones,
+        dataset_path
     )
     simulator.run()
 

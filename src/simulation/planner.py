@@ -10,11 +10,11 @@ from noise.navigator import get_navigator
 
 
 class PathPlanner:
-    def __init__(self):
+    def __init__(self, dataset_path):
         self.speed = DRONE_SPEED
         self.step_time = MODEL_TIME_STEP
 
-        self.navigator = get_navigator(NAVIGATOR_TYPE)
+        self.navigator = get_navigator(NAVIGATOR_TYPE, dataset_path)
 
     def plan(self, start: Coordinate, end: Coordinate):
         distance = calculate_distance(start, end)

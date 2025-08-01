@@ -1,15 +1,22 @@
-from common.configuration import PRINT_MODEL_STATISTICS
+from common.configuration import PRINT_MODEL_STATISTICS, LONDON_WAREHOUSES
+from simulation.dispatcher import Dispatcher
+from simulation.fleet import Fleet
+from simulation.noise_monitor import NoiseMonitor
+from simulation.plotter import Plotter
+from simulation.timer import Timer
+
+WAREHOUSES = [location for _, location in LONDON_WAREHOUSES]
 
 
 class Simulator:
-    def __init__(self, number_of_orders, timer, noise_monitor, fleet, dispatcher, plotter):
+    def __init__(self, number_of_orders, number_of_drones, dataset_path):
         self.undelivered_orders_number = number_of_orders
 
-        self.timer = timer
-        self.noise_monitor = noise_monitor
-        self.fleet = fleet
-        self.dispatcher = dispatcher
-        self.plotter = plotter
+        self.timer = Timer()
+        self.noise_monitor = NoiseMonitor(number_of_drones, number_of_orders)
+        self.fleet = Fleet(number_of_drones, dataset_path, WAREHOUSES)
+        self.dispatcher = Dispatcher(number_of_orders, dataset_path)
+        self.plotter = Plotter(WAREHOUSES)
 
     @property
     def delivered_orders_number(self):

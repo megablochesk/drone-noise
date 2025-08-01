@@ -95,6 +95,13 @@ def add_font_style():
         "ytick.labelsize": 15,
     })
 
+
+def finalise_visualisation():
+    add_font_style()
+    save_figures()
+    plot_figures()
+
+
 def ensure_list_length(input_value, reference_list_length):
     if not isinstance(input_value, list):
         return [input_value] * reference_list_length
