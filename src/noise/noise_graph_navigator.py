@@ -10,22 +10,52 @@ from noise.noise_graph_builder import load_or_build_graph
 
 
 class NoiseGraphNavigator:
-    def __init__(self):
+    def __init__(self, heavy_mode=True):
         self.graph = load_or_build_graph()
         self.nodes = list(self.graph.nodes)
-        self.tree = self.build_kdtree()
+        self.heavy_mode = heavy_mode
 
-        self._warehouse_node_cache = {
-            coord: self._query_kdtree(coord)
-            for _, coord in LONDON_WAREHOUSES
-        }
+        if heavy_mode:
+            self.tree = self._build_kdtree()
 
-        self._route_cache = {}
-        self._warehouse_paths = self._load_or_compute_warehouse_paths()
+            self._warehouse_node_cache = {
+                coord: self._query_kdtree(coord)
+                for _, coord in LONDON_WAREHOUSES
+            }
 
-        print("Warehouse paths loaded!")
+            self._route_cache = {}
+            self._warehouse_paths = self._load_or_compute_warehouse_paths()
 
-    def build_kdtree(self):
+            print("Warehouse paths loaded!")
+
+    def nodes_to_coordinates(self, nodes):
+        return [
+            Coordinate(
+                northing=self.graph.nodes[node]["northing"],
+                easting=self.graph.nodes[node]["easting"],
+            )
+            for node in nodes
+        ]
+
+    def find_nearest_node(self, point: Coordinate) -> tuple:
+        cached = self._warehouse_node_cache.get(point)
+        if cached:
+            return cached
+        return self._query_kdtree(point)
+
+
+    def get_optimal_route(self, start: Coordinate, end: Coordinate):
+        if self.heavy_mode:
+            return self.calculate_optimal_route(end, start)
+        return None
+
+    def calculate_optimal_route(self, end, start):
+        start_node = self.find_nearest_node(start)
+        end_node = self.find_nearest_node(end)
+
+        return self._get_or_compute_route(start_node, end_node)
+
+    def _build_kdtree(self):
         return cKDTree([
             (self.graph.nodes[node]["easting"], self.graph.nodes[node]["northing"])
             for node in self.graph
@@ -73,18 +103,6 @@ class NoiseGraphNavigator:
         self._save_paths_to_cache(computed)
         return computed
 
-    def find_nearest_node(self, point: Coordinate) -> tuple:
-        cached = self._warehouse_node_cache.get(point)
-        if cached:
-            return cached
-        return self._query_kdtree(point)
-
-    def get_optimal_route(self, start: Coordinate, end: Coordinate):
-        start_node = self.find_nearest_node(start)
-        end_node = self.find_nearest_node(end)
-
-        return self._get_or_compute_route(start_node, end_node)
-
     def _get_or_compute_route(self, start_node, end_node):
         key = (start_node, end_node)
         rev_key = (end_node, start_node)
@@ -114,12 +132,3 @@ class NoiseGraphNavigator:
     def _cache_and_return(self, key, path):
         self._route_cache[key] = path
         return path
-
-    def nodes_to_coordinates(self, nodes):
-        return [
-            Coordinate(
-                northing=self.graph.nodes[node]["northing"],
-                easting=self.graph.nodes[node]["easting"],
-            )
-            for node in nodes
-        ]
