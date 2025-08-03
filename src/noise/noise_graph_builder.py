@@ -1,4 +1,5 @@
 import json
+from functools import lru_cache
 
 import networkx as nx
 from pyproj import Transformer
@@ -11,7 +12,7 @@ _WGS84_TO_BNG = Transformer.from_crs(4326, 27700, always_xy=True)
 
 NEIGHBOR_SHIFTS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
-
+@lru_cache(maxsize=1)
 def load_or_build_graph(base_noise_path=NAVIGATION_BASE_NOISE_PATH, noise_graph_path=NAVIGATION_GRAPH_PATH):
     if path_exists(noise_graph_path, suffixes=(".pkl", ".graphml")):
         return load_graph(noise_graph_path)

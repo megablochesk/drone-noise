@@ -14,7 +14,8 @@ class PathPlanner:
         self.speed = DRONE_SPEED
         self.step_time = MODEL_TIME_STEP
 
-        self.navigator = get_navigator(NAVIGATOR_TYPE, dataset_path)
+        if NAVIGATOR_TYPE != "straight":
+            self.navigator = get_navigator(NAVIGATOR_TYPE, dataset_path)
 
     def plan(self, start: Coordinate, end: Coordinate):
         distance = calculate_distance(start, end)
