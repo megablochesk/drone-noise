@@ -13,3 +13,9 @@ class DroneStatus(Enum):
     PREPARING = 2
     DELIVERING = 3
     RETURNING = 4
+
+
+class NavigationType(Enum):
+    STRAIGHT = 0
+    HEAVY_NOISE = 1
+    LIGHT_NOISE = 2

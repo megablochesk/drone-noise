@@ -1,6 +1,7 @@
 import math
 
 from common.coordinate import Coordinate
+from common.enum import NavigationType
 
 # Switches
 PRINT_DRONE_STATISTICS = False
@@ -9,7 +10,7 @@ PLOT_MAP = False
 PLOT_STATISTICS = False
 
 TAKE_INTO_ACCOUNT_LANDING = False
-NAVIGATOR_TYPE = "straight"
+NAVIGATOR_TYPE = NavigationType.STRAIGHT
 
 TOTAL_ORDER_NUMBER = 100_000
 TOTAL_DRONE_NUMBER = 500
