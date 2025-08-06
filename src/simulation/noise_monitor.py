@@ -1,13 +1,10 @@
-from common.file_utils import save_drone_noise_data, define_results_path
-from noise.noise_data_processor import calculate_combined_noise_data
+from noise.noise_data_processor import combine_base_and_drone_noise
 from noise.noise_tracker import NoiseTracker
 
 
 class NoiseMonitor:
-    def __init__(self, number_of_drones, number_of_orders):
+    def __init__(self):
         self.tracker = NoiseTracker()
-
-        self.path = define_results_path(number_of_orders, number_of_drones)
 
         self.impact = None
 
@@ -17,6 +14,4 @@ class NoiseMonitor:
     def finish(self, iterations):
         self.tracker.calculate_noise_cells()
 
-        save_drone_noise_data(self.tracker, iterations, self.path)
-
-        self.impact = calculate_combined_noise_data(self.path)
+        self.impact = combine_base_and_drone_noise(self.tracker.noise_cells, iterations)

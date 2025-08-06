@@ -9,13 +9,13 @@ WAREHOUSES = [location for _, location in LONDON_WAREHOUSES]
 
 
 class Simulator:
-    def __init__(self, number_of_orders, number_of_drones, dataset_path):
+    def __init__(self, number_of_orders, number_of_drones, order_dataset_path):
         self.undelivered_orders_number = number_of_orders
 
         self.timer = Timer()
-        self.noise_monitor = NoiseMonitor(number_of_drones, number_of_orders)
-        self.fleet = Fleet(number_of_drones, dataset_path, WAREHOUSES)
-        self.dispatcher = Dispatcher(number_of_orders, dataset_path)
+        self.noise_monitor = NoiseMonitor()
+        self.fleet = Fleet(number_of_drones, order_dataset_path, WAREHOUSES)
+        self.dispatcher = Dispatcher(number_of_orders, order_dataset_path)
         self.plotter = Plotter(WAREHOUSES)
 
     @property
@@ -29,7 +29,7 @@ class Simulator:
                 self.fleet.has_planning_drone)
 
     def run(self):
-        print("Start the simulation...")
+        print("Running simulation...")
 
         while self.has_pending_deliveries and self.timer.running:
             if PRINT_MODEL_STATISTICS:

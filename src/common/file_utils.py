@@ -1,4 +1,3 @@
-import csv
 import os
 import pickle
 
@@ -6,48 +5,11 @@ import networkx as nx
 import osmnx as ox
 import pandas as pd
 
-from common.configuration import RESULT_BASE_PATH, EXPERIMENT_RESULTS_PATH
-
-
-def define_results_path(order_number, drone_number):
-    path = RESULT_BASE_PATH + f"stat_o{order_number}_d{drone_number}"
-
-    if not path_exists(path):
-        os.makedirs(path)
-
-    return path
+from common.configuration import EXPERIMENT_RESULTS_PATH
 
 
 def get_experiment_results_full_file_path(file_name):
     return ensure_suffix(f'{EXPERIMENT_RESULTS_PATH}{file_name}', '.pkl')
-
-
-def save_drone_noise_data(noise_tracker, iteration_count, results_path):
-    matrix_path = f"{results_path}/noise.csv"
-
-    matrix_fields = ['row', 'col', 'avg_noise', 'max_noise']
-
-    matrix_data = [
-        [
-            cell.row,
-            cell.column,
-            cell.total_noise / iteration_count,
-            cell.max_noise
-        ]
-        for cell in noise_tracker.noise_cells
-    ]
-
-    write_csv(matrix_path, matrix_fields, matrix_data)
-
-
-def write_csv(file_path, headers, data, delimiter=','):
-    with open(file_path, 'w', newline='') as f:
-        writer = csv.writer(f, delimiter=delimiter)
-        writer.writerow(headers)
-        writer.writerows(data)
-        f.flush()
-
-    print(f"Done writing {file_path}!")
 
 
 def save_dataframe_to_pickle(dataframe, path):

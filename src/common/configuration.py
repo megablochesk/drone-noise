@@ -75,7 +75,6 @@ NOISE_GRAPH_NAVIGATION_FOLDER = 'recourses/data/noise_graph_navigation/'
 NAVIGATION_GRAPH_PATH = NOISE_GRAPH_NAVIGATION_FOLDER + f'navigation_graph_{NAVIGATION_GRID_CELL_SIZE}'
 WAREHOUSE_PATHS_CACHE = NOISE_GRAPH_NAVIGATION_FOLDER + "warehouse_paths_cache.pkl"
 
-RESULT_BASE_PATH = 'recourses/results/experiments/'
 MAP_FILE_PATH = 'drone_delivery_simulation.html'
 MSOA_POPULATION_PATH = 'recourses/data/MSOA_population_dataset_filtered.geojson'
 CELL_POPULATION_PATH = f'recourses/data/cell_population_{NOISE_GRID_CELL_SIZE}.pkl'
