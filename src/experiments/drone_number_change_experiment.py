@@ -2,15 +2,14 @@ from common.configuration import (
     ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
 )
 from experiments.simulation_based_experiment_utils import (
-    process_datasets_and_drone_number_combinations,
+    run_experiment_for_each_dataset_and_drone_number,
     run_complex_experiment
 )
 
 from visualiser.plotter import (
     plot_avg_noise_barchart, plot_delivered_orders_barchart,
     analyze_and_plot_noise_increase,
-    analyze_and_plot_population_impact, plot_cells_impacted_by_noise,
-    plot_execution_time_barchart
+    analyze_and_plot_population_impact, plot_execution_time_barchart
 )
 
 NUMBER_OF_DRONES_CASES = [100, 250, 500, 750, 1000, 1250]
@@ -24,7 +23,7 @@ ORDER_DATASETS = {
 
 
 def drone_number_change_experiment():
-    return process_datasets_and_drone_number_combinations(
+    return run_experiment_for_each_dataset_and_drone_number(
         ORDER_DATASETS.items(),
         NUMBER_OF_ORDERS,
         NUMBER_OF_DRONES_CASES

@@ -1,5 +1,5 @@
 from common.configuration import get_mixed_order_dataset_pattern
-from experiments.simulation_based_experiment_utils import process_all_datasets, run_complex_experiment
+from experiments.simulation_based_experiment_utils import run_experiment_for_each_dataset, run_complex_experiment
 from visualiser.plot_noise_level_comparison import plot_single_noise_metric_from_different_dfs
 
 NUMBER_OF_ORDERS = 100000
@@ -12,7 +12,7 @@ ORDER_DATASETS = {
 
 
 def mixed_random_and_best_stocking_experiment():
-    return process_all_datasets(
+    return run_experiment_for_each_dataset(
         ORDER_DATASETS.items(),
         NUMBER_OF_ORDERS,
         NUMBER_OF_DRONES

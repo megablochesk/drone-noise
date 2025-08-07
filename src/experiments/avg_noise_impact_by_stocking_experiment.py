@@ -1,7 +1,7 @@
 from common.configuration import (
     ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
 )
-from experiments.simulation_based_experiment_utils import process_all_datasets, run_complex_experiment
+from experiments.simulation_based_experiment_utils import run_experiment_for_each_dataset, run_complex_experiment
 from visualiser.plot_noise_level_comparison import plot_noise_level_comparison
 
 NUMBER_OF_DRONES = 100
@@ -15,7 +15,7 @@ ORDER_DATASETS = {
 
 
 def avg_noise_for_different_stocking_experiment():
-    return process_all_datasets(
+    return run_experiment_for_each_dataset(
         ORDER_DATASETS.items(),
         NUMBER_OF_ORDERS,
         NUMBER_OF_DRONES
