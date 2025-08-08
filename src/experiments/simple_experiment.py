@@ -1,8 +1,8 @@
 from common.configuration import TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, ORDER_BASE_PATH
 from experiments.simulation_based_experiment_utils import run_atomic_experiment, run_complex_experiment
 from visualiser.plot_noise_level_comparison import plot_noise_level_comparison
-from visualiser.plot_utils import plot_figures, save_figures
-from visualiser.statistics import plot_noise_change_barchart
+from visualiser.plot_utils import finalise_visualisation
+from visualiser.statistics import plot_noise_difference_barchart
 
 
 def simple_experiment():
@@ -17,7 +17,7 @@ def simple_experiment():
 def plot_all_statistics(experiment_results):
     noise_impact_df = experiment_results.iloc[0]['noise_impact_df']
 
-    plot_noise_change_barchart(noise_impact_df)
+    plot_noise_difference_barchart(noise_impact_df)
 
     plot_noise_level_comparison(
         noise_impact_df,
@@ -25,8 +25,7 @@ def plot_all_statistics(experiment_results):
         vmax=[80, 35, 1]
     )
 
-    save_figures()
-    plot_figures()
+    finalise_visualisation()
 
 
 def run_standard_experiment(load_saved_results=False):

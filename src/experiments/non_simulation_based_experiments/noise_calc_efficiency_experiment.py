@@ -1,8 +1,9 @@
-import time
 import math
+import time
+
 import numpy as np
-from numba import njit
 from memory_profiler import memory_usage
+from numba import njit
 
 # For demonstration, define needed constants here
 DRONE_NOISE_AT_SOURCE = 70.0

@@ -82,6 +82,8 @@ LONDON_BOUNDARIES_PATH = 'recourses/data/greater-london-boundaries.geo.json'
 
 EXPERIMENT_RESULTS_PATH = 'recourses/experiment_results/'
 
+MATPLOTLIB_BACKEND = 'Qt5Agg'
+
 LONDON_WAREHOUSES = [
     ('DBR1', Coordinate(180193.93, 550041.28)),
     ('DBR2', Coordinate(167766.96, 546937.62)),

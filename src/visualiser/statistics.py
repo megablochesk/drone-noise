@@ -3,33 +3,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from common.configuration import (
-    ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST, TOTAL_ORDER_NUMBER
+    ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST, TOTAL_ORDER_NUMBER, MATPLOTLIB_BACKEND
 )
 from common.coordinate import calculate_distance
 from orders.order_generator import load_orders
-from visualiser.plot_utils import plot_standalone_heatmap
 
-matplotlib.use('Qt5Agg')
-
-
-def plot_noise_difference_colormap(dataframe):
-    plot_noise_colormap(dataframe, 'noise_difference')
-
-
-def plot_noise_colormap(dataframe, noise_metric):
-    min_level = int(np.floor(dataframe[noise_metric].min()))
-    max_level = int(np.ceil(dataframe[noise_metric].max()))
-
-    plot_standalone_heatmap(
-        dataframe,
-        index='row',
-        columns='col',
-        values=noise_metric,
-        vmin=min_level,
-        vmax=max_level,
-        xlabel='Column',
-        ylabel='Row',
-        filename='dr_noise_imp')
+matplotlib.use(MATPLOTLIB_BACKEND)
 
 
 def prepare_noise_data(dataframe, noise_metric='noise_difference', bin_gap=0.5):
@@ -59,7 +38,7 @@ def plot_barchart(x_labels, counts, title, xlabel, ylabel, filename='barchart_de
     plt.tight_layout()
 
 
-def plot_noise_change_barchart(dataframe, bin_gap=0.5, file_name='noise_change_barchart'):
+def plot_noise_difference_barchart(dataframe, bin_gap=0.5, file_name='noise_change_barchart'):
     x_labels, noise_counts = prepare_noise_data(dataframe, bin_gap=bin_gap)
     plot_barchart(x_labels, noise_counts,
                   title='Number of Cells by Noise Level Difference',
@@ -78,7 +57,7 @@ def _compute_distance_stats(delivery_dataset):
     }
 
 
-def compute_all_distance_stats():
+def _compute_all_distance_stats():
     order_paths = {
         'worst': ORDER_BASE_PATH_FURTHEST,
         'random': ORDER_BASE_PATH_RANDOM,
@@ -107,7 +86,7 @@ def plot_delivery_distance_barchart(ax, x, stats, width):
 
 
 def plot_delivery_distance_statistics():
-    stats = compute_all_distance_stats()
+    stats = _compute_all_distance_stats()
     labels = ['Min', 'Mean', 'Median', 'Max']
     x = np.arange(len(labels))
     width = 0.25

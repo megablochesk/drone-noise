@@ -5,12 +5,9 @@ from experiments.simulation_based_experiment_utils import (
     run_experiment_for_each_dataset_and_drone_number,
     run_complex_experiment
 )
+from visualiser.cell_noise_stat_plotter import analyze_and_plot_noise_increase, analyze_and_plot_population_impact
 
-from visualiser.plotter import (
-    plot_avg_noise_barchart, plot_delivered_orders_barchart,
-    analyze_and_plot_noise_increase,
-    analyze_and_plot_population_impact, plot_execution_time_barchart
-)
+from visualiser.plotter import plot_avg_noise_barchart, plot_delivered_orders_barchart, plot_execution_time_barchart
 
 NUMBER_OF_DRONES_CASES = [100, 250, 500, 750, 1000, 1250]
 NUMBER_OF_ORDERS = 100000
@@ -31,8 +28,6 @@ def drone_number_change_experiment():
 
 
 def plot_all_statistics(experiment_results):
-    # plot_cells_impacted_by_noise(experiment_results, 55)
-
     plot_execution_time_barchart(experiment_results)
 
     plot_avg_noise_barchart(experiment_results)

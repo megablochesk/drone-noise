@@ -3,9 +3,10 @@ import math
 import matplotlib
 import matplotlib.pyplot as plt
 
+from common.configuration import MATPLOTLIB_BACKEND
 from visualiser.plot_utils import plot_multiple_heatmaps
 
-matplotlib.use('Qt5Agg')
+matplotlib.use(MATPLOTLIB_BACKEND)
 
 METRICS = ['noise_level', 'average_noise', 'noise_difference']
 TITLES = ['Base City Noise', 'Drone Noise', 'City Noise Increase']
