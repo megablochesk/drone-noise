@@ -1,9 +1,11 @@
 from pathlib import Path
 
-from common.configuration import ORDER_FOLDER
 from common.file_utils import save_data_as_pickle_highest_protocol
+from common.model_configs import model_config
 from noise.navigator.heavy import HeavyNavigator
 from orders.order_generator import load_orders
+
+ORDER_FOLDER = model_config.paths.order_folder
 
 NUMBER_OF_ORDERS = -1  # all
 NOISE_GRAPH_NAVIGATOR = HeavyNavigator()

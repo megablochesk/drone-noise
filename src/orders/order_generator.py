@@ -5,11 +5,14 @@ import pandas as pd
 from shapely.geometry import shape, Point
 
 from common.configuration import (
-    ORDER_BASE_PATH, ORDER_DATASET_TYPES, LONDON_WAREHOUSES, MSOA_POPULATION_PATH,
-    get_mixed_order_dataset_pattern, get_single_type_order_dataset_pattern
+    ORDER_BASE_PATH, ORDER_DATASET_TYPES, get_mixed_order_dataset_pattern, get_single_type_order_dataset_pattern
 )
 from common.coordinate import Coordinate
+from common.model_configs import model_config
 from orders.order import Order
+
+MSOA_POPULATION_PATH = model_config.paths.msoa_population_path
+LONDON_WAREHOUSES = list(model_config.warehouses.bng_coordinates.items())
 
 
 def load_raw_orders(path):

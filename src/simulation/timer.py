@@ -1,7 +1,12 @@
-from common.configuration import MODEL_START_TIME, MODEL_END_TIME, MODEL_TIME_STEP
+from common.model_configs import model_config
 
 class Timer:
-    def __init__(self, start=MODEL_START_TIME, end=MODEL_END_TIME, step=MODEL_TIME_STEP):
+    def __init__(
+            self,
+            start=model_config.time.start_s,
+            end=model_config.time.end_s,
+            step=model_config.time.step_s
+    ):
         self.now = start
         self.end = end
         self.step = step

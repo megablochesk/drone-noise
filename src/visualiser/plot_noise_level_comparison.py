@@ -3,10 +3,10 @@ import math
 import matplotlib
 import matplotlib.pyplot as plt
 
-from common.configuration import MATPLOTLIB_BACKEND
+from common.model_configs import model_config
 from visualiser.plot_utils import plot_multiple_heatmaps
 
-matplotlib.use(MATPLOTLIB_BACKEND)
+matplotlib.use(model_config.paths.matplotlib_backend)
 
 METRICS = ['noise_level', 'average_noise', 'noise_difference']
 TITLES = ['Base City Noise', 'Drone Noise', 'City Noise Increase']

@@ -16,8 +16,8 @@ class Switches:
 
 @dataclass(frozen=True)
 class SimulationConfig:
-    orders: int = 100_000
-    drones: int = 500
+    orders: int = 100
+    drones: int = 100
     navigator_type: NavigationType = NavigationType.STRAIGHT
     order_dataset_types: Tuple[str, ...] = ("furthest", "random", "closest")
 

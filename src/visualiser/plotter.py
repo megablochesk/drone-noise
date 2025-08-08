@@ -1,10 +1,9 @@
 import matplotlib
 
-from common.configuration import MATPLOTLIB_BACKEND
-from common.configuration import NUMBER_OF_HOURS
+from common.model_configs import model_config
 from visualiser.barchart import plot_barchart_stats
 
-matplotlib.use(MATPLOTLIB_BACKEND)
+matplotlib.use(model_config.paths.matplotlib_backend)
 
 
 def plot_avg_noise_barchart(results_df):
@@ -23,7 +22,7 @@ def plot_delivered_orders_barchart(results_df):
         results_df,
         value_column='delivered_orders_number',
         xlabel='Number of Drones',
-        ylabel=f'Number of Orders Delivered in {NUMBER_OF_HOURS} Hours',
+        ylabel=f'Number of Orders Delivered in {model_config.time.hours} Hours',
         # title='Delivered Orders by Drone Number and Dataset',
         filename='del_orders'
     )

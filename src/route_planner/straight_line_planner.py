@@ -1,6 +1,9 @@
-from common.configuration import DRONE_SPEED, MODEL_TIME_STEP
 from common.coordinate import Coordinate, calculate_distance
+from common.model_configs import model_config
 from route_planner.route_planner import RoutePlanner
+
+MODEL_TIME_STEP = model_config.time.step_s
+DRONE_SPEED = model_config.drone.speed_mps
 
 
 class StraightLinePlanner(RoutePlanner):

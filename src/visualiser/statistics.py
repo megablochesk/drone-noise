@@ -3,12 +3,13 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from common.configuration import (
-    ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST, TOTAL_ORDER_NUMBER, MATPLOTLIB_BACKEND
+    ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST, TOTAL_ORDER_NUMBER
 )
 from common.coordinate import calculate_distance
+from common.model_configs import model_config
 from orders.order_generator import load_orders
 
-matplotlib.use(MATPLOTLIB_BACKEND)
+matplotlib.use(model_config.paths.matplotlib_backend)
 
 
 def prepare_noise_data(dataframe, noise_metric='noise_difference', bin_gap=0.5):

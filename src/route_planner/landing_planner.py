@@ -1,5 +1,12 @@
-from common.configuration import TAKE_INTO_ACCOUNT_LANDING, NUMBER_OF_LANDING_STEPS, DRONE_FLIGHT_ALTITUDE, \
-    INTERMEDIATE_ALTITUDES_ASCENDING, INTERMEDIATE_ALTITUDES_DESCENDING
+from common.configuration import TAKE_INTO_ACCOUNT_LANDING
+from common.model_configs import model_config
+
+NUMBER_OF_LANDING_STEPS = model_config.landing_steps
+
+DRONE_FLIGHT_ALTITUDE = model_config.drone.flight_altitude_m
+
+INTERMEDIATE_ALTITUDES_ASCENDING = model_config.intermediate_altitudes_ascending
+INTERMEDIATE_ALTITUDES_DESCENDING = model_config.intermediate_altitudes_descending
 
 
 class AltitudePlanner:

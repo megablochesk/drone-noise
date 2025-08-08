@@ -1,7 +1,10 @@
 import numpy as np
 from numba import njit
 
-from common.configuration import DRONE_NOISE_AT_SOURCE, DRONE_FLIGHT_ALTITUDE
+from common.model_configs import model_config
+
+DRONE_FLIGHT_ALTITUDE = model_config.drone.flight_altitude_m
+DRONE_NOISE_AT_SOURCE = model_config.drone.noise_at_source_db
 
 DRONE_ALTITUDE_SQUARED = DRONE_FLIGHT_ALTITUDE ** 2
 BASELINE_NOISE_AT_ALTITUDE = DRONE_NOISE_AT_SOURCE - 20.0 * np.log10(DRONE_FLIGHT_ALTITUDE)

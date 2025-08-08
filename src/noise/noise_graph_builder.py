@@ -5,8 +5,11 @@ import networkx as nx
 from pyproj import Transformer
 from shapely.geometry import shape
 
-from common.configuration import NAVIGATION_GRID_CELL_SIZE, NAVIGATION_BASE_NOISE_PATH, NAVIGATION_GRAPH_PATH
+from common.configuration import NAVIGATION_BASE_NOISE_PATH, NAVIGATION_GRAPH_PATH
 from common.file_utils import load_graph, save_graph, path_exists
+from common.model_configs import model_config
+
+NAVIGATION_GRID_CELL_SIZE = model_config.grid.nav_cell_m
 
 _WGS84_TO_BNG = Transformer.from_crs(4326, 27700, always_xy=True)
 

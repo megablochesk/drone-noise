@@ -1,9 +1,14 @@
 import numpy as np
 
-from common.configuration import NAVIGATION_GRID_CELL_SIZE, DRONE_SPEED, MODEL_TIME_STEP, NAVIGATOR_TYPE
+from common.configuration import NAVIGATOR_TYPE
 from common.coordinate import calculate_distance
+from common.model_configs import model_config
 from noise.navigator import get_navigator
 from route_planner.route_planner import RoutePlanner
+
+MODEL_TIME_STEP = model_config.time.step_s
+DRONE_SPEED = model_config.drone.speed_mps
+NAVIGATION_GRID_CELL_SIZE = model_config.grid.nav_cell_m
 
 
 class NoiseBasedPlanner(RoutePlanner):

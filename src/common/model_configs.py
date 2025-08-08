@@ -113,7 +113,7 @@ class ModelConfig:
     grid: GridConfig = field(default_factory=GridConfig)
     time: TimeConfig = field(default_factory=TimeConfig)
     drone: DroneConfig = field(default_factory=DroneConfig)
-    map_bounds: MapBoundaries = field(default_factory=MapBoundaries)
+    map_boundaries: MapBoundaries = field(default_factory=MapBoundaries)
     paths: PathsConfiguration = field(default_factory=PathsConfiguration)
     warehouses: Warehouses = field(default_factory=Warehouses.london_default)
 

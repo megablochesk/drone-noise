@@ -5,7 +5,9 @@ import networkx as nx
 import osmnx as ox
 import pandas as pd
 
-from common.configuration import EXPERIMENT_RESULTS_PATH
+from common.model_configs import model_config
+
+EXPERIMENT_RESULTS_PATH = model_config.paths.experiment_results_path
 
 
 def get_experiment_results_full_file_path(file_name):

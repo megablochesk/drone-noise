@@ -2,11 +2,14 @@ import math
 from dataclasses import dataclass
 
 import geopandas as gpd
-from common.configuration import (
-    MapBoundaries as Map, NOISE_GRID_CELL_SIZE as CELL_SIZE, LONDON_BOUNDARIES_PATH
-)
-from common.coordinate import Coordinate
 from shapely.geometry import box
+
+from common.coordinate import Coordinate
+from common.model_configs import model_config
+
+BOUNDARIES = model_config.map_boundaries
+CELL_SIZE = model_config.grid.noise_cell_m
+LONDON_BOUNDARIES_PATH = model_config.paths.LONDON_BOUNDARIES_PATH
 
 
 @dataclass
@@ -28,8 +31,8 @@ def load_and_reproject_geojson(file_path):
 
 
 def compute_grid_dimensions():
-    rows = math.floor((Map.TOP - Map.BOTTOM) / CELL_SIZE)
-    cols = math.floor((Map.RIGHT - Map.LEFT) / CELL_SIZE)
+    rows = math.floor((BOUNDARIES.top - BOUNDARIES.bottom) / CELL_SIZE)
+    cols = math.floor((BOUNDARIES.right - BOUNDARIES.left) / CELL_SIZE)
 
     return rows, cols
 
@@ -39,9 +42,9 @@ def create_grid():
     num_rows, num_cols = compute_grid_dimensions()
 
     for r in range(num_rows):
-        y = Map.BOTTOM + r * CELL_SIZE
+        y = BOUNDARIES.bottom + r * CELL_SIZE
         for c in range(num_cols):
-            x = Map.LEFT + c * CELL_SIZE
+            x = BOUNDARIES.left + c * CELL_SIZE
             geometry = box(x, y, x + CELL_SIZE, y + CELL_SIZE)
             cells.append({
                 "geometry": geometry,
@@ -74,8 +77,8 @@ def build_cell_matrix():
         r, c = cell["row"], cell["col"]
 
         centroid = Coordinate(
-            northing=Map.BOTTOM + (r + 0.5) * CELL_SIZE,
-            easting=Map.LEFT + (c + 0.5) * CELL_SIZE,
+            northing=BOUNDARIES.bottom + (r + 0.5) * CELL_SIZE,
+            easting=BOUNDARIES.left + (c + 0.5) * CELL_SIZE
         )
 
         matrix.append(Cell(r, c, centroid))

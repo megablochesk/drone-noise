@@ -1,10 +1,14 @@
 from typing import List
 
 import folium
-from common.configuration import MapBoundaries as Map, MAP_FILE_PATH
+
 from common.coordinate import Coordinate
+from common.model_configs import model_config
 from drones.drone import Drone
 from noise.noise_overlay_generator import create_noise_layer, get_colormap
+
+BOUNDARIES = model_config.map_boundaries
+MAP_FILE_PATH = model_config.paths.MAP_FILE_PATH
 
 MIN_NOISE_LEVEL = 40
 MAX_NOISE_LEVEL = 100
@@ -12,8 +16,8 @@ MAX_NOISE_LEVEL = 100
 
 class FoliumPlotter:
     def __init__(self, warehouses: List[Coordinate]):
-        center_northing = (Map.BOTTOM + Map.TOP) / 2
-        center_easting = (Map.LEFT + Map.RIGHT) / 2
+        center_northing = (BOUNDARIES.bottom + BOUNDARIES.top) / 2
+        center_easting = (BOUNDARIES.left + BOUNDARIES.right) / 2
         center_latlon = Coordinate(center_northing, center_easting).convert_to_latlon()
 
         self.map = folium.Map(location=center_latlon, zoom_start=13)

@@ -4,7 +4,9 @@ import osmnx as ox
 from shapely.geometry import Point, MultiPoint
 from shapely.ops import voronoi_diagram, unary_union
 
-from common.configuration import LONDON_WAREHOUSES_LATLON as WAREHOUSES
+from common.model_configs import model_config
+
+WAREHOUSES = list(model_config.warehouses.latlon_coordinates.items())
 
 
 def get_area_boundary(location):
