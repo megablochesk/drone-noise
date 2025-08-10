@@ -37,36 +37,6 @@ class GridConfig:
     nav_cell_m: int = 100
 
 @dataclass(frozen=True)
-class PathsConfiguration:
-    order_folder: str = "recourses/data/order/"
-    base_noise_folder: str = "recourses/data/base_noise/"
-    noise_graph_navigation_folder: str = "recourses/data/noise_graph_navigation/"
-    msoa_population_path: str = "recourses/data/MSOA_population_dataset_filtered.geojson"
-    london_boundaries_path: str = "recourses/data/greater-london-boundaries.geo.json"
-    experiment_results_path: str = "recourses/experiment_results/"
-    map_file_path: str = "drone_delivery_simulation.html"
-
-    matplotlib_backend: str = "Qt5Agg"
-
-    def single_type_order_dataset(self, order_dataset_type: str, stocking_number: int) -> str:
-        return f"{self.order_folder}drone_delivery_orders_{stocking_number}_{order_dataset_type}.csv"
-
-    def mixed_order_dataset(self, random_ratio: int, closest_ratio: int, stocking_number: int) -> str:
-        return f"{self.order_folder}mixed_stocking_{stocking_number}_random{random_ratio}_closest{closest_ratio}.csv"
-
-    def base_noise_path(self, cell_size_meters: int) -> str:
-        return f"{self.base_noise_folder}base_noise_london_map_{cell_size_meters}.geojson"
-
-    def navigation_graph_path(self, navigation_cell_size_meters: int) -> str:
-        return f"{self.noise_graph_navigation_folder}navigation_graph_{navigation_cell_size_meters}"
-
-    def warehouse_paths_cache(self) -> str:
-        return f"{self.noise_graph_navigation_folder}warehouse_paths_cache.pkl"
-
-    def cell_population_path(self, noise_cell_size_meters: int) -> str:
-        return f"recourses/data/cell_population_{noise_cell_size_meters}.pkl"
-
-@dataclass(frozen=True)
 class Warehouses:
     bng_coordinates: Dict[str, Coordinate]
     latlon_coordinates: Dict[str, Tuple[float, float]]
@@ -114,7 +84,6 @@ class ModelConfig:
     time: TimeConfig = field(default_factory=TimeConfig)
     drone: DroneConfig = field(default_factory=DroneConfig)
     map_boundaries: MapBoundaries = field(default_factory=MapBoundaries)
-    paths: PathsConfiguration = field(default_factory=PathsConfiguration)
     warehouses: Warehouses = field(default_factory=Warehouses.london_default)
 
     @property

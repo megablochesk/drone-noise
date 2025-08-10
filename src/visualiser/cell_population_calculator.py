@@ -1,11 +1,12 @@
-import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+import pandas as pd
 from tqdm import tqdm
 
-from orders.order_generator import MSOA_INDEX, MSOA_POPULATIONS
-from noise.grid_generator import get_valid_cells
 from common.file_utils import save_dataframe_to_pickle, load_dataframe_from_pickle
-from common.configuration import CELL_POPULATION_PATH
+from common.path_configs import CELL_POPULATION_PATH
+from noise.grid_generator import get_valid_cells
+from orders.order_generator import MSOA_INDEX, MSOA_POPULATIONS
 
 CELL_POPULATION = load_dataframe_from_pickle(CELL_POPULATION_PATH)
 

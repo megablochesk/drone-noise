@@ -5,14 +5,6 @@ import networkx as nx
 import osmnx as ox
 import pandas as pd
 
-from common.model_configs import model_config
-
-EXPERIMENT_RESULTS_PATH = model_config.paths.experiment_results_path
-
-
-def get_experiment_results_full_file_path(file_name):
-    return ensure_suffix(f'{EXPERIMENT_RESULTS_PATH}{file_name}', '.pkl')
-
 
 def save_dataframe_to_pickle(dataframe, path):
     dataframe.to_pickle(path)

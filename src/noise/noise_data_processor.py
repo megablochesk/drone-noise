@@ -2,7 +2,7 @@ import json
 
 import pandas as pd
 
-from common.configuration import BASE_NOISE_PATH
+from common.path_configs import BASE_NOISE_PATH
 from noise.noise_math_utils import add_two_decibel_levels
 
 

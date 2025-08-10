@@ -2,9 +2,9 @@ import matplotlib
 import seaborn as sns
 from matplotlib import pyplot as plt
 
-from common.model_configs import model_config
+from common.path_configs import PATH_CONFIGS
 
-matplotlib.use(model_config.paths.matplotlib_backend)
+matplotlib.use(PATH_CONFIGS.matplotlib_backend)
 
 COLORMAP = "viridis"
 

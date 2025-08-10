@@ -1,6 +1,4 @@
-from common.configuration import (
-    ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
-)
+from common.path_configs import ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
 from experiments.simulation_based_experiment_utils import (
     run_experiment_for_each_dataset_and_drone_number,
     run_complex_experiment

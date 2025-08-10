@@ -1,9 +1,10 @@
 import matplotlib
 
 from common.model_configs import model_config
+from common.path_configs import PATH_CONFIGS
 from visualiser.barchart import plot_barchart_stats
 
-matplotlib.use(model_config.paths.matplotlib_backend)
+matplotlib.use(PATH_CONFIGS.matplotlib_backend)
 
 
 def plot_avg_noise_barchart(results_df):

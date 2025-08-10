@@ -6,10 +6,11 @@ from shapely.geometry import box
 
 from common.coordinate import Coordinate
 from common.model_configs import model_config
+from common.path_configs import PATH_CONFIGS
 
 BOUNDARIES = model_config.map_boundaries
 CELL_SIZE = model_config.grid.noise_cell_m
-LONDON_BOUNDARIES_PATH = model_config.paths.LONDON_BOUNDARIES_PATH
+LONDON_BOUNDARIES_PATH = PATH_CONFIGS.london_boundaries_path
 
 
 @dataclass

@@ -1,10 +1,12 @@
-from common.configuration import PRINT_MODEL_STATISTICS
 from common.model_configs import model_config
+from common.simulation_configs import simulation_configs
 from simulation.dispatcher import Dispatcher
 from simulation.fleet import Fleet
 from simulation.noise_monitor import NoiseMonitor
 from simulation.plotter import Plotter
 from simulation.timer import Timer
+
+PRINT_MODEL_STATISTICS = simulation_configs.switches.print_model_stats
 
 LONDON_WAREHOUSES = list(model_config.warehouses.bng_coordinates.items())
 WAREHOUSES = [location for _, location in LONDON_WAREHOUSES]

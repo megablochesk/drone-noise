@@ -4,6 +4,7 @@ from dataclasses import dataclass, replace, field
 from typing import Tuple
 
 from common.enum import NavigationType
+from common.path_configs import ORDER_BASE_PATH_MIXED_50_50
 
 
 @dataclass(frozen=True)
@@ -25,7 +26,7 @@ class SimulationConfig:
 class SimulatorConfig:
     switches: Switches = field(default_factory=Switches)
     sim: SimulatorConfig = field(default_factory=SimulationConfig)
-    default_order_base_path: str = "recourses/data/order/mixed_stocking_100000_random50_closest50.csv"
+    default_order_base_path: str = ORDER_BASE_PATH_MIXED_50_50
 
     def with_overrides(self, **kwargs) -> "SimulatorConfig":
         return replace(self, **kwargs)

@@ -6,10 +6,11 @@ from scipy.spatial import cKDTree
 from common.coordinate import Coordinate
 from common.file_utils import save_data_as_pickle, load_data_from_pickle, path_exists
 from common.model_configs import model_config
+from common.path_configs import PATH_CONFIGS
 from noise.navigator.base import BaseNavigator
 
 LONDON_WAREHOUSES = list(model_config.warehouses.bng_coordinates.items())
-WAREHOUSE_PATHS_CACHE = model_config.paths.warehouse_paths_cache()
+WAREHOUSE_PATHS_CACHE = PATH_CONFIGS.warehouse_paths_cache()
 
 
 class HeavyNavigator(BaseNavigator):

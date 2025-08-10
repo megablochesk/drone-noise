@@ -1,8 +1,8 @@
 import numpy as np
 
-from common.configuration import NAVIGATOR_TYPE
 from common.coordinate import calculate_distance
 from common.model_configs import model_config
+from common.simulation_configs import simulation_configs
 from noise.navigator import get_navigator
 from route_planner.route_planner import RoutePlanner
 
@@ -13,7 +13,7 @@ NAVIGATION_GRID_CELL_SIZE = model_config.grid.nav_cell_m
 
 class NoiseBasedPlanner(RoutePlanner):
     def __init__(self, dataset_path):
-        self.navigator = get_navigator(NAVIGATOR_TYPE, dataset_path)
+        self.navigator = get_navigator(simulation_configs.sim.navigator_type, dataset_path)
 
     def plan_route(self, start, end):
         if calculate_distance(start, end) == 0:

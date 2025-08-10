@@ -1,4 +1,5 @@
-from common.configuration import get_mixed_order_dataset_pattern
+from common.path_configs import get_mixed_order_dataset_pattern
+from common.simulation_configs import simulation_configs
 from experiments.simulation_based_experiment_utils import run_experiment_for_each_dataset, run_complex_experiment
 from visualiser.plot_noise_level_comparison import plot_single_noise_metric_from_different_dfs
 
@@ -6,7 +7,7 @@ NUMBER_OF_ORDERS = 100000
 NUMBER_OF_DRONES = 500
 
 ORDER_DATASETS = {
-    f'r{random_ratio}_c{closest_ratio}': get_mixed_order_dataset_pattern(random_ratio, closest_ratio)
+    f'r{random_ratio}_c{closest_ratio}': get_mixed_order_dataset_pattern(random_ratio, closest_ratio, simulation_configs.sim.orders)
     for random_ratio, closest_ratio in [(ratio, 100 - ratio) for ratio in range(100, 0, -10)]
 }
 

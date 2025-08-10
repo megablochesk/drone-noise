@@ -1,7 +1,9 @@
-from common.configuration import PRINT_DRONE_STATISTICS
-from common.coordinate import Coordinate, calculate_distance
+from common.coordinate import Coordinate
 from common.enum import DroneStatus
+from common.simulation_configs import simulation_configs
 from orders.order import Order
+
+PRINT_DRONE_STATISTICS = simulation_configs.switches.print_drone_stats
 
 
 class Drone:

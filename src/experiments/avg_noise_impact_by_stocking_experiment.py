@@ -1,6 +1,4 @@
-from common.configuration import (
-    ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
-)
+from common.path_configs import ORDER_BASE_PATH_CLOSEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_FURTHEST
 from experiments.simulation_based_experiment_utils import run_experiment_for_each_dataset, run_complex_experiment
 from visualiser.plot_noise_level_comparison import plot_noise_level_comparison
 

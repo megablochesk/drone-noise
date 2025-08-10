@@ -5,9 +5,9 @@ import networkx as nx
 from pyproj import Transformer
 from shapely.geometry import shape
 
-from common.configuration import NAVIGATION_BASE_NOISE_PATH, NAVIGATION_GRAPH_PATH
 from common.file_utils import load_graph, save_graph, path_exists
 from common.model_configs import model_config
+from common.path_configs import NAVIGATION_BASE_NOISE_PATH, NAVIGATION_GRAPH_PATH
 
 NAVIGATION_GRID_CELL_SIZE = model_config.grid.nav_cell_m
 

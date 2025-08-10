@@ -12,7 +12,7 @@ from shapely.geometry import shape
 matplotlib.use("TkAgg")
 
 
-from common.configuration import NAVIGATION_BASE_NOISE_PATH
+from common.path_configs import NAVIGATION_BASE_NOISE_PATH
 
 
 def read_base_noise_data(path: str) -> pd.DataFrame:

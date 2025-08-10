@@ -4,11 +4,11 @@ import folium
 
 from common.coordinate import Coordinate
 from common.model_configs import model_config
+from common.path_configs import PATH_CONFIGS
 from drones.drone import Drone
 from noise.noise_overlay_generator import create_noise_layer, get_colormap
 
 BOUNDARIES = model_config.map_boundaries
-MAP_FILE_PATH = model_config.paths.MAP_FILE_PATH
 
 MIN_NOISE_LEVEL = 40
 MAX_NOISE_LEVEL = 100
@@ -77,5 +77,5 @@ class FoliumPlotter:
     def save_flight_map(self):
         folium.LayerControl().add_to(self.map)
 
-        self.map.save(MAP_FILE_PATH)
+        self.map.save(PATH_CONFIGS.map_file_map)
         print(f"Map saved!")

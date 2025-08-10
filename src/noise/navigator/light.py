@@ -1,8 +1,9 @@
 from typing import Dict, List, Tuple
 
-from common.configuration import get_noise_navigation_route_orders_file, ORDER_BASE_PATH
 from common.coordinate import Coordinate
 from common.file_utils import load_data_from_pickle, path_exists
+from common.path_configs import get_noise_navigation_route_orders_file
+from common.simulation_configs import simulation_configs
 from .base import BaseNavigator
 
 
@@ -11,7 +12,7 @@ class LightNavigator(BaseNavigator):
         super().__init__()
 
         if order_route_path is None:
-            order_route_path = ORDER_BASE_PATH
+            order_route_path = simulation_configs.default_order_base_path
 
         route_pickle_path = get_noise_navigation_route_orders_file(order_route_path)
 

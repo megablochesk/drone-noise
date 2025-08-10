@@ -1,4 +1,4 @@
-from common.configuration import TOTAL_ORDER_NUMBER, TOTAL_DRONE_NUMBER, ORDER_BASE_PATH
+from common.simulation_configs import simulation_configs
 from experiments.simulation_based_experiment_utils import run_atomic_experiment, run_complex_experiment
 from visualiser.plot_noise_level_comparison import plot_noise_level_comparison
 from visualiser.plot_utils import finalise_visualisation
@@ -8,9 +8,9 @@ from visualiser.statistics import plot_noise_difference_barchart
 def simple_experiment():
     return run_atomic_experiment(
         'simple',
-        ORDER_BASE_PATH,
-        TOTAL_ORDER_NUMBER,
-        TOTAL_DRONE_NUMBER
+        simulation_configs.default_order_base_path,
+        simulation_configs.sim.orders,
+        simulation_configs.sim.drones
     )
 
 
