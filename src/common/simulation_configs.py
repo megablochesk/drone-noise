@@ -8,7 +8,6 @@ from common.path_configs import ORDER_BASE_PATH_MIXED_50_50
 
 @dataclass(frozen=True)
 class Switches:
-    print_drone_stats: bool = False
     print_model_stats: bool = False
     plot_map: bool = False
     drone_landing: bool = False

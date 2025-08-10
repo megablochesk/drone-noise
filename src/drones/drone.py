@@ -1,9 +1,6 @@
 from common.coordinate import Coordinate
 from common.enum import DroneStatus
-from common.simulation_configs import simulation_configs
 from orders.order import Order
-
-PRINT_DRONE_STATISTICS = simulation_configs.switches.print_drone_stats
 
 
 class Drone:
@@ -32,32 +29,20 @@ class Drone:
         self.destination = self.order.end_location
         self.status = DroneStatus.PREPARING
         self.order.mark_as_accepted()
-
-        if PRINT_DRONE_STATISTICS:
-            print(f"Drone {self.drone_id} accepted order {self.order.order_id} and waiting for the route generation")
     
     def start_delivering(self):
         self.order.mark_as_en_route()
         self.status = DroneStatus.DELIVERING
-
-        if PRINT_DRONE_STATISTICS:
-            print(f"Drone '{self.drone_id}' is delivering order {self.order.order_id} to {self.destination}")
     
     def complete_delivering(self):
         self.order.mark_as_delivered()
         self.status = DroneStatus.RETURNING
         self.destination = self.return_location
-
-        if PRINT_DRONE_STATISTICS:
-            print(f"Drone {self.drone_id} delivered order {self.order.order_id} and is flying to {self.destination}")
     
     def return_to_warehouse(self):
         self.status = DroneStatus.FREE
         self.order = None
         self.destination = None
-
-        if PRINT_DRONE_STATISTICS:
-            print(f"Drone {self.drone_id} returned to the nearest warehouse and start to recharge")
     
     def drone_has_route(self):
         return bool(self.route)
