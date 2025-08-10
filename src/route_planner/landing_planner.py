@@ -1,7 +1,7 @@
 from common.model_configs import model_config
 from common.simulation_configs import simulation_configs
 
-TAKE_INTO_ACCOUNT_LANDING = simulation_configs.switches.take_landing_into_account
+TAKE_INTO_ACCOUNT_LANDING = simulation_configs.switches.drone_landing
 
 NUMBER_OF_LANDING_STEPS = model_config.landing_steps
 

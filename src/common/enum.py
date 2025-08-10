@@ -19,3 +19,9 @@ class NavigationType(Enum):
     STRAIGHT = 0
     HEAVY_NOISE = 1
     LIGHT_NOISE = 2
+
+
+class OrderDatasetType(Enum):
+    RANDOM = 'random'
+    FURTHEST = 'furthest'
+    CLOSEST = 'closest'

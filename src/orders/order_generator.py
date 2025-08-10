@@ -5,6 +5,7 @@ import pandas as pd
 from shapely.geometry import shape, Point
 
 from common.coordinate import Coordinate
+from common.enum import OrderDatasetType
 from common.model_configs import model_config
 from common.path_configs import PATH_CONFIGS
 from common.path_configs import get_single_type_order_dataset_pattern, get_mixed_order_dataset_pattern
@@ -15,6 +16,7 @@ MSOA_POPULATION_PATH = PATH_CONFIGS.msoa_population_path
 LONDON_WAREHOUSES = list(model_config.warehouses.bng_coordinates.items())
 ORDER_BASE_PATH = simulation_configs.default_order_base_path
 
+ORDER_DATASET_TYPES = tuple(e.value for e in OrderDatasetType)
 
 def load_raw_orders(path):
     return pd.read_csv(path)
@@ -155,11 +157,11 @@ def choose_random_warehouse():
 
 def choose_warehouse(point, method):
     match method:
-        case 'closest':
+        case OrderDatasetType.CLOSEST:
             return find_closest_warehouse(point)
-        case 'furthest':
+        case OrderDatasetType.FURTHEST:
             return find_furthest_warehouse(point)
-        case 'random':
+        case OrderDatasetType.RANDOM:
             return choose_random_warehouse()
         case _:
             raise ValueError(f"Unknown warehouse selection method: {method}")
@@ -198,7 +200,7 @@ def generate_datasets(number_of_deliveries=10_000):
 
     destinations = [generate_random_population_based_point() for _ in range(number_of_deliveries)]
 
-    for method in simulation_configs.sim.order_dataset_types:
+    for method in ORDER_DATASET_TYPES:
         orders = []
         for order_id in range(1, number_of_deliveries + 1):
             orders.append(generate_order(order_id, destinations[order_id - 1], method))
