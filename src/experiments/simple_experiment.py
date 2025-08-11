@@ -9,8 +9,8 @@ def simple_experiment():
     return run_atomic_experiment(
         'simple',
         simulation_configs.default_order_base_path,
-        simulation_configs.sim.orders,
-        simulation_configs.sim.drones
+        simulation_configs.orders,
+        simulation_configs.drones
     )
 
 

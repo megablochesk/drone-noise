@@ -7,7 +7,7 @@ NUMBER_OF_ORDERS = 100000
 NUMBER_OF_DRONES = 500
 
 ORDER_DATASETS = {
-    f'r{random_ratio}_c{closest_ratio}': get_mixed_order_dataset_pattern(random_ratio, closest_ratio, simulation_configs.sim.orders)
+    f'r{random_ratio}_c{closest_ratio}': get_mixed_order_dataset_pattern(random_ratio, closest_ratio, simulation_configs.orders)
     for random_ratio, closest_ratio in [(ratio, 100 - ratio) for ratio in range(100, 0, -10)]
 }
 

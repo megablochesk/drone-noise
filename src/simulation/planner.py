@@ -13,7 +13,7 @@ class PathPlanner:
 
     @staticmethod
     def _init_route_planner(dataset_path):
-        if sim_configs.sim.navigator_type == NavigationType.STRAIGHT:
+        if sim_configs.navigator_type == NavigationType.STRAIGHT:
             return StraightLinePlanner()
 
         return NoiseBasedPlanner(dataset_path)

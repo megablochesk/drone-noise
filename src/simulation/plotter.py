@@ -3,7 +3,7 @@ from visualiser.folium_plotter import FoliumPlotter
 
 class Plotter:
     def __init__(self, warehouse_locations):
-        self.enabled = simulation_configs.switches.plot_map
+        self.enabled = simulation_configs.plot_map
         self.plotter = FoliumPlotter(warehouse_locations) if self.enabled else None
 
     def update_drones(self, drones):

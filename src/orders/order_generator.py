@@ -205,7 +205,7 @@ def generate_datasets(number_of_deliveries=10_000):
         for order_id in range(1, number_of_deliveries + 1):
             orders.append(generate_order(order_id, destinations[order_id - 1], method))
 
-        save_file_name = get_single_type_order_dataset_pattern(method, simulation_configs.sim.orders)
+        save_file_name = get_single_type_order_dataset_pattern(method, simulation_configs.orders)
 
         save_orders_to_csv(orders, save_file_name)
 
@@ -228,7 +228,7 @@ def generate_mixed_stocking_datasets(number_of_deliveries=10_000):
 
         random.shuffle(orders)
 
-        save_file_name = get_mixed_order_dataset_pattern(random_pct, closest_pct, simulation_configs.sim.orders)
+        save_file_name = get_mixed_order_dataset_pattern(random_pct, closest_pct, simulation_configs.orders)
 
         save_orders_to_csv(orders, save_file_name)
 

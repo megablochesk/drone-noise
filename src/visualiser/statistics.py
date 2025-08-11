@@ -10,7 +10,7 @@ from orders.order_generator import load_orders
 
 matplotlib.use(PATH_CONFIGS.matplotlib_backend)
 
-TOTAL_ORDER_NUMBER = simulation_configs.sim.orders
+TOTAL_ORDER_NUMBER = simulation_configs.orders
 
 
 def prepare_noise_data(dataframe, noise_metric='noise_difference', bin_gap=0.5):
