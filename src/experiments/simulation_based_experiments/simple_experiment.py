@@ -1,17 +1,8 @@
-from common.simulation_configs import DEFAULT_SIMULATION_CONFIGS
-from experiments.simulation_based_experiment_utils import run_atomic_experiment, run_complex_experiment
+from experiments.config_generator import build_configs_for_single
+from experiments.experiment_executor import run_complex_experiment
 from visualiser.plot_noise_level_comparison import plot_noise_level_comparison
 from visualiser.plot_utils import finalise_visualisation
 from visualiser.statistics import plot_noise_difference_barchart
-
-
-def simple_experiment():
-    return run_atomic_experiment(
-        'simple',
-        DEFAULT_SIMULATION_CONFIGS.order_dataset_path,
-        DEFAULT_SIMULATION_CONFIGS.orders_to_process,
-        DEFAULT_SIMULATION_CONFIGS.drones
-    )
 
 
 def plot_all_statistics(experiment_results):
@@ -29,9 +20,11 @@ def plot_all_statistics(experiment_results):
 
 
 def run_standard_experiment(load_saved_results=False):
+    configs_with_names = build_configs_for_single("simple")
+
     run_complex_experiment(
         load_saved_results=load_saved_results,
         result_file_name="simple",
-        experiment_function=simple_experiment,
+        configs_with_names=configs_with_names,
         visualisation_function=plot_all_statistics
     )

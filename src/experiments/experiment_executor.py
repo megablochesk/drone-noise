@@ -5,54 +5,54 @@ import pandas as pd
 from common.file_utils import load_dataframe_from_pickle, save_dataframe_to_pickle
 from common.path_configs import get_experiment_results_full_file_path
 from common.runtime_configs import use_simulation_config
-from common.simulation_configs import DEFAULT_SIMULATION_CONFIGS
 from simulation.simulator import Simulator
 from visualiser.plot_utils import finalise_visualisation
 
 
-def run_complex_experiment(result_file_name, load_saved_results, experiment_function, visualisation_function=None):
+def run_complex_experiment(
+    result_file_name,
+    load_saved_results,
+    experiment_function=None,
+    visualisation_function=None,
+    configs_with_names=None
+):
+    if configs_with_names is not None:
+        def wrapped_experiment():
+            return _run_experiments_for_configs(configs_with_names)
+        experiment_function = wrapped_experiment
+
+    if experiment_function is None:
+        raise ValueError("Either experiment_function or configs_with_names must be provided")
+
     results = _load_or_run_experiment(result_file_name, load_saved_results, experiment_function)
 
     _visualise_results(results, visualisation_function)
 
 
-def run_experiment_for_each_dataset(datasets_description, order_number, number_of_drones):
+def _run_experiments_for_configs(configs_with_names):
     results = []
 
-    for dataset_name, dataset_path in datasets_description:
-        results.append(run_atomic_experiment(dataset_name, dataset_path, order_number, number_of_drones))
+    for dataset_name, cfg in configs_with_names:
+        result = _run_atomic_experiment(dataset_name, cfg)
+        results.append(result)
+
     return results
 
 
-def run_experiment_for_each_dataset_and_drone_number(datasets_description, order_number, drone_number_cases):
-    results = []
+def _run_atomic_experiment(dataset_name, config):
+    start_time = time.time()
 
-    for dataset_name, dataset_path in datasets_description:
-        for number_of_drones in drone_number_cases:
-            results.append(run_atomic_experiment(dataset_name, dataset_path, order_number, number_of_drones))
-    return results
-
-
-def run_atomic_experiment(dataset_name, dataset_path, num_orders, num_drones):
-    print(dataset_name, num_drones, num_orders)
-
-    run_config = _configure_simulator(dataset_path, num_orders, num_drones)
-
-    with use_simulation_config(run_config):
-        start_time = time.time()
+    with use_simulation_config(config):
         simulator_after_run = _run_simulation()
-        elapsed_time = time.time() - start_time
 
-        print(f"Time: {elapsed_time:.2f} seconds")
+    elapsed_time = time.time() - start_time
 
-        return _extract_experiment_results(simulator_after_run, dataset_name, num_orders, num_drones, elapsed_time)
-
-
-def _configure_simulator(order_dataset_path, num_orders, num_drones):
-    return DEFAULT_SIMULATION_CONFIGS.with_overrides(
-        orders_to_process=num_orders,
-        drones=num_drones,
-        order_dataset_path=order_dataset_path,
+    return _extract_experiment_results(
+        simulator_after_run,
+        dataset_name,
+        config.orders_to_process,
+        config.drones,
+        elapsed_time
     )
 
 
