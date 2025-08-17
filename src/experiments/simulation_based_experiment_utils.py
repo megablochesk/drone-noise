@@ -4,7 +4,8 @@ import pandas as pd
 
 from common.file_utils import load_dataframe_from_pickle, save_dataframe_to_pickle
 from common.path_configs import get_experiment_results_full_file_path
-from common.runtime_configs import runtime_simulation_config
+from common.runtime_configs import use_simulation_config
+from common.simulation_configs import DEFAULT_SIMULATION_CONFIGS
 from simulation.simulator import Simulator
 from visualiser.plot_utils import finalise_visualisation
 
@@ -15,25 +16,11 @@ def run_complex_experiment(result_file_name, load_saved_results, experiment_func
     _visualise_results(results, visualisation_function)
 
 
-def run_atomic_experiment(dataset_name, dataset_path, num_orders, num_drones):
-    print(dataset_name, num_drones, num_orders)
-
-    start_time = time.time()
-    simulator = _create_and_run_simulator(dataset_path, num_orders, num_drones)
-    elapsed_time = time.time() - start_time
-
-    print(f"Time: {elapsed_time:.2f} seconds")
-
-    return _extract_experiment_results(simulator, dataset_name, num_orders, num_drones, elapsed_time)
-
-
 def run_experiment_for_each_dataset(datasets_description, order_number, number_of_drones):
     results = []
 
     for dataset_name, dataset_path in datasets_description:
-        result = run_atomic_experiment(dataset_name, dataset_path, order_number, number_of_drones)
-        results.append(result)
-
+        results.append(run_atomic_experiment(dataset_name, dataset_path, order_number, number_of_drones))
     return results
 
 
@@ -42,21 +29,43 @@ def run_experiment_for_each_dataset_and_drone_number(datasets_description, order
 
     for dataset_name, dataset_path in datasets_description:
         for number_of_drones in drone_number_cases:
-            result = run_atomic_experiment(dataset_name, dataset_path, order_number, number_of_drones)
-            results.append(result)
-
+            results.append(run_atomic_experiment(dataset_name, dataset_path, order_number, number_of_drones))
     return results
 
 
-def _create_and_run_simulator(dataset_path, num_orders, num_drones):
-    simulator = Simulator(num_orders, num_drones, dataset_path)
+def run_atomic_experiment(dataset_name, dataset_path, num_orders, num_drones):
+    print(dataset_name, num_drones, num_orders)
+
+    run_config = _configure_simulator(dataset_path, num_orders, num_drones)
+
+    with use_simulation_config(run_config):
+        start_time = time.time()
+        simulator_after_run = _run_simulation()
+        elapsed_time = time.time() - start_time
+
+        print(f"Time: {elapsed_time:.2f} seconds")
+
+        return _extract_experiment_results(simulator_after_run, dataset_name, num_orders, num_drones, elapsed_time)
+
+
+def _configure_simulator(order_dataset_path, num_orders, num_drones):
+    return DEFAULT_SIMULATION_CONFIGS.with_overrides(
+        orders_to_process=num_orders,
+        drones=num_drones,
+        order_dataset_path=order_dataset_path,
+    )
+
+
+def _run_simulation():
+    simulator = Simulator()
     simulator.run()
+
     return simulator
 
 
-def _extract_experiment_results(simulator, dataset_name, num_orders, num_drones, elapsed_time):
-    delivered_orders = simulator.delivered_orders_number
-    noise_impact_df = simulator.noise_monitor.impact
+def _extract_experiment_results(simulator_after_run, dataset_name, num_orders, num_drones, elapsed_time):
+    delivered_orders = simulator_after_run.delivered_orders_number
+    noise_impact_df = simulator_after_run.noise_monitor.impact
     avg_noise_difference = noise_impact_df["noise_difference"].mean()
 
     return {

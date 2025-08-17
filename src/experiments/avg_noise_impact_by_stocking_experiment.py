@@ -3,7 +3,7 @@ from experiments.simulation_based_experiment_utils import run_experiment_for_eac
 from visualiser.plot_noise_level_comparison import plot_noise_level_comparison
 
 NUMBER_OF_DRONES = 100
-NUMBER_OF_ORDERS = 100000
+NUMBER_OF_ORDERS = 100_000
 
 ORDER_DATASETS = {
     'closest': ORDER_BASE_PATH_CLOSEST,

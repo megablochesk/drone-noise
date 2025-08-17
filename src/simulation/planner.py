@@ -1,6 +1,6 @@
 from common.coordinate import Coordinate
 from common.enum import NavigationType
-from common.runtime_configs import runtime_simulation_config as sim_configs
+from common.runtime_configs import get_simulation_config
 from route_planner.landing_planner import AltitudePlanner
 from route_planner.noise_based_planner import NoiseBasedPlanner
 from route_planner.straight_line_planner import StraightLinePlanner
@@ -8,12 +8,14 @@ from route_planner.straight_line_planner import StraightLinePlanner
 
 class PathPlanner:
     def __init__(self, dataset_path):
-        self.route_planner = self._init_route_planner(dataset_path)
+        navigator_type = get_simulation_config().navigator_type
+
+        self.route_planner = self._init_route_planner(navigator_type, dataset_path)
         self.landing_planner = AltitudePlanner()
 
     @staticmethod
-    def _init_route_planner(dataset_path):
-        if sim_configs.navigator_type == NavigationType.STRAIGHT:
+    def _init_route_planner(navigator_type, dataset_path):
+        if navigator_type == NavigationType.STRAIGHT:
             return StraightLinePlanner()
 
         return NoiseBasedPlanner(dataset_path)

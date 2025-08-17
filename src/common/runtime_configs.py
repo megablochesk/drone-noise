@@ -1,9 +1,9 @@
 from contextlib import contextmanager
 from typing import Iterator
 
-from common.simulation_configs import SimulationConfig, _default_simulation_config
+from common.simulation_configs import SimulationConfig
 
-runtime_simulation_config: SimulationConfig = _default_simulation_config
+runtime_simulation_config: SimulationConfig | None = None
 
 def get_simulation_config() -> SimulationConfig:
     return runtime_simulation_config

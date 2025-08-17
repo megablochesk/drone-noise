@@ -1,12 +1,10 @@
 from common.model_configs import model_config
-from common.runtime_configs import runtime_simulation_config as runtime_config
+from common.runtime_configs import get_simulation_config
 from simulation.dispatcher import Dispatcher
 from simulation.fleet import Fleet
 from simulation.noise_monitor import NoiseMonitor
 from simulation.plotter import Plotter
 from simulation.timer import Timer
-
-PRINT_MODEL_STATISTICS = runtime_config.print_model_stats
 
 LONDON_WAREHOUSES = list(model_config.warehouses.bng_coordinates.items())
 WAREHOUSES = [location for _, location in LONDON_WAREHOUSES]
@@ -14,12 +12,14 @@ WAREHOUSES = [location for _, location in LONDON_WAREHOUSES]
 
 class Simulator:
     def __init__(self):
-        self.undelivered_orders_number = runtime_config.orders
+        self.configs = get_simulation_config()
+
+        self.undelivered_orders_number = self.configs.orders_to_process
 
         self.timer = Timer()
         self.noise_monitor = NoiseMonitor()
-        self.fleet = Fleet(runtime_config.drones, runtime_config.default_order_base_path, WAREHOUSES)
-        self.dispatcher = Dispatcher(runtime_config.orders, runtime_config.default_order_base_path)
+        self.fleet = Fleet(self.configs.drones, self.configs.order_dataset_path, WAREHOUSES)
+        self.dispatcher = Dispatcher(self.configs.orders_to_process, self.configs.order_dataset_path)
         self.plotter = Plotter(WAREHOUSES)
 
     @property
@@ -36,7 +36,7 @@ class Simulator:
         print("Running simulation...")
 
         while self.has_pending_deliveries and self.timer.running:
-            if PRINT_MODEL_STATISTICS:
+            if self.configs.print_model_stats:
                 self.print_drones_statistics()
 
             self.process_deliveries()

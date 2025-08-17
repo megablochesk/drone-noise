@@ -1,7 +1,5 @@
 from common.model_configs import model_config
-from common.runtime_configs import runtime_simulation_config
-
-TAKE_INTO_ACCOUNT_LANDING = runtime_simulation_config.drone_landing
+from common.runtime_configs import get_simulation_config
 
 NUMBER_OF_LANDING_STEPS = model_config.landing_steps
 
@@ -12,12 +10,15 @@ INTERMEDIATE_ALTITUDES_DESCENDING = model_config.intermediate_altitudes_descendi
 
 
 class AltitudePlanner:
+    def __init__(self):
+        self.use_drone_landing = get_simulation_config().drone_landing
+
     def add_landing_sequence(self, route, start, end):
-        if self.is_zero_distance_route(route) and TAKE_INTO_ACCOUNT_LANDING:
+        if self.is_zero_distance_route(route) and self.use_drone_landing:
             count = 1 + 2 * NUMBER_OF_LANDING_STEPS
             return [start] * count
 
-        if TAKE_INTO_ACCOUNT_LANDING:
+        if self.use_drone_landing:
             return self._pad_landing_sequence(route, start, end)
 
         return route
@@ -26,7 +27,7 @@ class AltitudePlanner:
         if self.is_zero_distance_route(route):
             return [DRONE_FLIGHT_ALTITUDE]
 
-        if TAKE_INTO_ACCOUNT_LANDING:
+        if self.use_drone_landing:
             path_len = len(route) - 2 * NUMBER_OF_LANDING_STEPS
             return self._landing_altitudes(path_len)
 

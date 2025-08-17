@@ -1,4 +1,4 @@
-from common.runtime_configs import runtime_simulation_config
+from common.simulation_configs import DEFAULT_SIMULATION_CONFIGS
 from experiments.simulation_based_experiment_utils import run_atomic_experiment, run_complex_experiment
 from visualiser.plot_noise_level_comparison import plot_noise_level_comparison
 from visualiser.plot_utils import finalise_visualisation
@@ -8,9 +8,9 @@ from visualiser.statistics import plot_noise_difference_barchart
 def simple_experiment():
     return run_atomic_experiment(
         'simple',
-        runtime_simulation_config.default_order_base_path,
-        runtime_simulation_config.orders,
-        runtime_simulation_config.drones
+        DEFAULT_SIMULATION_CONFIGS.order_dataset_path,
+        DEFAULT_SIMULATION_CONFIGS.orders_to_process,
+        DEFAULT_SIMULATION_CONFIGS.drones
     )
 
 

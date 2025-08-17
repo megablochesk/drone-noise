@@ -5,12 +5,10 @@ from matplotlib import pyplot as plt
 from common.coordinate import calculate_distance
 from common.path_configs import ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
 from common.path_configs import PATH_CONFIGS
-from common.runtime_configs import runtime_simulation_config
+from common.runtime_configs import get_simulation_config
 from orders.order_generator import load_orders
 
 matplotlib.use(PATH_CONFIGS.matplotlib_backend)
-
-TOTAL_ORDER_NUMBER = runtime_simulation_config.orders
 
 
 def prepare_noise_data(dataframe, noise_metric='noise_difference', bin_gap=0.5):
@@ -66,7 +64,9 @@ def _compute_all_distance_stats():
         'best': ORDER_BASE_PATH_CLOSEST
     }
 
-    return {label: _compute_distance_stats(load_orders(TOTAL_ORDER_NUMBER, path)) for label, path in
+    orders_to_process = get_simulation_config().orders_to_process
+
+    return {label: _compute_distance_stats(load_orders(orders_to_process, path)) for label, path in
             order_paths.items()}
 
 
