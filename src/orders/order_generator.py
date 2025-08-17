@@ -9,12 +9,12 @@ from common.enum import OrderDatasetType
 from common.model_configs import model_config
 from common.path_configs import PATH_CONFIGS
 from common.path_configs import get_single_type_order_dataset_pattern, get_mixed_order_dataset_pattern
-from common.simulation_configs import simulation_configs
+from common.runtime_configs import runtime_simulation_config
 from orders.order import Order
 
 MSOA_POPULATION_PATH = PATH_CONFIGS.msoa_population_path
 LONDON_WAREHOUSES = list(model_config.warehouses.bng_coordinates.items())
-ORDER_BASE_PATH = simulation_configs.default_order_base_path
+ORDER_BASE_PATH = runtime_simulation_config.default_order_base_path
 
 ORDER_DATASET_TYPES = tuple(e.value for e in OrderDatasetType)
 
@@ -205,7 +205,7 @@ def generate_datasets(number_of_deliveries=10_000):
         for order_id in range(1, number_of_deliveries + 1):
             orders.append(generate_order(order_id, destinations[order_id - 1], method))
 
-        save_file_name = get_single_type_order_dataset_pattern(method, simulation_configs.orders)
+        save_file_name = get_single_type_order_dataset_pattern(method, runtime_simulation_config.orders)
 
         save_orders_to_csv(orders, save_file_name)
 
@@ -228,7 +228,7 @@ def generate_mixed_stocking_datasets(number_of_deliveries=10_000):
 
         random.shuffle(orders)
 
-        save_file_name = get_mixed_order_dataset_pattern(random_pct, closest_pct, simulation_configs.orders)
+        save_file_name = get_mixed_order_dataset_pattern(random_pct, closest_pct, runtime_simulation_config.orders)
 
         save_orders_to_csv(orders, save_file_name)
 

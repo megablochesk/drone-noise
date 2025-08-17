@@ -5,12 +5,12 @@ from matplotlib import pyplot as plt
 from common.coordinate import calculate_distance
 from common.path_configs import ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
 from common.path_configs import PATH_CONFIGS
-from common.simulation_configs import simulation_configs
+from common.runtime_configs import runtime_simulation_config
 from orders.order_generator import load_orders
 
 matplotlib.use(PATH_CONFIGS.matplotlib_backend)
 
-TOTAL_ORDER_NUMBER = simulation_configs.orders
+TOTAL_ORDER_NUMBER = runtime_simulation_config.orders
 
 
 def prepare_noise_data(dataframe, noise_metric='noise_difference', bin_gap=0.5):

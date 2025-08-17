@@ -23,5 +23,4 @@ class SimulationConfig:
     def with_overrides(self, **kwargs) -> "SimulationConfig":
         return replace(self, **kwargs)
 
-
-simulation_configs = SimulationConfig()
+_default_simulation_config = SimulationConfig()

@@ -1,7 +1,7 @@
 from common.model_configs import model_config
-from common.simulation_configs import simulation_configs
+from common.runtime_configs import runtime_simulation_config
 
-TAKE_INTO_ACCOUNT_LANDING = simulation_configs.drone_landing
+TAKE_INTO_ACCOUNT_LANDING = runtime_simulation_config.drone_landing
 
 NUMBER_OF_LANDING_STEPS = model_config.landing_steps
 

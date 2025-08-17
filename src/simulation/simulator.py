@@ -1,25 +1,25 @@
 from common.model_configs import model_config
-from common.simulation_configs import simulation_configs
+from common.runtime_configs import runtime_simulation_config as runtime_config
 from simulation.dispatcher import Dispatcher
 from simulation.fleet import Fleet
 from simulation.noise_monitor import NoiseMonitor
 from simulation.plotter import Plotter
 from simulation.timer import Timer
 
-PRINT_MODEL_STATISTICS = simulation_configs.print_model_stats
+PRINT_MODEL_STATISTICS = runtime_config.print_model_stats
 
 LONDON_WAREHOUSES = list(model_config.warehouses.bng_coordinates.items())
 WAREHOUSES = [location for _, location in LONDON_WAREHOUSES]
 
 
 class Simulator:
-    def __init__(self, number_of_orders, number_of_drones, order_dataset_path):
-        self.undelivered_orders_number = number_of_orders
+    def __init__(self):
+        self.undelivered_orders_number = runtime_config.orders
 
         self.timer = Timer()
         self.noise_monitor = NoiseMonitor()
-        self.fleet = Fleet(number_of_drones, order_dataset_path, WAREHOUSES)
-        self.dispatcher = Dispatcher(number_of_orders, order_dataset_path)
+        self.fleet = Fleet(runtime_config.drones, runtime_config.default_order_base_path, WAREHOUSES)
+        self.dispatcher = Dispatcher(runtime_config.orders, runtime_config.default_order_base_path)
         self.plotter = Plotter(WAREHOUSES)
 
     @property
