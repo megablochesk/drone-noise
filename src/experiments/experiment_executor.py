@@ -5,6 +5,7 @@ import pandas as pd
 from common.file_utils import load_dataframe_from_pickle, save_dataframe_to_pickle
 from common.path_configs import get_experiment_results_full_file_path
 from common.runtime_configs import use_simulation_config
+from common.simulation_configs import SimulationConfig
 from simulation.simulator import Simulator
 from visualiser.plot_utils import finalise_visualisation
 
@@ -32,28 +33,27 @@ def run_complex_experiment(
 def _run_experiments_for_configs(configs_with_names):
     results = []
 
-    for dataset_name, cfg in configs_with_names:
-        result = _run_atomic_experiment(dataset_name, cfg)
+    for dataset_name, config in configs_with_names:
+        result = _run_atomic_experiment(dataset_name, config)
         results.append(result)
 
     return results
 
 
-def _run_atomic_experiment(dataset_name, config):
+def _run_atomic_experiment(dataset_name, config: SimulationConfig):
     start_time = time.time()
 
     with use_simulation_config(config):
         simulator_after_run = _run_simulation()
 
-    elapsed_time = time.time() - start_time
+        elapsed_time = time.time() - start_time
 
-    return _extract_experiment_results(
-        simulator_after_run,
-        dataset_name,
-        config.orders_to_process,
-        config.drones,
-        elapsed_time
-    )
+        return _extract_experiment_results(
+            simulator_after_run,
+            dataset_name,
+            elapsed_time,
+            config
+        )
 
 
 def _run_simulation():
@@ -63,18 +63,18 @@ def _run_simulation():
     return simulator
 
 
-def _extract_experiment_results(simulator_after_run, dataset_name, num_orders, num_drones, elapsed_time):
-    delivered_orders = simulator_after_run.delivered_orders_number
+def _extract_experiment_results(simulator_after_run, dataset_name, elapsed_time, config):
     noise_impact_df = simulator_after_run.noise_monitor.impact
     avg_noise_difference = noise_impact_df["noise_difference"].mean()
 
     return {
         'dataset_name': dataset_name,
-        'num_drones': num_drones,
-        'num_orders': num_orders,
+        'num_drones': config.number_of_drones,
+        'num_orders': config.orders_to_process,
+        'navigation_type': config.navigator_type,
         'avg_noise_diff': avg_noise_difference,
         'noise_impact_df': noise_impact_df,
-        'delivered_orders_number': delivered_orders,
+        'delivered_orders_number': simulator_after_run.delivered_orders_number,
         'execution_time_seconds': elapsed_time
     }
 
@@ -116,4 +116,5 @@ def _visualise_results(results, visualisation_function=None):
 
     print("Running visualisation on experiment results...")
     visualisation_function(results)
+
     finalise_visualisation()

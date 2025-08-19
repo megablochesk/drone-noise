@@ -18,7 +18,7 @@ class Simulator:
 
         self.timer = Timer()
         self.noise_monitor = NoiseMonitor()
-        self.fleet = Fleet(self.configs.drones, self.configs.order_dataset_path, WAREHOUSES)
+        self.fleet = Fleet(self.configs.number_of_drones, self.configs.order_dataset_path, WAREHOUSES)
         self.dispatcher = Dispatcher(self.configs.orders_to_process, self.configs.order_dataset_path)
         self.plotter = Plotter(WAREHOUSES)
 

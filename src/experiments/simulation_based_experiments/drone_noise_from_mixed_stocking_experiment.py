@@ -13,7 +13,7 @@ ORDER_DATASETS = {
 }
 
 
-def build_mixed_stocking_configs():
+def generate_configs():
     return generate_configs_for_datasets(
         ORDER_DATASETS,
         NUMBER_OF_ORDERS_TO_PROCESS,
@@ -29,14 +29,14 @@ def plot_mixed_datasets_noise_maps(results_df):
         metric='average_noise',
         vmin=25,
         vmax=50,
-        filename='mixed_datasets_noise_maps')
+        filename='mixed_datasets_noise_maps'
+    )
 
 
 def run_mixed_random_and_best_stocking_experiment(load_saved_results=False):
-    configs_with_names = build_mixed_stocking_configs()
     run_complex_experiment(
         load_saved_results=load_saved_results,
         result_file_name="mixed_random_and_best_stocking",
-        configs_with_names=configs_with_names,
+        configs_with_names=generate_configs(),
         visualisation_function=plot_mixed_datasets_noise_maps,
     )
