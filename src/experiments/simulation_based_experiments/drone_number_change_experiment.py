@@ -1,8 +1,8 @@
 from common.path_configs import ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
 from experiments.config_generator import build_configs_for_datasets_and_drones
 from experiments.experiment_executor import run_complex_experiment
-from visualiser.cell_noise_stat_plotter import analyze_and_plot_noise_increase, analyze_and_plot_population_impact
-from visualiser.plotter import plot_avg_noise_barchart, plot_delivered_orders_barchart, plot_execution_time_barchart
+from visualiser.cell_statistics_plotter import analyze_and_plot_noise_increase, analyze_and_plot_population_impact
+from visualiser.general_statistics_plotter import plot_avg_noise_barchart, plot_delivered_orders_barchart, plot_execution_time_barchart
 
 NUMBER_OF_DRONES_CASES = [100, 250, 500, 750, 1000, 1250]
 NUMBER_OF_ORDERS = 100_000
