@@ -1,11 +1,11 @@
-import json
 import random
 
-import pandas as pd
-from shapely.geometry import shape, Point
+from shapely.geometry import Point
 
+from census_analysis.msoa_data import MSOA_DATA
 from common.coordinate import Coordinate
 from common.enum import OrderDatasetType
+from common.file_utils import save_df_to_csv, load_df_from_csv
 from common.model_configs import model_config
 from common.path_configs import PATH_CONFIGS
 from common.path_configs import get_single_type_order_dataset_pattern, get_mixed_order_dataset_pattern
@@ -17,15 +17,12 @@ LONDON_WAREHOUSES = list(model_config.warehouses.bng_coordinates.items())
 
 ORDER_DATASET_TYPES = tuple(e.value for e in OrderDatasetType)
 
-def load_raw_orders(path):
-    return pd.read_csv(path)
-
 
 def load_orders(number_of_orders, path=None):
     if path is None:
         path = get_simulation_config().order_dataset_path
 
-    order_df = load_raw_orders(path)
+    order_df = load_df_from_csv(path)
 
     limited_df = order_df.head(number_of_orders)
 
@@ -39,30 +36,6 @@ def load_orders(number_of_orders, path=None):
     ]
 
     return orders
-
-
-def load_geojson(geojson_path):
-    with open(geojson_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-
-def build_msoa_index():
-    geojson_data = load_geojson(MSOA_POPULATION_PATH)
-
-    msoa_dict = {}
-    msoa_populations = {}
-
-    for feature in geojson_data['features']:
-        msoa_code = feature['properties'].get('msoa21cd', '').strip()
-        population = feature['properties'].get('population', None)
-
-        polygon = shape(feature['geometry'])
-
-        if population is not None:
-            msoa_dict[msoa_code] = polygon
-            msoa_populations[msoa_code] = population
-
-    return msoa_dict, msoa_populations
 
 
 def generate_random_point_in_msoa(msoa_code, polygon, max_attempts=10000):
@@ -87,43 +60,26 @@ def generate_random_point_in_msoa(msoa_code, polygon, max_attempts=10000):
 
 
 def generate_point_for_msoa(msoa_code):
-    polygon = MSOA_INDEX.get(msoa_code)
+    polygon = MSOA_DATA.msoa_index.get(msoa_code)
     if not polygon:
         raise ValueError(f"No polygon found for MSOA code: {msoa_code}")
 
     random_point = generate_random_point_in_msoa(msoa_code, polygon)
-    x_rounded = round(random_point.x, 2)
-    y_rounded = round(random_point.y, 2)
-
-    return x_rounded, y_rounded
-
-
-def calculate_population_distribution(msoa_populations):
-    total_population = sum(msoa_populations.values())
-    if total_population == 0:
-        raise ValueError("Total population is zero, cannot generate weighted points.")
-
-    cumulative = 0.0
-    distribution = []
-    for msoa_code, pop in msoa_populations.items():
-        cumulative += pop / total_population
-        distribution.append((msoa_code, cumulative))
-    return distribution
+    return round(random_point.x, 2), round(random_point.y, 2)
 
 
 def generate_random_population_based_point():
-    r = random.random()
-
-    for msoa_code, cum_prob in POPULATION_DISTRIBUTION:
-        if r <= cum_prob:
+    random_value = random.random()
+    for msoa_code, msoa_pop_distribution in MSOA_DATA.population_distribution:
+        if random_value <= msoa_pop_distribution:
             x, y = generate_point_for_msoa(msoa_code)
             return msoa_code, x, y
     return None
 
 
-def distance_between_points(warehouse, point):
-    wx, wy = warehouse
-    x, y = point
+def distance_between_points(warehouse_coordinates, point_coordinates):
+    wx, wy = warehouse_coordinates
+    x, y = point_coordinates
 
     dx = wx - x
     dy = wy - y
@@ -181,25 +137,7 @@ def generate_order(order_id, destination_point, selection_method):
     }
 
 
-def save_orders_to_csv(orders, filename):
-    orders_df = pd.DataFrame(orders)
-    orders_df.to_csv(filename, index=False)
-
-
-MSOA_INDEX = None
-MSOA_POPULATIONS = None
-POPULATION_DISTRIBUTION = None
-
-
-def init_constants():
-    global MSOA_INDEX, MSOA_POPULATIONS, POPULATION_DISTRIBUTION
-    MSOA_INDEX, MSOA_POPULATIONS = build_msoa_index()
-    POPULATION_DISTRIBUTION = calculate_population_distribution(MSOA_POPULATIONS)
-
-
 def generate_datasets(number_of_orders=10_000):
-    init_constants()
-
     destinations = [generate_random_population_based_point() for _ in range(number_of_orders)]
 
     for method in ORDER_DATASET_TYPES:
@@ -209,11 +147,10 @@ def generate_datasets(number_of_orders=10_000):
 
         save_file_name = get_single_type_order_dataset_pattern(method, number_of_orders)
 
-        save_orders_to_csv(orders, save_file_name)
+        save_df_to_csv(orders, save_file_name)
+
 
 def generate_mixed_stocking_datasets(number_of_deliveries=10_000):
-    init_constants()
-
     ratios = [(i, 100 - i) for i in range(100, 0, -10)]  # (random%, closest%)
 
     destinations = [generate_random_population_based_point() for _ in range(number_of_deliveries)]
@@ -232,5 +169,4 @@ def generate_mixed_stocking_datasets(number_of_deliveries=10_000):
 
         save_file_name = get_mixed_order_dataset_pattern(random_pct, closest_pct, number_of_deliveries)
 
-        save_orders_to_csv(orders, save_file_name)
-
+        save_df_to_csv(orders, save_file_name)

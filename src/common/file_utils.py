@@ -1,3 +1,4 @@
+import json
 import os
 import pickle
 
@@ -96,3 +97,19 @@ def ensure_suffix(line, suffix):
     if not line.endswith(suffix):
         return line + suffix
     return line
+
+
+def load_df_from_csv(path):
+    return pd.read_csv(path)
+
+
+def save_df_to_csv(data, path):
+    if not isinstance(data, pd.DataFrame):
+        data = pd.DataFrame(data)
+    
+    data.to_csv(path, index=False)
+
+
+def load_json(json_file_path):
+    with open(json_file_path, 'r', encoding='utf-8') as f:
+        return json.load(f)

@@ -5,7 +5,7 @@ from common.path_configs import PATH_CONFIGS
 from noise.navigator.heavy import HeavyNavigator
 from orders.order_generator import load_orders
 
-ORDER_FOLDER = PATH_CONFIGS.order_folder
+ORDER_FOLDER = PATH_CONFIGS.order_dir
 
 NUMBER_OF_ORDERS = -1  # all
 NOISE_GRAPH_NAVIGATOR = HeavyNavigator()
