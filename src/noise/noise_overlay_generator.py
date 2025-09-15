@@ -2,7 +2,6 @@ import branca
 import folium
 import matplotlib
 import numpy as np
-import pandas as pd
 from matplotlib import cm
 
 

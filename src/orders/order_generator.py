@@ -7,14 +7,11 @@ from common.coordinate import Coordinate
 from common.enum import OrderDatasetType
 from common.file_utils import save_df_to_csv, load_df_from_csv
 from common.model_configs import model_config
-from common.path_configs import PATH_CONFIGS
 from common.path_configs import get_single_type_order_dataset_pattern, get_mixed_order_dataset_pattern
 from common.runtime_configs import get_simulation_config
 from orders.order import Order
 
-MSOA_POPULATION_PATH = PATH_CONFIGS.msoa_population_path
 LONDON_WAREHOUSES = list(model_config.warehouses.bng_coordinates.items())
-
 ORDER_DATASET_TYPES = tuple(e.value for e in OrderDatasetType)
 
 
