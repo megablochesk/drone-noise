@@ -46,6 +46,10 @@ class PathsConfiguration:
     def cell_ethnicity_path(noise_cell_size_meters: int) -> str:
         return f"recourses/data/cell_ethnicity_{noise_cell_size_meters}.pkl"
 
+    @staticmethod
+    def cell_age_path(noise_cell_size_meters: int) -> str:
+        return f"recourses/data/cell_age_{noise_cell_size_meters}.pkl"
+
 
 PATH_CONFIGS = PathsConfiguration()
 
@@ -59,6 +63,7 @@ NAVIGATION_BASE_NOISE_PATH = PATH_CONFIGS.base_noise_path(model_config.grid.nav_
 NAVIGATION_GRAPH_PATH = PATH_CONFIGS.navigation_graph_path(model_config.grid.nav_cell_m)
 CELL_POPULATION_PATH = PATH_CONFIGS.cell_population_path(model_config.grid.noise_cell_m)
 CELL_ETHNICITY_PATH = PATH_CONFIGS.cell_ethnicity_path(model_config.grid.noise_cell_m)
+CELL_AGE_PATH = PATH_CONFIGS.cell_age_path(model_config.grid.noise_cell_m)
 
 
 def get_single_type_order_dataset_pattern(order_dataset_type: str, stocking_number: int) -> str:
