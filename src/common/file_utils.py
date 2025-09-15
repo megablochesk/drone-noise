@@ -90,7 +90,13 @@ def path_exists(path, suffixes=None):
     if os.path.exists(path):
         return True
 
-    return any(os.path.exists(path + suffix) for suffix in suffixes)
+    if not suffixes:
+        return False
+
+    if isinstance(suffixes, str):
+        suffixes = [suffixes]
+
+    return any(os.path.exists(path + s) for s in suffixes)
 
 
 def ensure_suffix(line, suffix):
