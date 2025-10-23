@@ -1,7 +1,8 @@
 from common.path_configs import ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
 from experiments.config_generator import build_configs_for_datasets_and_drones
 from experiments.experiment_executor import run_complex_experiment
-from visualiser.cell_statistics_plotter import analyze_and_plot_noise_increase, analyze_and_plot_population_impact
+from visualiser.cell_statistics_plotter import analyze_and_plot_noise_increase, analyze_and_plot_population_impact, \
+    analyze_and_plot_ethnicity_impact, analyze_and_plot_age_impact
 from visualiser.general_statistics_plotter import plot_avg_noise_barchart, plot_delivered_orders_barchart, plot_execution_time_barchart
 
 NUMBER_OF_DRONES_CASES = [100, 250, 500, 750, 1000, 1250]
@@ -31,6 +32,8 @@ def plot_all_statistics(experiment_results):
     for dB_level in range(55, 60, 5):
         analyze_and_plot_noise_increase(experiment_results, dB_level)
         analyze_and_plot_population_impact(experiment_results, dB_level)
+        analyze_and_plot_age_impact(experiment_results, dB_level)
+        analyze_and_plot_ethnicity_impact(experiment_results, dB_level)
 
 
 def run_drone_number_change_experiment(load_saved_results=False):

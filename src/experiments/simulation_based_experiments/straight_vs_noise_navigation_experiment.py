@@ -2,9 +2,7 @@ from common.enum import NavigationType
 from common.path_configs import ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
 from experiments.config_generator import build_configs_for_datasets_drones_and_navigation_types
 from experiments.experiment_executor import run_complex_experiment
-from visualiser.cell_statistics_plotter import plot_noise_exceedance_combined, plot_population_impact_combined
-from visualiser.general_statistics_plotter import plot_comparison_avg_noise_barchart, plot_comparison_orders_barchart, \
-    plot_comparison_execution_time_barchart, plot_delivered_orders_comparison, plot_avg_noise_diff_comparison
+from visualiser.cell_statistics_plotter import plot_ethnicity_impact_each_group_combined
 
 NAVIGATION_TYPES = [NavigationType.STRAIGHT, NavigationType.LIGHT_NOISE]
 
@@ -28,16 +26,18 @@ def generate_configs():
 
 
 def plot_all_statistics(experiment_results):
-    plot_comparison_avg_noise_barchart(experiment_results)
-    plot_comparison_orders_barchart(experiment_results)
-    plot_comparison_execution_time_barchart(experiment_results)
+    #plot_comparison_avg_noise_barchart(experiment_results)
+    #plot_comparison_orders_barchart(experiment_results)
+    #plot_comparison_execution_time_barchart(experiment_results)
 
-    plot_delivered_orders_comparison(experiment_results)
-    plot_avg_noise_diff_comparison(experiment_results)
+    #plot_delivered_orders_comparison(experiment_results)
+    #plot_avg_noise_diff_comparison(experiment_results)
 
     for db in range(55, 60, 5):
-        plot_noise_exceedance_combined(experiment_results, threshold=db)
-        plot_population_impact_combined(experiment_results, threshold=db)
+        #plot_noise_exceedance_combined(experiment_results, threshold=db, plot_stat_difference=False)
+        #plot_population_impact_combined(experiment_results, threshold=db, plot_stat_difference=False)
+        #plot_age_impact_each_band_combined(experiment_results, threshold=db, plot_stat_difference=True, use_band_names=True)
+        plot_ethnicity_impact_each_group_combined(experiment_results, threshold=db, plot_stat_difference=True, use_names=True)
 
 
 def run_navigation_type_change_experiment(load_saved_results=True):

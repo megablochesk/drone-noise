@@ -13,7 +13,7 @@ def generate_configs_for_datasets(
     return [
         (dataset_name, base_config.with_overrides(
             orders_to_process=orders,
-            drones=drones,
+            number_of_drones=drones,
             order_dataset_path=dataset_path
         ))
         for dataset_name, dataset_path in datasets.items()
@@ -29,7 +29,7 @@ def build_configs_for_datasets_and_drones(
     return [
         (f"{dataset_name}_d{drones}", base_config.with_overrides(
             orders_to_process=orders,
-            drones=drones,
+            number_of_drones=drones,
             order_dataset_path=dataset_path
         ))
         for dataset_name, dataset_path in datasets.items()

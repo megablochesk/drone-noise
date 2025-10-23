@@ -2,6 +2,7 @@ from experiments.config_generator import build_configs_for_single
 from experiments.experiment_executor import run_complex_experiment
 from visualiser.plot_noise_level_comparison import plot_noise_level_comparison
 from visualiser.plot_utils import finalise_visualisation
+from visualiser.single_sim_group_impact import plot_single_sim_age_impact_counts, plot_single_sim_ethnicity_impact_counts
 from visualiser.statistics import plot_noise_difference_barchart
 
 
@@ -9,14 +10,17 @@ def plot_all_statistics(experiment_results):
     noise_impact_df = experiment_results.iloc[0]['noise_impact_df']
 
     plot_noise_difference_barchart(noise_impact_df)
-
     plot_noise_level_comparison(
         noise_impact_df,
         vmin=[40, 25, 0],
         vmax=[80, 35, 1]
     )
 
+    plot_single_sim_age_impact_counts(noise_impact_df, threshold=55)
+    plot_single_sim_ethnicity_impact_counts(noise_impact_df, threshold=55)
+
     finalise_visualisation()
+
 
 
 def run_standard_experiment(load_saved_results=False):
