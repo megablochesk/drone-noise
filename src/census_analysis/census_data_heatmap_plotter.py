@@ -28,6 +28,12 @@ def plot_census_data_heatmap_by_code(df, code: int, data_category: str, vmin: fl
         ylabel="Row",
     )
 
+    ax.tick_params(axis="y", labelrotation=0)
+    for lbl in ax.get_yticklabels():
+        lbl.set_va("center")
+        lbl.set_ha("right")
+
+
 
 def plot_heatmaps_for_census_data(df, data_category, vmin, vmax):
     codes = sorted(df.attrs[f"{data_category}_code_to_name"])
