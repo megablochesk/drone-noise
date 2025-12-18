@@ -1,3 +1,5 @@
+import os
+
 import matplotlib
 import seaborn as sns
 from matplotlib import pyplot as plt
@@ -77,9 +79,12 @@ def save_figures():
     for i in plt.get_fignums():
         fig = plt.figure(i)
 
-        filename = fig.filename if hasattr(fig, "filename") else f'figure_{i}'
+        filename = fig.filename if hasattr(fig, "filename") else f"figure_{i}"
+        out_path = f"figures/{filename}.eps"
 
-        fig.savefig(f"figures/{filename}.eps", dpi=300, format="eps", bbox_inches='tight')
+        os.makedirs(os.path.dirname(out_path), exist_ok=True)
+
+        fig.savefig(out_path, dpi=300, format="eps", bbox_inches="tight")
 
 
 def add_font_style():

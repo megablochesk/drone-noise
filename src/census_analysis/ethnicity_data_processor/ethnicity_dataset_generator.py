@@ -22,7 +22,8 @@ def compute_and_visualise_ethnicity_data():
     plot_heatmaps_for_census_data(
         ethnicity_dataset_df,
         data_category="ethnicity",
-        vmin=0.0, vmax=1000.0
+        vmin=0.0, vmax=1000.0,
+        folder="ethnicity_pop_maps"
     )
 
     finalise_visualisation()

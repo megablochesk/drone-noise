@@ -22,7 +22,8 @@ def compute_and_visualise_age_data():
     plot_heatmaps_for_census_data(
         age_dataset_df,
         data_category="age",
-        vmin=0.0, vmax=1000.0
+        vmin=0.0, vmax=1000.0,
+        folder="age_pop_maps"
     )
 
     finalise_visualisation()
