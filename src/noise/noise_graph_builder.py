@@ -1,4 +1,5 @@
 import json
+import math
 from functools import lru_cache
 
 import networkx as nx
@@ -13,7 +14,12 @@ NAVIGATION_GRID_CELL_SIZE = model_config.grid.nav_cell_m
 
 _WGS84_TO_BNG = Transformer.from_crs(4326, 27700, always_xy=True)
 
-NEIGHBOR_SHIFTS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+NEIGHBOR_SHIFTS = [
+    (-1, -1), (0, -1), (1, -1),
+    (-1,  0),          (1,  0),
+    (-1,  1), (0,  1), (1,  1)
+]
+
 
 @lru_cache(maxsize=1)
 def load_or_build_graph(base_noise_path=NAVIGATION_BASE_NOISE_PATH, noise_graph_path=NAVIGATION_GRAPH_PATH):
@@ -26,7 +32,7 @@ def load_or_build_graph(base_noise_path=NAVIGATION_BASE_NOISE_PATH, noise_graph_
     return graph
 
 
-def _build_graph(base_noise_path):
+def _build_graph(base_noise_path: str) -> nx.Graph:
     records = _get_cells_noise_levels(base_noise_path)
     graph = nx.Graph()
 
@@ -36,8 +42,10 @@ def _build_graph(base_noise_path):
     return graph
 
 
-def _get_cells_noise_levels(path):
-    features = json.load(open(path)).get("features", [])
+def _get_cells_noise_levels(path: str):
+    with open(path) as f:
+        features = json.load(f).get("features", [])
+
     return [
         (
             feature["properties"].get("row", 0),
@@ -61,14 +69,29 @@ def _add_nodes_from_records(graph: nx.Graph, records):
 
 
 def _connect_adjacent_cells(graph: nx.Graph):
+    diagonal_factor = math.sqrt(2.0)
+
     for node_row, node_column in graph.nodes:
         node = (node_row, node_column)
-        for delta_row, delta_column in NEIGHBOR_SHIFTS:
-            neighbor_node = (node_row + delta_row, node_column + delta_column)
-            if neighbor_node in graph and not graph.has_edge(node, neighbor_node):
-                noise_1 = graph.nodes[node]["noise"]
-                noise_2 = graph.nodes[neighbor_node]["noise"]
 
-                average_noise_between_cells = (noise_1 + noise_2) / 2
-                weight = NAVIGATION_GRID_CELL_SIZE / average_noise_between_cells
-                graph.add_edge(node, neighbor_node, weight=weight)
+        for row_shift, column_shift in NEIGHBOR_SHIFTS:
+            neighbor_node = (node_row + row_shift, node_column + column_shift)
+            if neighbor_node not in graph or graph.has_edge(node, neighbor_node):
+                continue
+
+            node_noise = graph.nodes[node]["noise"]
+            neighbor_node_noise = graph.nodes[neighbor_node]["noise"]
+            average_noise = (node_noise + neighbor_node_noise) / 2
+
+            distance = NAVIGATION_GRID_CELL_SIZE * (diagonal_factor if is_diagonal_shift(column_shift, row_shift) else 1)
+
+            graph.add_edge(
+                node,
+                neighbor_node,
+                distance=distance,
+                noise=average_noise
+            )
+
+
+def is_diagonal_shift(column_shift, row_shift):
+    return row_shift != 0 and column_shift != 0
