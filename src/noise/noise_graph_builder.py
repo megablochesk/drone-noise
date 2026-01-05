@@ -85,11 +85,21 @@ def _connect_adjacent_cells(graph: nx.Graph):
 
             distance = NAVIGATION_GRID_CELL_SIZE * (diagonal_factor if is_diagonal_shift(column_shift, row_shift) else 1)
 
+            node_e = graph.nodes[node]["easting"]
+            node_n = graph.nodes[node]["northing"]
+            nbr_e = graph.nodes[neighbor_node]["easting"]
+            nbr_n = graph.nodes[neighbor_node]["northing"]
+
+            dx = nbr_e - node_e
+            dy = nbr_n - node_n
+
             graph.add_edge(
                 node,
                 neighbor_node,
                 distance=distance,
-                noise=average_noise
+                noise=average_noise,
+                dx=dx,
+                dy=dy,
             )
 
 

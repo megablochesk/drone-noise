@@ -2,13 +2,13 @@ from pathlib import Path
 
 from common.file_utils import save_data_as_pickle_highest_protocol
 from common.path_configs import PATH_CONFIGS
-from noise.navigator.heavy import HeavyNavigator
+from noise.navigator.warehouse_route_cache_generator import WarehouseRouteCacheGenerator
 from orders.order_generator import load_orders
 
 ORDER_FOLDER = PATH_CONFIGS.order_dir
 
 NUMBER_OF_ORDERS = -1  # all
-NOISE_GRAPH_NAVIGATOR = HeavyNavigator()
+NOISE_GRAPH_NAVIGATOR = WarehouseRouteCacheGenerator()
 
 
 def get_list_of_csv_files():

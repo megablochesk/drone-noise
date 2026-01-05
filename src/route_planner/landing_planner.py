@@ -9,7 +9,7 @@ INTERMEDIATE_ALTITUDES_ASCENDING = model_config.intermediate_altitudes_ascending
 INTERMEDIATE_ALTITUDES_DESCENDING = model_config.intermediate_altitudes_descending
 
 
-class AltitudePlanner:
+class LandingPlanner:
     def __init__(self):
         self.use_drone_landing = get_simulation_config().drone_landing
 

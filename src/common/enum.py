@@ -19,9 +19,15 @@ class NavigationType(Enum):
     STRAIGHT = 0
     HEAVY_NOISE = 1
     LIGHT_NOISE = 2
+    MIXED = 3
+
+    MIXED_A025 = 4
+    MIXED_A050 = 5
+    MIXED_A075 = 6
+    MIXED_A100 = 7
 
 
 class OrderDatasetType(Enum):
-    RANDOM = 'random'
-    FURTHEST = 'furthest'
-    CLOSEST = 'closest'
+    RANDOM = "random"
+    FURTHEST = "furthest"
+    CLOSEST = "closest"

@@ -1,7 +1,7 @@
 from common.coordinate import Coordinate
 from common.enum import NavigationType
 from common.runtime_configs import get_simulation_config
-from route_planner.landing_planner import AltitudePlanner
+from route_planner.landing_planner import LandingPlanner
 from route_planner.noise_based_planner import NoiseBasedPlanner
 from route_planner.straight_line_planner import StraightLinePlanner
 
@@ -11,7 +11,7 @@ class PathPlanner:
         navigator_type = get_simulation_config().navigator_type
 
         self.route_planner = self._init_route_planner(navigator_type, dataset_path)
-        self.landing_planner = AltitudePlanner()
+        self.landing_planner = LandingPlanner()
 
     @staticmethod
     def _init_route_planner(navigator_type, dataset_path):

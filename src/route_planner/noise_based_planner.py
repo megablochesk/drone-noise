@@ -13,9 +13,13 @@ NAVIGATION_GRID_CELL_SIZE = model_config.grid.nav_cell_m
 
 class NoiseBasedPlanner(RoutePlanner):
     def __init__(self, dataset_path):
-        navigation_type = get_simulation_config().navigator_type
+        runtime_config = get_simulation_config()
 
-        self.navigator = get_navigator(navigation_type, dataset_path)
+        self.navigator = get_navigator(
+            mode=runtime_config.navigator_type,
+            dataset_path=dataset_path,
+            compute_on_miss=getattr(runtime_config, "compute_on_miss", False),
+        )
 
     def plan_route(self, start, end):
         if calculate_distance(start, end) == 0:
