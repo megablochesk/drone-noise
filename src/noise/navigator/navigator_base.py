@@ -14,6 +14,9 @@ class BaseNavigator:
     def __init__(self, graph: nx.Graph | None = None):
         self.graph: nx.Graph = graph if graph is not None else load_or_build_graph()
 
+    def get_optimal_route(self, start: Coordinate, end: Coordinate) -> List[GridNode]:
+        raise NotImplementedError
+
     def nodes_to_coordinates(self, nodes: Iterable[GridNode]) -> List[Coordinate]:
         out: List[Coordinate] = []
         for n in nodes:

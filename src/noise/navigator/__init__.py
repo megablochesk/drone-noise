@@ -39,10 +39,7 @@ def get_navigator(
     weight: WeightSpec | None = None,
     weight_id: str | None = None,
     compute_on_miss: bool = False,
-) -> BaseNavigator | None:
-    if mode == NavigationType.STRAIGHT:
-        return None
-
+) -> BaseNavigator:
     if _is_mixed_mode(mode):
         alpha = _mixed_alpha_for_mode(mode)
 
