@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import time
+from collections import defaultdict
 from enum import Enum
 from typing import Any
 
@@ -33,12 +36,25 @@ def run_complex_experiment(
 
 
 def _run_experiments_for_configs(configs_with_names):
+    grouped = _group_by_navigation_type(configs_with_names)
+
     results = []
-    for run_name, config in configs_with_names:
-        result = _run_atomic_experiment(run_name, config)
-        results.append(result)
+    for nav_name in sorted(grouped.keys()):
+        runs = grouped[nav_name]
+        print(f"\n=== Running group: navigation_type={nav_name}  (runs={len(runs)}) ===")
+        for run_name, config in runs:
+            result = _run_atomic_experiment(run_name, config)
+            results.append(result)
 
     return results
+
+
+def _group_by_navigation_type(configs_with_names):
+    groups = defaultdict(list)
+    for run_name, config in configs_with_names:
+        nav_name = _nav_to_name(config.navigator_type)
+        groups[nav_name].append((run_name, config))
+    return dict(groups)
 
 
 def _run_atomic_experiment(run_name: str, config: SimulationConfig):
@@ -113,7 +129,6 @@ def _run_and_store_experiment(experiment_function, file_path):
 def _convert_results_to_dataframe(results):
     if isinstance(results, dict):
         return pd.DataFrame([results])
-
     return pd.DataFrame(results)
 
 
