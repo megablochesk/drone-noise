@@ -34,6 +34,7 @@ class Simulator:
 
     def run(self):
         print("Running simulation...")
+        print(f"Number of drones - {self.configs.number_of_drones}\nNavigation type - {self.configs.navigator_type}")
 
         while self.has_pending_deliveries and self.timer.running:
             if self.configs.print_model_stats:
