@@ -24,15 +24,9 @@ def _slug(s) -> str:
     return re.sub(r"[^0-9A-Za-z]+", "_", str(s)).strip("_").lower()
 
 
-def plot_noise_exceedance_combined(main_df: pd.DataFrame, threshold: int = 55, decimals: int = 0, plot_stat_difference: bool = True):
+def plot_noise_exceedance_combined(main_df: pd.DataFrame, threshold: int = 55, decimals: int = 0):
     summary_df = calculate_cells_exceeding_threshold(main_df, threshold)
-    if plot_stat_difference:
-        plot_dataset_stat_difference(
-            summary_df,
-            value_col="cells_exceeding_threshold",
-            ylabel="% of cells compared to Normal",
-            title=f"Average Cells exceeding {threshold} dB",
-        )
+
     return plot_combined_bars(
         summary_df,
         value_column="cells_exceeding_threshold",
@@ -44,16 +38,9 @@ def plot_noise_exceedance_combined(main_df: pd.DataFrame, threshold: int = 55, d
     )
 
 
-def plot_population_impact_combined(main_df: pd.DataFrame, threshold: int = 55, plot_stat_difference: bool = True):
+def plot_population_impact_combined(main_df: pd.DataFrame, threshold: int = 55):
     summary_df = calculate_population_impacted_by_noise(main_df, CELL_POPULATION, threshold)
-    if plot_stat_difference:
-        plot_dataset_stat_difference(
-            summary_df,
-            value_col="impacted_population",
-            ylabel="% population exposure compared to Normal",
-            title=f"Average population exposed over {threshold} dB vs Normal",
-            filename="del_cel_imp_stat_diff",
-        )
+
     return plot_combined_bars(
         summary_df,
         value_column="impacted_population",

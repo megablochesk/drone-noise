@@ -3,7 +3,6 @@ import matplotlib
 from common.model_configs import model_config
 from common.path_configs import PATH_CONFIGS
 from visualiser.barchart import plot_barchart_stats, plot_combined_bars
-from visualiser.statistics import plot_dataset_stat_difference
 
 matplotlib.use(PATH_CONFIGS.matplotlib_backend)
 
@@ -72,24 +71,4 @@ def plot_comparison_execution_time_barchart(results_df):
         ylabel="Execution Time (s)",
         title="Normal vs Routed — Execution Time",
         filename='exec_time_comp'
-    )
-
-
-def plot_delivered_orders_comparison(results_df):
-    plot_dataset_stat_difference(
-        results_df,
-        value_col="delivered_orders_number",
-        title="Average Order Number Difference to Normal",
-        ylabel="% of order number compared to Normal",
-        filename='del_orders_comp_stat'
-    )
-
-
-def plot_avg_noise_diff_comparison(results_df):
-    plot_dataset_stat_difference(
-        results_df,
-        value_col="avg_noise_diff",
-        ylabel="% of average noise difference compared to Normal",
-        title="Average Noise Difference: Normal vs Routed",
-        filename='avg_noise_diff_comp_stat'
     )
