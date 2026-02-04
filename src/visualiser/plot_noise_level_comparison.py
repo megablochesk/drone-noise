@@ -12,8 +12,14 @@ METRICS = ['noise_level', 'average_noise', 'noise_difference']
 TITLES = ['Base City Noise', 'Drone Noise', 'City Noise Increase']
 
 
-def plot_noise_level_comparison(dataframe, file_name='noise_level_comparison',
-                                metrics=None, titles=None, vmin=None, vmax=None):
+def plot_noise_level_comparison(
+    dataframe, file_name='noise_level_comparison',
+    metrics=None,
+    titles=None,
+    vmin=None,
+    vmax=None,
+    suptitle: str | None = None
+):
     if titles is None:
         titles = TITLES
 
@@ -26,6 +32,14 @@ def plot_noise_level_comparison(dataframe, file_name='noise_level_comparison',
         fig.filename = f'{file_name}_{vmin[0] or "min"}_{vmax[0] or "max"}'
     else:
         fig.filename = f'{file_name}_{vmin or "min"}_{vmax or "max"}'
+
+    if suptitle:
+        fig.suptitle(suptitle, fontsize=14, y=0.98)
+
+    if suptitle:
+        fig.tight_layout(rect=[0, 0, 1, 0.94])
+    else:
+        fig.tight_layout()
 
     plot_multiple_heatmaps(
         dataframe,

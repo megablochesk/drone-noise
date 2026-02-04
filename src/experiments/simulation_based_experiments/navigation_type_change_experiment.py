@@ -2,9 +2,18 @@ from common.enum import NavigationType
 from common.path_configs import ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
 from experiments.config_generator import build_configs_for_datasets_drones_and_navigation_types
 from experiments.experiment_executor import run_complex_experiment
-from visualiser.cell_statistics_plotter import plot_ethnicity_impact_each_group_combined
+from visualiser.navigation_experiment_heatmaps_plotter import plot_heatmaps_per_drone_number_and_navigation_type
+from visualiser.navigation_experiment_line_plotter import plot_delivered_orders_lines_facet, \
+    plot_average_noise_lines_facet, \
+    plot_impacted_population_lines
 
-NAVIGATION_TYPES = [NavigationType.STRAIGHT, NavigationType.LIGHT_NOISE]
+NAVIGATION_TYPES = [
+    NavigationType.STRAIGHT,
+    NavigationType.NOISE_A025,
+    NavigationType.NOISE_A050,
+    NavigationType.NOISE_A075,
+    NavigationType.NOISE_A100
+]
 
 NUMBER_OF_DRONES_CASES = [100, 250, 500, 750, 1000, 1250]
 NUMBER_OF_ORDERS = 100_000
@@ -25,19 +34,14 @@ def generate_configs():
     )
 
 
-def plot_all_statistics(experiment_results):
-    #plot_comparison_avg_noise_barchart(experiment_results)
-    #plot_comparison_orders_barchart(experiment_results)
-    #plot_comparison_execution_time_barchart(experiment_results)
+def plot_all_statistics(experiment_results, noise_level_threshold=55):
+    plot_average_noise_lines_facet(experiment_results)
 
-    #plot_delivered_orders_comparison(experiment_results)
-    #plot_avg_noise_diff_comparison(experiment_results)
+    plot_delivered_orders_lines_facet(experiment_results)
 
-    for db in range(55, 60, 5):
-        #plot_noise_exceedance_combined(experiment_results, threshold=db, plot_stat_difference=False)
-        #plot_population_impact_combined(experiment_results, threshold=db, plot_stat_difference=False)
-        #plot_age_impact_each_band_combined(experiment_results, threshold=db, plot_stat_difference=True, use_band_names=True)
-        plot_ethnicity_impact_each_group_combined(experiment_results, threshold=db, plot_stat_difference=True, use_names=True)
+    plot_heatmaps_per_drone_number_and_navigation_type(experiment_results)
+
+    plot_impacted_population_lines(experiment_results, threshold=noise_level_threshold)
 
 
 def run_navigation_type_change_experiment(load_saved_results=True):
