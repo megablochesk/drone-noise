@@ -108,10 +108,13 @@ def plot_metric_lines_facet_by_dataset(
         _format_axis(ax, x=sub[x_col], xlabel=xlabel, ylabel=ylabel, title=_dataset_label(ds))
 
     _add_figure_legend(fig, axes[0])
-    if title:
-        fig.suptitle(title, y=1.02)
 
-    fig.tight_layout()
+    if title:
+        fig.suptitle(title, y=1.04)
+
+    top = 0.86 if title else 0.88
+    fig.tight_layout(rect=[0, 0, 1, top])
+
     return fig, axes
 
 
@@ -141,23 +144,35 @@ def _format_axis(ax, *, x, xlabel, ylabel, title):
     ax.grid(axis="y", linestyle=":", linewidth=0.7, alpha=0.6)
 
 
-def _add_figure_legend(fig, ax, *, fontsize: int = 13, title: str | None = None, title_fontsize: int = 14):
+def _add_figure_legend(
+    fig,
+    ax,
+    *,
+    fontsize: int = 13,
+    title: str | None = None,
+    title_fontsize: int = 14,
+    ncol: int | None = None,
+):
     handles, labels = ax.get_legend_handles_labels()
     labels = [l for l in labels if l]
     if not labels:
-        return
+        return None
 
-    fig.legend(
+    if ncol is None:
+        ncol = min(len(labels), 5)
+
+    legend = fig.legend(
         handles,
         labels,
         loc="upper center",
-        ncol=min(len(labels), 5),
+        bbox_to_anchor=(0.5, 0.995),
+        ncol=ncol,
         frameon=False,
         fontsize=fontsize,
         title=title,
         title_fontsize=title_fontsize,
     )
-
+    return legend
 
 
 def _dataset_order(values: Iterable[str]) -> list[str]:
