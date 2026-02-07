@@ -1,6 +1,6 @@
 from common.model_configs import model_config
 from common.runtime_configs import get_simulation_config
-from simulation.dispatcher import Dispatcher
+from simulation.delivery_dispatcher import DeliveryDispatcher
 from simulation.fleet import Fleet
 from simulation.noise_monitor import NoiseMonitor
 from simulation.plotter import Plotter
@@ -19,7 +19,7 @@ class Simulator:
         self.timer = Timer()
         self.noise_monitor = NoiseMonitor()
         self.fleet = Fleet(self.configs.number_of_drones, self.configs.order_dataset_path, WAREHOUSES)
-        self.dispatcher = Dispatcher(self.configs.orders_to_process, self.configs.order_dataset_path)
+        self.dispatcher = DeliveryDispatcher(self.configs.orders_to_process, self.configs.order_dataset_path)
         self.plotter = Plotter(WAREHOUSES)
 
     @property

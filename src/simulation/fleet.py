@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from common.enum import DroneStatus
-from drones.dronegenerator import DroneGenerator
+from drones.drone_generator import DroneGenerator
 from simulation.planner import PathPlanner
 
 

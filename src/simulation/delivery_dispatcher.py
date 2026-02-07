@@ -1,8 +1,9 @@
 from collections import defaultdict, deque
+
 from orders.order_generator import load_orders
 
 
-class Dispatcher:
+class DeliveryDispatcher:
     def __init__(self, number_of_orders, dataset):
         self.pending_orders = load_orders(number_of_orders, dataset)
 
