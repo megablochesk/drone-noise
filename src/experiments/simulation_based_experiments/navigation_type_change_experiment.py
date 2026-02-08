@@ -4,8 +4,7 @@ from experiments.config_generator import build_configs_for_datasets_drones_and_n
 from experiments.experiment_executor import run_complex_experiment
 from visualiser.navigation_experiment_heatmaps_plotter import plot_heatmaps_per_drone_number_and_navigation_type
 from visualiser.navigation_experiment_line_plotter import plot_delivered_orders_lines_facet, \
-    plot_average_noise_lines_facet, \
-    plot_impacted_population_lines
+    plot_average_noise_lines_facet, plot_impacted_population_lines
 
 NAVIGATION_TYPES = [
     NavigationType.STRAIGHT,

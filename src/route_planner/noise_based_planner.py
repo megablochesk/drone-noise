@@ -43,23 +43,23 @@ def resample_polyline_by_time(coords: list[Coordinate], speed: float, dt: float)
     if step_dist <= 0:
         return coords
 
-    cum = _cumulative_distances(coords)
-    total = float(cum[-1])
+    cumulative_distances = calculate_cumulative_distances(coords)
+    total = float(cumulative_distances[-1])
     if total <= 0:
         return [coords[0], coords[-1]]
 
-    targets = _targets(total, step_dist)
-    return _resample_by_targets(coords, cum, targets)
+    targets = get_targets(total, step_dist)
+    return resample_by_targets(coords, cumulative_distances, targets)
 
 
-def _cumulative_distances(coords: list[Coordinate]) -> np.ndarray:
+def calculate_cumulative_distances(coords: list[Coordinate]) -> np.ndarray:
     cum = np.zeros(len(coords), dtype=float)
     for i in range(1, len(coords)):
         cum[i] = cum[i - 1] + calculate_distance(coords[i - 1], coords[i])
     return cum
 
 
-def _targets(total: float, step_dist: float) -> np.ndarray:
+def get_targets(total: float, step_dist: float) -> np.ndarray:
     if step_dist >= total:
         return np.array([0.0, total], dtype=float)
     t = np.arange(0.0, total, step_dist, dtype=float)
@@ -68,7 +68,7 @@ def _targets(total: float, step_dist: float) -> np.ndarray:
     return t
 
 
-def _resample_by_targets(coords: list[Coordinate], cum: np.ndarray, targets: np.ndarray) -> list[Coordinate]:
+def resample_by_targets(coords: list[Coordinate], cum: np.ndarray, targets: np.ndarray) -> list[Coordinate]:
     out: list[Coordinate] = []
     j = 0
     n = len(coords)
