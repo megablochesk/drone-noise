@@ -24,13 +24,15 @@ def build_configs_for_datasets_and_drones(
     datasets: dict[str, str],
     orders: int,
     drone_cases: Iterable[int],
-    base_config: SimulationConfig= DEFAULT_SIMULATION_CONFIGS
+    base_config: SimulationConfig= DEFAULT_SIMULATION_CONFIGS,
+    drone_landing: bool = False,
 ):
     return [
         (f"{dataset_name}_d{drones}", base_config.with_overrides(
             orders_to_process=orders,
             number_of_drones=drones,
-            order_dataset_path=dataset_path
+            order_dataset_path=dataset_path,
+            drone_landing=drone_landing
         ))
         for dataset_name, dataset_path in datasets.items()
         for drones in drone_cases
