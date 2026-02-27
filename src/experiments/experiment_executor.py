@@ -1,18 +1,96 @@
 from __future__ import annotations
 
+import gc
 import time
 from collections import defaultdict
+from dataclasses import dataclass
 from enum import Enum
+from threading import Event, Thread
 from typing import Any
 
 import pandas as pd
 
+from common.enum import NavigationType
 from common.file_utils import load_dataframe_from_pickle, save_dataframe_to_pickle
 from common.path_configs import get_experiment_results_full_file_path
 from common.runtime_configs import use_simulation_config
 from common.simulation_configs import SimulationConfig
+from simulation.planned_route_cache import PlannedRouteCache, PlannedRouteCacheStats
 from simulation.simulator import Simulator
 from visualiser.plot_utils import finalise_visualisation
+
+try:
+    import psutil
+except ImportError:  # pragma: no cover
+    psutil = None
+
+try:
+    from noise.navigator import clear_navigator_cache
+except ImportError:  # pragma: no cover
+    def clear_navigator_cache():
+        return None
+
+
+@dataclass(frozen=True)
+class DatasetExperimentGroupKey:
+    dataset_name: str
+    dataset_path: str
+    drone_landing_enabled: bool
+
+
+@dataclass(frozen=True)
+class MemoryUsageSummary:
+    start_rss_bytes: int
+    end_rss_bytes: int
+    peak_rss_bytes: int
+
+
+class ProcessMemoryMonitor:
+    def __init__(self, sampling_interval_seconds: float = 1.0):
+        self._sampling_interval_seconds = sampling_interval_seconds
+        self._process = psutil.Process() if psutil is not None else None
+        self._stop_event = Event()
+        self._monitor_thread: Thread | None = None
+        self._start_rss_bytes = 0
+        self._peak_rss_bytes = 0
+
+    @property
+    def enabled(self) -> bool:
+        return self._process is not None
+
+    def start(self):
+        if not self.enabled:
+            return
+
+        self._stop_event.clear()
+        self._start_rss_bytes = self._read_current_rss_bytes()
+        self._peak_rss_bytes = self._start_rss_bytes
+        self._monitor_thread = Thread(target=self._monitor_memory_usage, daemon=True)
+        self._monitor_thread.start()
+
+    def stop(self) -> MemoryUsageSummary | None:
+        if not self.enabled:
+            return None
+
+        self._stop_event.set()
+        if self._monitor_thread is not None:
+            self._monitor_thread.join()
+            self._monitor_thread = None
+
+        end_rss_bytes = self._read_current_rss_bytes()
+        peak_rss_bytes = max(self._peak_rss_bytes, end_rss_bytes)
+        return MemoryUsageSummary(
+            start_rss_bytes=self._start_rss_bytes,
+            end_rss_bytes=end_rss_bytes,
+            peak_rss_bytes=peak_rss_bytes,
+        )
+
+    def _monitor_memory_usage(self):
+        while not self._stop_event.wait(self._sampling_interval_seconds):
+            self._peak_rss_bytes = max(self._peak_rss_bytes, self._read_current_rss_bytes())
+
+    def _read_current_rss_bytes(self) -> int:
+        return self._process.memory_info().rss
 
 
 def run_complex_experiment(
@@ -20,7 +98,7 @@ def run_complex_experiment(
     load_saved_results,
     experiment_function=None,
     visualisation_function=None,
-    configs_with_names=None
+    configs_with_names=None,
 ):
     if configs_with_names is not None:
         def wrapped_experiment():
@@ -36,32 +114,128 @@ def run_complex_experiment(
 
 
 def _run_experiments_for_configs(configs_with_names):
-    grouped = _group_by_navigation_type(configs_with_names)
+    grouped_configs = _group_by_navigation_type_and_dataset(configs_with_names)
 
     results = []
-    for nav_name in sorted(grouped.keys()):
-        runs = grouped[nav_name]
-        print(f"\n=== Running group: navigation_type={nav_name}  (runs={len(runs)}) ===")
-        for run_name, config in runs:
-            result = _run_atomic_experiment(run_name, config)
-            results.append(result)
+    for navigation_type_name in sorted(grouped_configs.keys()):
+        dataset_groups = grouped_configs[navigation_type_name]
+        print(
+            f"\n=== Running navigation type group: navigation_type={navigation_type_name} "
+            f"(datasets={len(dataset_groups)}) ==="
+        )
+
+        for dataset_group_key in _sort_dataset_group_keys(dataset_groups):
+            dataset_runs = dataset_groups[dataset_group_key]
+            results.extend(
+                _run_dataset_group(
+                    navigation_type_name=navigation_type_name,
+                    dataset_group_key=dataset_group_key,
+                    runs=dataset_runs,
+                )
+            )
+
+        _clear_navigation_level_caches()
 
     return results
 
 
-def _group_by_navigation_type(configs_with_names):
-    groups = defaultdict(list)
+def _group_by_navigation_type_and_dataset(configs_with_names):
+    grouped_configs = defaultdict(lambda: defaultdict(list))
+
     for run_name, config in configs_with_names:
-        nav_name = _nav_to_name(config.navigator_type)
-        groups[nav_name].append((run_name, config))
-    return dict(groups)
+        navigation_type_name = _nav_to_name(config.navigator_type)
+        dataset_group_key = DatasetExperimentGroupKey(
+            dataset_name=_dataset_type_from_run_name(run_name),
+            dataset_path=config.order_dataset_path,
+            drone_landing_enabled=config.drone_landing,
+        )
+        grouped_configs[navigation_type_name][dataset_group_key].append((run_name, config))
+
+    return {
+        navigation_type_name: dict(dataset_groups)
+        for navigation_type_name, dataset_groups in grouped_configs.items()
+    }
 
 
-def _run_atomic_experiment(run_name: str, config: SimulationConfig):
+def _sort_dataset_group_keys(dataset_groups):
+    return sorted(
+        dataset_groups.keys(),
+        key=lambda dataset_group_key: (
+            dataset_group_key.dataset_name,
+            dataset_group_key.dataset_path,
+            dataset_group_key.drone_landing_enabled,
+        ),
+    )
+
+
+def _run_dataset_group(
+    navigation_type_name: str,
+    dataset_group_key: DatasetExperimentGroupKey,
+    runs: list[tuple[str, SimulationConfig]],
+):
+    planned_route_cache = _create_planned_route_cache(navigation_type_name)
+    ordered_runs = _sort_runs_by_descending_drone_count(runs)
+    memory_monitor = ProcessMemoryMonitor()
+
+    print(
+        f"\n--- Running dataset group: navigation_type={navigation_type_name}, "
+        f"dataset={dataset_group_key.dataset_name}, drone_landing={dataset_group_key.drone_landing_enabled}, "
+        f"runs={len(ordered_runs)}, "
+        f"planned_route_cache={'enabled' if planned_route_cache is not None else 'disabled'} ---"
+    )
+
+    dataset_results = []
+    memory_monitor.start()
+    try:
+        for run_name, config in ordered_runs:
+            dataset_results.append(
+                _run_atomic_experiment(
+                    run_name=run_name,
+                    config=config,
+                    planned_route_cache=planned_route_cache,
+                )
+            )
+    finally:
+        memory_usage_summary = memory_monitor.stop()
+        cache_stats = _get_planned_route_cache_stats(planned_route_cache)
+        _log_dataset_group_summary(
+            navigation_type_name=navigation_type_name,
+            dataset_group_key=dataset_group_key,
+            cache_stats=cache_stats,
+            memory_usage_summary=memory_usage_summary,
+        )
+        _clear_planned_route_cache(planned_route_cache)
+        _log_memory_after_cache_cleanup(
+            navigation_type_name=navigation_type_name,
+            dataset_group_key=dataset_group_key,
+        )
+
+    return dataset_results
+
+
+def _create_planned_route_cache(navigation_type_name: str) -> PlannedRouteCache | None:
+    if navigation_type_name == NavigationType.STRAIGHT.name:
+        return None
+
+    return PlannedRouteCache()
+
+
+def _sort_runs_by_descending_drone_count(runs):
+    return sorted(
+        runs,
+        key=lambda run: (-run[1].number_of_drones, run[0]),
+    )
+
+
+def _run_atomic_experiment(
+    run_name: str,
+    config: SimulationConfig,
+    planned_route_cache: PlannedRouteCache | None = None,
+):
     start_time = time.time()
 
     with use_simulation_config(config):
-        simulator_after_run = _run_simulation()
+        simulator_after_run = _run_simulation(planned_route_cache=planned_route_cache)
 
         elapsed_time = time.time() - start_time
 
@@ -69,12 +243,12 @@ def _run_atomic_experiment(run_name: str, config: SimulationConfig):
             simulator_after_run,
             run_name,
             elapsed_time,
-            config
+            config,
         )
 
 
-def _run_simulation():
-    simulator = Simulator()
+def _run_simulation(planned_route_cache: PlannedRouteCache | None = None):
+    simulator = Simulator(planned_route_cache=planned_route_cache)
     simulator.run()
 
     return simulator
@@ -96,8 +270,103 @@ def _extract_experiment_results(simulator_after_run, run_name, elapsed_time, con
         "avg_noise_diff": avg_noise_difference,
         "noise_impact_df": noise_impact_df,
         "delivered_orders_number": simulator_after_run.delivered_orders_number,
-        "execution_time_seconds": elapsed_time
+        "execution_time_seconds": elapsed_time,
     }
+
+
+def _get_planned_route_cache_stats(
+    planned_route_cache: PlannedRouteCache | None,
+) -> PlannedRouteCacheStats | None:
+    if planned_route_cache is None:
+        return None
+
+    return planned_route_cache.get_stats()
+
+
+def _log_dataset_group_summary(
+    navigation_type_name: str,
+    dataset_group_key: DatasetExperimentGroupKey,
+    cache_stats: PlannedRouteCacheStats | None,
+    memory_usage_summary: MemoryUsageSummary | None,
+):
+    print(
+        f"\nDataset group summary: navigation_type={navigation_type_name}, "
+        f"dataset={dataset_group_key.dataset_name}, "
+        f"drone_landing={dataset_group_key.drone_landing_enabled}"
+    )
+
+    if cache_stats is None:
+        print("  Planned route cache: disabled")
+    else:
+        print(
+            "  Planned route cache: "
+            f"entries={cache_stats.entry_count}, "
+            f"hits={cache_stats.hit_count}, "
+            f"misses={cache_stats.miss_count}, "
+            f"requests={cache_stats.request_count}, "
+            f"hit_rate={cache_stats.hit_rate:.2%}"
+        )
+
+    if memory_usage_summary is None:
+        print("  Memory usage: unavailable (psutil not installed)")
+        return
+
+    print(
+        "  Memory usage: "
+        f"start_rss={_format_bytes(memory_usage_summary.start_rss_bytes)}, "
+        f"end_rss={_format_bytes(memory_usage_summary.end_rss_bytes)}, "
+        f"peak_rss={_format_bytes(memory_usage_summary.peak_rss_bytes)}, "
+        f"peak_growth={_format_bytes(memory_usage_summary.peak_rss_bytes - memory_usage_summary.start_rss_bytes)}"
+    )
+
+
+def _clear_planned_route_cache(planned_route_cache: PlannedRouteCache | None):
+    if planned_route_cache is None:
+        return
+
+    planned_route_cache.clear()
+    gc.collect()
+
+
+def _log_memory_after_cache_cleanup(
+    navigation_type_name: str,
+    dataset_group_key: DatasetExperimentGroupKey,
+):
+    current_rss_bytes = _read_current_process_rss_bytes()
+    if current_rss_bytes is None:
+        return
+
+    print(
+        "  Memory after cache cleanup: "
+        f"navigation_type={navigation_type_name}, "
+        f"dataset={dataset_group_key.dataset_name}, "
+        f"rss={_format_bytes(current_rss_bytes)}"
+    )
+
+
+def _clear_navigation_level_caches():
+    clear_navigator_cache()
+    gc.collect()
+
+
+def _read_current_process_rss_bytes() -> int | None:
+    if psutil is None:
+        return None
+
+    return psutil.Process().memory_info().rss
+
+
+def _format_bytes(size_in_bytes: int) -> str:
+    negative_prefix = "-" if size_in_bytes < 0 else ""
+    absolute_size = abs(size_in_bytes)
+    units = ["B", "KB", "MB", "GB", "TB"]
+    unit_index = 0
+
+    while absolute_size >= 1024 and unit_index < len(units) - 1:
+        absolute_size /= 1024
+        unit_index += 1
+
+    return f"{negative_prefix}{absolute_size:.2f} {units[unit_index]}"
 
 
 def _load_or_run_experiment(result_file_name, load_saved_results, experiment_function):
@@ -144,33 +413,33 @@ def _visualise_results(results, visualisation_function=None):
 
 
 def _ensure_results_schema(df: pd.DataFrame) -> pd.DataFrame:
-    x = df.copy()
+    normalized_results = df.copy()
 
-    if "run_name" not in x.columns and "dataset_name" in x.columns:
-        x["run_name"] = x["dataset_name"].astype(str)
+    if "run_name" not in normalized_results.columns and "dataset_name" in normalized_results.columns:
+        normalized_results["run_name"] = normalized_results["dataset_name"].astype(str)
 
-    if "dataset_name" in x.columns:
-        x["dataset_name"] = x["dataset_name"].map(_dataset_type_from_run_name)
+    if "dataset_name" in normalized_results.columns:
+        normalized_results["dataset_name"] = normalized_results["dataset_name"].map(_dataset_type_from_run_name)
 
-    if "dataset" not in x.columns and "dataset_name" in x.columns:
-        x["dataset"] = x["dataset_name"]
+    if "dataset" not in normalized_results.columns and "dataset_name" in normalized_results.columns:
+        normalized_results["dataset"] = normalized_results["dataset_name"]
 
-    if "navigation_type" in x.columns:
-        x["navigation_type"] = x["navigation_type"].map(_nav_to_name)
+    if "navigation_type" in normalized_results.columns:
+        normalized_results["navigation_type"] = normalized_results["navigation_type"].map(_nav_to_name)
 
-    return x
+    return normalized_results
 
 
 def _dataset_type_from_run_name(run_name: Any) -> str:
-    s = str(run_name)
-    return s.split("_d", 1)[0]
+    run_name_string = str(run_name)
+    return run_name_string.split("_d", 1)[0]
 
 
-def _nav_to_name(v: Any) -> str:
-    if isinstance(v, Enum):
-        return v.name
-    if hasattr(v, "name"):
-        name = getattr(v, "name")
+def _nav_to_name(value: Any) -> str:
+    if isinstance(value, Enum):
+        return value.name
+    if hasattr(value, "name"):
+        name = getattr(value, "name")
         if isinstance(name, str):
             return name
-    return str(v)
+    return str(value)

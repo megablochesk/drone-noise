@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 from common.model_configs import model_config
 from common.runtime_configs import get_simulation_config
 from simulation.delivery_dispatcher import DeliveryDispatcher
 from simulation.fleet import Fleet
 from simulation.noise_monitor import NoiseMonitor
+from simulation.planned_route_cache import PlannedRouteCache
 from simulation.plotter import Plotter
 from simulation.timer import Timer
 
@@ -11,14 +14,19 @@ WAREHOUSES = [location for _, location in LONDON_WAREHOUSES]
 
 
 class Simulator:
-    def __init__(self):
+    def __init__(self, planned_route_cache: PlannedRouteCache | None = None):
         self.configs = get_simulation_config()
 
         self.undelivered_orders_number = self.configs.orders_to_process
 
         self.timer = Timer()
         self.noise_monitor = NoiseMonitor()
-        self.fleet = Fleet(self.configs.number_of_drones, self.configs.order_dataset_path, WAREHOUSES)
+        self.fleet = Fleet(
+            self.configs.number_of_drones,
+            self.configs.order_dataset_path,
+            WAREHOUSES,
+            planned_route_cache=planned_route_cache,
+        )
         self.dispatcher = DeliveryDispatcher(self.configs.orders_to_process, self.configs.order_dataset_path)
         self.plotter = Plotter(WAREHOUSES)
 
@@ -28,9 +36,11 @@ class Simulator:
 
     @property
     def has_pending_deliveries(self):
-        return (self.dispatcher.has_pending_orders or
-                self.fleet.has_delivering_drones or
-                self.fleet.has_planning_drone)
+        return (
+            self.dispatcher.has_pending_orders
+            or self.fleet.has_delivering_drones
+            or self.fleet.has_planning_drone
+        )
 
     def run(self):
         print("Running simulation...")

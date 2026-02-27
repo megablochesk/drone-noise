@@ -2,16 +2,23 @@ from __future__ import annotations
 
 from common.enum import DroneStatus
 from drones.drone_generator import DroneGenerator
+from simulation.planned_route_cache import PlannedRouteCache
 from simulation.planner import PathPlanner
 
 
 class Fleet:
-    def __init__(self, number_of_drones, dataset_path, warehouse_locations):
+    def __init__(
+        self,
+        number_of_drones,
+        dataset_path,
+        warehouse_locations,
+        planned_route_cache: PlannedRouteCache | None = None,
+    ):
         self.free_drones = DroneGenerator(warehouse_locations).generate_drones(number_of_drones)
         self.waiting_planning_drones = []
         self.delivering_drones = []
 
-        self.planner = PathPlanner(dataset_path)
+        self.planner = PathPlanner(dataset_path, planned_route_cache=planned_route_cache)
 
     @property
     def has_free_drone(self):
@@ -64,8 +71,10 @@ class Fleet:
             if drone.status is DroneStatus.FREE:
                 self.free_drones.append(drone)
 
-        self.delivering_drones = [x for x in self.delivering_drones if x not in self.free_drones]
-        self.waiting_planning_drones.extend([x for x in self.delivering_drones if x.need_planning is True])
+        self.delivering_drones = [drone for drone in self.delivering_drones if drone not in self.free_drones]
+        self.waiting_planning_drones.extend([
+            drone for drone in self.delivering_drones if drone.need_planning is True
+        ])
 
     @staticmethod
     def _get_difference(primary_list, exclusion_list):
