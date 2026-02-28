@@ -10,6 +10,7 @@ from typing import Any
 
 import pandas as pd
 
+from common.coordinate import Coordinate
 from common.enum import NavigationType
 from common.file_utils import load_dataframe_from_pickle, save_dataframe_to_pickle
 from common.path_configs import get_experiment_results_full_file_path
@@ -109,7 +110,6 @@ def run_complex_experiment(
         raise ValueError("Either experiment_function or configs_with_names must be provided")
 
     results = _load_or_run_experiment(result_file_name, load_saved_results, experiment_function)
-
     _visualise_results(results, visualisation_function)
 
 
@@ -134,7 +134,7 @@ def _run_experiments_for_configs(configs_with_names):
                 )
             )
 
-        _clear_navigation_level_caches()
+        _clear_navigation_level_caches(navigation_type_name)
 
     return results
 
@@ -177,11 +177,18 @@ def _run_dataset_group(
     ordered_runs = _sort_runs_by_descending_drone_count(runs)
     memory_monitor = ProcessMemoryMonitor()
 
+    max_orders_to_process = max(config.orders_to_process for _, config in ordered_runs)
+    active_warehouse_locations = _load_active_warehouse_locations(
+        dataset_path=dataset_group_key.dataset_path,
+        number_of_orders=max_orders_to_process,
+    )
+
     print(
         f"\n--- Running dataset group: navigation_type={navigation_type_name}, "
         f"dataset={dataset_group_key.dataset_name}, drone_landing={dataset_group_key.drone_landing_enabled}, "
         f"runs={len(ordered_runs)}, "
-        f"planned_route_cache={'enabled' if planned_route_cache is not None else 'disabled'} ---"
+        f"planned_route_cache={'enabled' if planned_route_cache is not None else 'disabled'}, "
+        f"active_warehouses={len(active_warehouse_locations)} ---"
     )
 
     dataset_results = []
@@ -193,6 +200,7 @@ def _run_dataset_group(
                     run_name=run_name,
                     config=config,
                     planned_route_cache=planned_route_cache,
+                    warehouse_locations=active_warehouse_locations,
                 )
             )
     finally:
@@ -213,10 +221,27 @@ def _run_dataset_group(
     return dataset_results
 
 
+def _load_active_warehouse_locations(dataset_path: str, number_of_orders: int) -> list[Coordinate]:
+    data_frame = pd.read_csv(
+        dataset_path,
+        usecols=["Start Northing", "Start Easting"],
+        nrows=number_of_orders,
+    )
+
+    unique_pairs = (
+        data_frame[["Start Northing", "Start Easting"]]
+        .drop_duplicates()
+        .itertuples(index=False, name=None)
+    )
+
+    warehouse_locations = [Coordinate(northing, easting) for northing, easting in unique_pairs]
+    warehouse_locations.sort(key=lambda coordinate: (coordinate.northing, coordinate.easting))
+    return warehouse_locations
+
+
 def _create_planned_route_cache(navigation_type_name: str) -> PlannedRouteCache | None:
     if navigation_type_name == NavigationType.STRAIGHT.name:
         return None
-
     return PlannedRouteCache()
 
 
@@ -231,14 +256,17 @@ def _run_atomic_experiment(
     run_name: str,
     config: SimulationConfig,
     planned_route_cache: PlannedRouteCache | None = None,
+    warehouse_locations=None,
 ):
     start_time = time.time()
 
     with use_simulation_config(config):
-        simulator_after_run = _run_simulation(planned_route_cache=planned_route_cache)
+        simulator_after_run = _run_simulation(
+            planned_route_cache=planned_route_cache,
+            warehouse_locations=warehouse_locations,
+        )
 
         elapsed_time = time.time() - start_time
-
         return _extract_experiment_results(
             simulator_after_run,
             run_name,
@@ -247,10 +275,12 @@ def _run_atomic_experiment(
         )
 
 
-def _run_simulation(planned_route_cache: PlannedRouteCache | None = None):
-    simulator = Simulator(planned_route_cache=planned_route_cache)
+def _run_simulation(planned_route_cache: PlannedRouteCache | None = None, warehouse_locations=None):
+    simulator = Simulator(
+        planned_route_cache=planned_route_cache,
+        warehouse_locations=warehouse_locations,
+    )
     simulator.run()
-
     return simulator
 
 
@@ -274,9 +304,7 @@ def _extract_experiment_results(simulator_after_run, run_name, elapsed_time, con
     }
 
 
-def _get_planned_route_cache_stats(
-    planned_route_cache: PlannedRouteCache | None,
-) -> PlannedRouteCacheStats | None:
+def _get_planned_route_cache_stats(planned_route_cache: PlannedRouteCache | None) -> PlannedRouteCacheStats | None:
     if planned_route_cache is None:
         return None
 
@@ -344,9 +372,13 @@ def _log_memory_after_cache_cleanup(
     )
 
 
-def _clear_navigation_level_caches():
+def _clear_navigation_level_caches(navigation_type_name: str):
     clear_navigator_cache()
     gc.collect()
+
+    current_rss_bytes = _read_current_process_rss_bytes()
+    if current_rss_bytes is not None:
+        print(f"Memory after navigator cleanup: navigation_type={navigation_type_name}, rss={_format_bytes(current_rss_bytes)}")
 
 
 def _read_current_process_rss_bytes() -> int | None:

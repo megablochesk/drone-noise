@@ -10,25 +10,31 @@ from simulation.plotter import Plotter
 from simulation.timer import Timer
 
 LONDON_WAREHOUSES = list(model_config.warehouses.bng_coordinates.items())
-WAREHOUSES = [location for _, location in LONDON_WAREHOUSES]
+DEFAULT_WAREHOUSE_LOCATIONS = [location for _, location in LONDON_WAREHOUSES]
 
 
 class Simulator:
-    def __init__(self, planned_route_cache: PlannedRouteCache | None = None):
+    def __init__(
+        self,
+        planned_route_cache: PlannedRouteCache | None = None,
+        warehouse_locations=None,
+    ):
         self.configs = get_simulation_config()
 
         self.undelivered_orders_number = self.configs.orders_to_process
+
+        selected_warehouse_locations = warehouse_locations or DEFAULT_WAREHOUSE_LOCATIONS
 
         self.timer = Timer()
         self.noise_monitor = NoiseMonitor()
         self.fleet = Fleet(
             self.configs.number_of_drones,
             self.configs.order_dataset_path,
-            WAREHOUSES,
+            selected_warehouse_locations,
             planned_route_cache=planned_route_cache,
         )
         self.dispatcher = DeliveryDispatcher(self.configs.orders_to_process, self.configs.order_dataset_path)
-        self.plotter = Plotter(WAREHOUSES)
+        self.plotter = Plotter(selected_warehouse_locations)
 
     @property
     def delivered_orders_number(self):
