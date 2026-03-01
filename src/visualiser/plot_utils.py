@@ -75,12 +75,12 @@ def plot_figures():
     plt.show()
 
 
-def save_figures():
+def save_figures(output_directory: str = "figures"):
     for i in plt.get_fignums():
         fig = plt.figure(i)
 
         filename = fig.filename if hasattr(fig, "filename") else f"figure_{i}"
-        out_path = f"figures/{filename}.eps"
+        out_path = os.path.join(output_directory, f"{filename}.eps")
 
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
@@ -97,9 +97,9 @@ def add_font_style():
     })
 
 
-def finalise_visualisation():
+def finalise_visualisation(output_directory: str = "figures"):
     add_font_style()
-    save_figures()
+    save_figures(output_directory=output_directory)
     plot_figures()
 
 

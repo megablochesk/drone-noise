@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import gc
+import os
+import re
 import time
 from collections import defaultdict
 from dataclasses import dataclass
@@ -9,6 +11,7 @@ from threading import Event, Thread
 from typing import Any
 
 import pandas as pd
+import psutil
 
 from common.coordinate import Coordinate
 from common.enum import NavigationType
@@ -16,20 +19,10 @@ from common.file_utils import load_dataframe_from_pickle, save_dataframe_to_pick
 from common.path_configs import get_experiment_results_full_file_path
 from common.runtime_configs import use_simulation_config
 from common.simulation_configs import SimulationConfig
+from noise.navigator import clear_navigator_cache
 from simulation.planned_route_cache import PlannedRouteCache, PlannedRouteCacheStats
 from simulation.simulator import Simulator
 from visualiser.plot_utils import finalise_visualisation
-
-try:
-    import psutil
-except ImportError:  # pragma: no cover
-    psutil = None
-
-try:
-    from noise.navigator import clear_navigator_cache
-except ImportError:  # pragma: no cover
-    def clear_navigator_cache():
-        return None
 
 
 @dataclass(frozen=True)
@@ -110,7 +103,7 @@ def run_complex_experiment(
         raise ValueError("Either experiment_function or configs_with_names must be provided")
 
     results = _load_or_run_experiment(result_file_name, load_saved_results, experiment_function)
-    _visualise_results(results, visualisation_function)
+    _visualise_results(results, visualisation_function, result_file_name=result_file_name)
 
 
 def _run_experiments_for_configs(configs_with_names):
@@ -378,7 +371,10 @@ def _clear_navigation_level_caches(navigation_type_name: str):
 
     current_rss_bytes = _read_current_process_rss_bytes()
     if current_rss_bytes is not None:
-        print(f"Memory after navigator cleanup: navigation_type={navigation_type_name}, rss={_format_bytes(current_rss_bytes)}")
+        print(
+            f"Memory after navigator cleanup: navigation_type={navigation_type_name}, "
+            f"rss={_format_bytes(current_rss_bytes)}"
+        )
 
 
 def _read_current_process_rss_bytes() -> int | None:
@@ -433,7 +429,7 @@ def _convert_results_to_dataframe(results):
     return pd.DataFrame(results)
 
 
-def _visualise_results(results, visualisation_function=None):
+def _visualise_results(results, visualisation_function=None, result_file_name: str | None = None):
     if visualisation_function is None:
         return
 
@@ -441,7 +437,30 @@ def _visualise_results(results, visualisation_function=None):
     results = _ensure_results_schema(results)
     visualisation_function(results)
 
-    finalise_visualisation()
+    output_directory = _build_experiment_figure_output_directory(result_file_name)
+    finalise_visualisation(output_directory=output_directory)
+
+
+def _build_experiment_figure_output_directory(result_file_name: str | None) -> str:
+    if not result_file_name:
+        return "figures"
+
+    experiment_folder_name = _sanitize_experiment_folder_name(result_file_name)
+    return os.path.join("figures", experiment_folder_name)
+
+
+def _sanitize_experiment_folder_name(result_file_name: str) -> str:
+    base_name = os.path.basename(str(result_file_name))
+    name_without_extension, _ = os.path.splitext(base_name)
+
+    normalized_name = name_without_extension.strip().replace(" ", "_")
+    normalized_name = normalized_name.replace(os.sep, "_")
+    if os.altsep:
+        normalized_name = normalized_name.replace(os.altsep, "_")
+
+    normalized_name = re.sub(r"[^A-Za-z0-9._-]+", "_", normalized_name)
+    normalized_name = re.sub(r"_+", "_", normalized_name).strip("_")
+    return normalized_name or "experiment"
 
 
 def _ensure_results_schema(df: pd.DataFrame) -> pd.DataFrame:
