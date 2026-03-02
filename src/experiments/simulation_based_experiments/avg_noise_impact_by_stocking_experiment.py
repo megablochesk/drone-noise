@@ -3,7 +3,7 @@ from experiments.config_generator import generate_configs_for_datasets
 from experiments.experiment_executor import run_complex_experiment
 from visualiser.plot_noise_level_comparison import plot_noise_level_comparison
 
-NUMBER_OF_DRONES = 100
+NUMBER_OF_DRONES = 1250
 NUMBER_OF_ORDERS = 100_000
 
 ORDER_DATASETS = {

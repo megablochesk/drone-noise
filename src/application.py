@@ -1,12 +1,15 @@
-from experiments.simulation_based_experiments.simple_experiment import run_standard_experiment
-
 if __name__ == '__main__':
-    run_standard_experiment()
+    load_results_from_saved_file = False
 
-    # run_navigation_type_change_experiment()
+    #run_standard_experiment(load_results_from_saved_file)
 
-    #run_avg_noise_for_different_stocking_experiment()
+    # run_drone_number_change_experiment(load_results_from_saved_file)
+
+    #run_avg_noise_for_different_stocking_experiment(load_results_from_saved_file)
+
+    #run_drone_landing_experiment(load_results_from_saved_file)
+
+    #run_navigation_type_change_experiment(load_results_from_saved_file)
+
     #run_mixed_random_and_best_stocking_experiment()
-    #run_drone_number_change_experiment()
-
-    # generate_mixed_stocking_datasets(100_000)
+    #generate_mixed_stocking_datasets(100_000)

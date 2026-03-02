@@ -5,7 +5,7 @@ from visualiser.cell_statistics_plotter import analyze_and_plot_noise_increase, 
     analyze_and_plot_ethnicity_impact, analyze_and_plot_age_impact
 from visualiser.general_statistics_plotter import plot_avg_noise_barchart, plot_delivered_orders_barchart
 
-NUMBER_OF_DRONES_CASES = [100, 250, 500, 750, 1000, 1250]
+NUMBER_OF_DRONES_CASES = [1250, 1000, 750, 500, 250, 100]
 NUMBER_OF_ORDERS = 100_000
 
 ORDER_DATASETS = {

@@ -15,7 +15,7 @@ class SimulationConfig:
     orders_to_process: int = 100_000
     number_of_drones: int = 1250
 
-    drone_landing: bool = True
+    drone_landing: bool = False
 
     navigator_type: NavigationType = NavigationType.STRAIGHT
 
