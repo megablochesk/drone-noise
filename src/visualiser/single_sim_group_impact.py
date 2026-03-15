@@ -135,6 +135,7 @@ def _plot_bars(
     max_items: int | None = None,
     legend_prefix: str | None = None,
     codes_override: list[str] | None = None,
+    display_codes_func=None,
 ) -> pd.DataFrame:
     if sort == "desc":
         df = df.sort_values(value_col, ascending=False, kind="mergesort")
@@ -146,9 +147,12 @@ def _plot_bars(
 
     df = df.reset_index(drop=True)
 
-    display_codes = codes_override if codes_override is not None else [
-        f"E{index + 1:02d}" for index in range(len(df))
-    ]
+    if codes_override is not None:
+        display_codes = codes_override
+    elif display_codes_func is not None:
+        display_codes = display_codes_func(df["name"].tolist())
+    else:
+        display_codes = [f"E{index + 1:02d}" for index in range(len(df))]
 
     y_positions = np.arange(len(df))
     values = df[value_col].to_numpy(dtype=float)
@@ -202,6 +206,33 @@ def _ethnicity_names(value_cols: list[int]) -> dict[int, str]:
     }
 
 
+_ETHNICITY_ABBREVIATIONS: dict[str, str] = {
+    "Roma": "ROM",
+    "Arab": "ARB",
+    "Chinese": "CHN",
+    "Any other ethnic group": "OTH",
+    "Irish": "IRI",
+    "Other Black": "OBLK",
+    "Other Mixed or Multiple ethnic groups": "OMIX",
+    "Other White": "OWHT",
+    "African": "AFR",
+    "White and Black Caribbean": "WBCR",
+    "Caribbean": "CRB",
+    "White and Black African": "WBAF",
+    "White and Asian": "WASN",
+    "Other Asian": "OASN",
+    "English, Welsh, Scottish, Northern Irish or British": "BRIT",
+    "Bangladeshi": "BAN",
+    "Indian": "IND",
+    "Pakistani": "PAK",
+    "Gypsy or Irish Traveller": "GIT",
+}
+
+
+def _ethnicity_display_codes(names: list[str]) -> list[str]:
+    return [_ETHNICITY_ABBREVIATIONS.get(name, name) for name in names]
+
+
 def plot_single_sim_group_impact(
     *,
     noise_impact_df: pd.DataFrame,
@@ -218,6 +249,7 @@ def plot_single_sim_group_impact(
     shared_codes_order: list[int] | None = None,
     shared_display_codes: list[str] | None = None,
     make_legend: bool = True,
+    display_codes_func=None,
 ) -> tuple[pd.DataFrame, list[int], list[str]]:
     impacted_cells = _impacted_cells(noise_impact_df, threshold)
     value_cols = _value_cols(cell_values_df)
@@ -246,6 +278,7 @@ def plot_single_sim_group_impact(
             max_items=max_items,
             legend_prefix=legend_out if make_legend else None,
             codes_override=shared_display_codes,
+            display_codes_func=display_codes_func,
         )
 
         ordered_codes = (
@@ -268,11 +301,16 @@ def plot_single_sim_group_impact(
         max_items=max_items,
         legend_prefix=legend_out if make_legend else None,
         codes_override=shared_display_codes,
+        display_codes_func=display_codes_func,
     )
 
     ordered_codes = summary["code"].tolist() if shared_codes_order is not None else summary["code"].tolist()
     display_codes = mapping["code"].tolist() if shared_display_codes is None else shared_display_codes
     return summary, ordered_codes, display_codes
+
+
+def _age_display_codes(names: list[str]) -> list[str]:
+    return names
 
 
 def plot_single_sim_age_impact(
@@ -304,6 +342,7 @@ def plot_single_sim_age_impact(
         shared_codes_order=shared_codes_order,
         shared_display_codes=shared_display_codes,
         make_legend=make_legend,
+        display_codes_func=_age_display_codes,
     )
 
 
@@ -336,6 +375,7 @@ def plot_single_sim_ethnicity_impact(
         shared_codes_order=shared_codes_order,
         shared_display_codes=shared_display_codes,
         make_legend=make_legend,
+        display_codes_func=_ethnicity_display_codes,
     )
 
 

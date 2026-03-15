@@ -146,7 +146,7 @@ def analyze_and_plot_population_impact(main_df: pd.DataFrame, threshold: int = 5
     )
 
 
-def analyze_and_plot_age_impact(main_df: pd.DataFrame, threshold: int = 55, use_band_names: bool = True):
+def analyze_and_plot_age_impact(main_df: pd.DataFrame, threshold: int = 55, use_band_names: bool = False):
     summary_df = calculate_age_impacted_by_noise(main_df, CELL_AGE, threshold=threshold, use_band_names=use_band_names)
     base_cols = {"dataset", "dataset_name", "num_drones", "navigation_type"}
     value_cols = [c for c in summary_df.columns if c not in base_cols]
