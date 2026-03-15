@@ -24,12 +24,13 @@ ORDER_DATASETS = {
 }
 
 
-def generate_configs():
+def generate_configs(drone_landing):
     return build_configs_for_datasets_drones_and_navigation_types(
         datasets=ORDER_DATASETS,
         orders=NUMBER_OF_ORDERS,
         drone_cases=NUMBER_OF_DRONES_CASES,
-        navigation_types=NAVIGATION_TYPES
+        navigation_types=NAVIGATION_TYPES,
+        drone_landing=drone_landing,
     )
 
 
@@ -43,11 +44,13 @@ def plot_all_statistics(experiment_results, noise_level_threshold=55):
     plot_impacted_population_lines(experiment_results, threshold=noise_level_threshold)
 
 
-def run_navigation_type_change_experiment(load_saved_results=True):
-    configs_with_names = generate_configs()
+def run_navigation_type_change_experiment(load_saved_results=True, drone_landing=True):
+    result_file_name_suffix = "with_landing" if drone_landing else "no_landing"
+
+    configs_with_names = generate_configs(drone_landing)
     run_complex_experiment(
         load_saved_results=load_saved_results,
-        result_file_name="navigation_type_change",
+        result_file_name=f"navigation_type_change_{result_file_name_suffix}",
         configs_with_names=configs_with_names,
         visualisation_function=plot_all_statistics
     )

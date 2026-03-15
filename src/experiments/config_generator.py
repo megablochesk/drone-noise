@@ -24,8 +24,8 @@ def build_configs_for_datasets_and_drones(
     datasets: dict[str, str],
     orders: int,
     drone_cases: Iterable[int],
-    base_config: SimulationConfig= DEFAULT_SIMULATION_CONFIGS,
     drone_landing: bool = False,
+    base_config: SimulationConfig= DEFAULT_SIMULATION_CONFIGS,
 ):
     return [
         (f"{dataset_name}_d{drones}", base_config.with_overrides(
@@ -44,6 +44,7 @@ def build_configs_for_datasets_drones_and_navigation_types(
     orders: int,
     drone_cases: Iterable[int],
     navigation_types: Iterable[NavigationType],
+    drone_landing: bool = False,
     base_config: SimulationConfig = DEFAULT_SIMULATION_CONFIGS,
 ):
     return [
@@ -54,6 +55,7 @@ def build_configs_for_datasets_drones_and_navigation_types(
                 number_of_drones=number_of_drones,
                 order_dataset_path=dataset_path,
                 navigator_type=navigation_type,
+                drone_landing=drone_landing
             ),
         )
         for dataset_name, dataset_path in datasets.items()
