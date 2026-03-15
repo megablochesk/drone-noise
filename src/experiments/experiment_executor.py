@@ -117,8 +117,7 @@ def _run_experiments_for_configs(configs_with_names):
             f"(datasets={len(dataset_groups)}) ==="
         )
 
-        for dataset_group_key in _sort_dataset_group_keys(dataset_groups):
-            dataset_runs = dataset_groups[dataset_group_key]
+        for dataset_group_key, dataset_runs in dataset_groups.items():
             results.extend(
                 _run_dataset_group(
                     navigation_type_name=navigation_type_name,
@@ -148,17 +147,6 @@ def _group_by_navigation_type_and_dataset(configs_with_names):
         navigation_type_name: dict(dataset_groups)
         for navigation_type_name, dataset_groups in grouped_configs.items()
     }
-
-
-def _sort_dataset_group_keys(dataset_groups):
-    return sorted(
-        dataset_groups.keys(),
-        key=lambda dataset_group_key: (
-            dataset_group_key.dataset_name,
-            dataset_group_key.dataset_path,
-            dataset_group_key.drone_landing_enabled,
-        ),
-    )
 
 
 def _run_dataset_group(
