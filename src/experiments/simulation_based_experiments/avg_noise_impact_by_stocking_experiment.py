@@ -29,8 +29,8 @@ def plot_noise_comparison_for_different_stocking(results_df):
         metrics=['average_noise', 'average_noise', 'average_noise'],
         titles=['Best Stocking', 'Random Stocking', 'Worst Stocking'],
         file_name='noise_maps',
-        vmin=15,
-        vmax=45
+        vmin=29,
+        vmax=50
     )
 
 
