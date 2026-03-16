@@ -12,6 +12,7 @@ from visualiser.cell_statistics_calculator import (
     calculate_age_impacted_by_noise,
     calculate_ethnicity_impacted_by_noise,
 )
+from visualiser.linegraph import plot_linegraph_stats
 from visualiser.plot_utils import plot_standalone_heatmap
 from visualiser.statistics import plot_dataset_stat_difference
 
@@ -122,27 +123,25 @@ def plot_ethnicity_impact_each_group_combined(main_df: pd.DataFrame, threshold: 
         )
 
 
-def analyze_and_plot_noise_increase(main_df: pd.DataFrame, threshold: int = 55):
+def analyze_and_plot_noise_increase(main_df: pd.DataFrame, threshold: int = 55, filename="del_cel_imp"):
     summary_df = calculate_cells_exceeding_threshold(main_df, threshold)
-    return plot_barchart_stats(
+    return plot_linegraph_stats(
         summary_df,
         value_column="cells_exceeding_threshold",
         xlabel="Number of Drones",
         ylabel="Number of Cells",
-        decimal_places=0,
-        filename="del_cel_imp",
+        filename=filename,
     )
 
 
-def analyze_and_plot_population_impact(main_df: pd.DataFrame, threshold: int = 55):
+def analyze_and_plot_population_impact(main_df: pd.DataFrame, threshold: int = 55, filename="del_pop_imp"):
     summary_df = calculate_population_impacted_by_noise(main_df, CELL_POPULATION, threshold)
-    return plot_barchart_stats(
+    return plot_linegraph_stats(
         summary_df,
         value_column="impacted_population",
         xlabel="Number of Drones",
         ylabel=f"Extra Population Exposed to Noise over {threshold} dB",
-        decimal_places=0,
-        filename="del_pop_imp",
+        filename=filename,
     )
 
 
