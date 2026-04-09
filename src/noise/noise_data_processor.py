@@ -1,9 +1,10 @@
 import json
 
+import numpy as np
 import pandas as pd
 
 from common.path_configs import BASE_NOISE_PATH
-from noise.noise_math_utils import add_two_decibel_levels
+from noise.noise_math_utils import add_two_decibel_levels, calculate_leq
 
 
 def read_base_noise_data(file_path: str = BASE_NOISE_PATH) -> pd.DataFrame:
@@ -25,12 +26,12 @@ def read_base_noise_data(file_path: str = BASE_NOISE_PATH) -> pd.DataFrame:
 
 BASE_NOISE_DATA = read_base_noise_data()
 
-def generate_drone_noise_df(drone_noise_data, iteration_number) -> pd.DataFrame:
+def generate_drone_noise_df(drone_noise_data) -> pd.DataFrame:
     records = [
         {
             "row": cell.row,
             "col": cell.column,
-            "average_noise": cell.total_noise / iteration_number,
+            "average_noise": calculate_leq(np.array(cell.noise_history)),
             "maximum_noise": cell.max_noise,
         }
         for cell in drone_noise_data
@@ -58,7 +59,7 @@ def combine_noise_levels(drone_noise_df: pd.DataFrame, base_noise_df: pd.DataFra
     return merged_df
 
 
-def combine_base_and_drone_noise(drone_noise_data, iteration_number) -> pd.DataFrame:
-    drone_noise_df = generate_drone_noise_df(drone_noise_data, iteration_number)
+def combine_base_and_drone_noise(drone_noise_data) -> pd.DataFrame:
+    drone_noise_df = generate_drone_noise_df(drone_noise_data)
 
     return combine_noise_levels(drone_noise_df, BASE_NOISE_DATA)

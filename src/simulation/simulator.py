@@ -72,7 +72,7 @@ class Simulator:
         self.plotter.update_drones(self.fleet.delivering_drones)
 
     def end_simulation(self):
-        self.noise_monitor.finish(self.timer.iteration)
+        self.noise_monitor.finish()
         self.plotter.plot_noise_map(self.noise_monitor.impact)
 
         print("Simulation completed!")

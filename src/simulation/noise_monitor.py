@@ -11,7 +11,7 @@ class NoiseMonitor:
     def capture(self, drones):
         self.tracker.track_drones(drones)
 
-    def finish(self, iterations):
+    def finish(self):
         self.tracker.calculate_noise_cells()
 
-        self.impact = combine_base_and_drone_noise(self.tracker.noise_cells, iterations)
+        self.impact = combine_base_and_drone_noise(self.tracker.noise_cells)

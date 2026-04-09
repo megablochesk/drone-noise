@@ -1,5 +1,5 @@
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import geopandas as gpd
 from shapely.geometry import box
@@ -18,12 +18,12 @@ class Cell:
     row: int
     column: int
     centroid: Coordinate
-    total_noise: float = 0
-    max_noise: float = 0
+    noise_history: list = field(default_factory=list)
+    max_noise: float = 0.0
 
-    def add_noise(self, noise: float) -> None:
-        self.total_noise += noise
-        self.max_noise = max(self.max_noise, noise)
+    def add_noise(self, noise_db: float):
+        self.noise_history.append(noise_db)
+        self.max_noise = max(self.max_noise, noise_db)
 
 
 def load_and_reproject_geojson(file_path):

@@ -37,3 +37,7 @@ def calculate_mixed_noise_level(sound_sources):
 @njit
 def add_two_decibel_levels(first_dbl_level: float, second_dbl_level: float) -> float:
     return 10.0 * np.log10((10.0 ** (first_dbl_level / 10.0)) + (10.0 ** (second_dbl_level / 10.0)))
+
+
+def calculate_leq(noise_levels_db: np.ndarray) -> float:
+    return 10.0 * np.log10(np.mean(10.0 ** (noise_levels_db / 10.0)))
