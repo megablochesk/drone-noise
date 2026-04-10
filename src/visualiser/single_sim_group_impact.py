@@ -105,9 +105,11 @@ def _save_mapping(mapping: pd.DataFrame, base_path: str) -> None:
     output_path = figures_root / f"{base_path}.tex"
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
+    sorted_mapping = mapping.sort_values("code", key=lambda col: col.str.lower()).reset_index(drop=True)
+
     rows = "\n".join(
         f"{_latex_escape(r.code)} & {_latex_escape(r.name)} \\\\"
-        for r in mapping.itertuples(index=False)
+        for r in sorted_mapping.itertuples(index=False)
     )
 
     tex = (
@@ -169,7 +171,7 @@ def _plot_bars(
     ax.tick_params(axis="y", labelsize=9)
 
     if value_col == "pct":
-        ax.xaxis.set_major_formatter(mtick.StrMethodFormatter("{x:,.1f}%"))
+        ax.xaxis.set_major_formatter(mtick.StrMethodFormatter("{x:,.2f}%"))
         ax.set_xlabel("% of group impacted")
     else:
         ax.xaxis.set_major_formatter(mtick.StrMethodFormatter("{x:,.0f}"))
@@ -183,8 +185,10 @@ def _plot_bars(
         padding = 0.01 * max_value if max_value > 0 else 0.0
         for y_position, value in zip(y_positions, values):
             if value > 0:
-                label = f"{value:,.1f}%" if value_col == "pct" else f"{value:,.0f}"
+                label = f"{value:,.2f}%" if value_col == "pct" else f"{value:,.0f}"
                 ax.text(value + padding, y_position, label, va="center", ha="left", fontsize=9)
+
+        ax.set_xlim(right=max_value * 1.12)
 
     mapping = pd.DataFrame({"code": display_codes, "name": df["name"].tolist()})
     if legend_prefix is not None:
@@ -199,38 +203,72 @@ def _age_names(value_cols: list[int]) -> dict[int, str]:
 
 def _ethnicity_names(value_cols: list[int]) -> dict[int, str]:
     raw = CELL_ETHNICITY.attrs.get("ethnicity_code_to_name", {int(c): str(c) for c in value_cols})
-    return {
-        int(code): (re.split(r":| - ", name, maxsplit=1)[-1].strip() if isinstance(name, str) else str(name))
-        for code, name in raw.items()
-        if int(code) in value_cols
-    }
+    result = {}
+    for code, name in raw.items():
+        if int(code) not in value_cols:
+            continue
+        short_name = re.split(r":| - ", name, maxsplit=1)[-1].strip() if isinstance(name, str) else str(name)
+        result[int(code)] = _ethnicity_full_label(short_name)
+    return result
 
+
+_ETHNICITY_HIGH_LEVEL_GROUP: dict[str, str] = {
+    "Indian": "Asian",
+    "Pakistani": "Asian",
+    "Bangladeshi": "Asian",
+    "Chinese": "Asian",
+    "Other Asian": "Asian",
+    "African": "Black",
+    "Caribbean": "Black",
+    "Other Black": "Black",
+    "White and Black Caribbean": "Mixed",
+    "White and Black African": "Mixed",
+    "White and Asian": "Mixed",
+    "Other Mixed or Multiple ethnic groups": "Mixed",
+    "English, Welsh, Scottish, Northern Irish or British": "White",
+    "Irish": "White",
+    "Gypsy or Irish Traveller": "White",
+    "Roma": "White",
+    "Other White": "White",
+    "Arab": "Other",
+    "Any other ethnic group": "Other",
+}
 
 _ETHNICITY_ABBREVIATIONS: dict[str, str] = {
-    "Roma": "ROM",
-    "Arab": "ARB",
-    "Chinese": "CHN",
-    "Any other ethnic group": "OTH",
-    "Irish": "IRI",
-    "Other Black": "OBLK",
-    "Other Mixed or Multiple ethnic groups": "OMIX",
-    "Other White": "OWHT",
-    "African": "AFR",
-    "White and Black Caribbean": "WBCR",
-    "Caribbean": "CRB",
-    "White and Black African": "WBAF",
-    "White and Asian": "WASN",
-    "Other Asian": "OASN",
-    "English, Welsh, Scottish, Northern Irish or British": "BRIT",
-    "Bangladeshi": "BAN",
-    "Indian": "IND",
-    "Pakistani": "PAK",
-    "Gypsy or Irish Traveller": "GIT",
+    "Indian": "A:IND",
+    "Pakistani": "A:PAK",
+    "Bangladeshi": "A:BAN",
+    "Chinese": "A:CHN",
+    "Other Asian": "A:OASN",
+    "African": "B:AFR",
+    "Caribbean": "B:CRB",
+    "Other Black": "B:OBLK",
+    "White and Black Caribbean": "M:WBCR",
+    "White and Black African": "M:WBAF",
+    "White and Asian": "M:WASN",
+    "Other Mixed or Multiple ethnic groups": "M:OMIX",
+    "English, Welsh, Scottish, Northern Irish or British": "W:BRIT",
+    "Irish": "W:IRI",
+    "Gypsy or Irish Traveller": "W:GIT",
+    "Roma": "W:ROM",
+    "Other White": "W:OWHT",
+    "Arab": "O:ARB",
+    "Any other ethnic group": "O:OTH",
 }
 
 
+def _ethnicity_full_label(name: str) -> str:
+    group = _ETHNICITY_HIGH_LEVEL_GROUP.get(name)
+    if group is None:
+        return name
+    return f"{group}: {name}"
+
+
 def _ethnicity_display_codes(names: list[str]) -> list[str]:
-    return [_ETHNICITY_ABBREVIATIONS.get(name, name) for name in names]
+    def _abbreviate(full_label: str) -> str:
+        short_name = full_label.split(": ", 1)[-1] if ": " in full_label else full_label
+        return _ETHNICITY_ABBREVIATIONS.get(short_name, full_label)
+    return [_abbreviate(name) for name in names]
 
 
 def plot_single_sim_group_impact(
@@ -289,7 +327,7 @@ def plot_single_sim_group_impact(
         display_codes = mapping["code"].tolist() if shared_display_codes is None else shared_display_codes
         return summary, ordered_codes, display_codes
 
-    annotate = False if annotate is None else annotate
+    annotate = True if annotate is None else annotate
 
     mapping = _plot_bars(
         summary,

@@ -18,8 +18,9 @@ def plot_all_statistics(experiment_results):
     )
 
     plot_single_sim_age_impact_counts(noise_impact_df, threshold=55)
-    plot_single_sim_ethnicity_impact_counts(noise_impact_df, threshold=55)
     plot_single_sim_age_impact_percentages(noise_impact_df, threshold=55)
+
+    plot_single_sim_ethnicity_impact_counts(noise_impact_df, threshold=55)
     plot_single_sim_ethnicity_impact_percentages(noise_impact_df, threshold=55)
 
 
