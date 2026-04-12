@@ -4,8 +4,8 @@ from common.path_configs import CELL_POPULATION_PATH
 from visualiser.plot_utils import finalise_visualisation, plot_standalone_heatmap
 
 
-def load_or_compute_ethnicity_dataset(pickle_path: str, try_from_file: bool = False):
-    if try_from_file and path_exists(pickle_path):
+def load_or_compute_population_dataset(pickle_path: str):
+    if path_exists(pickle_path):
         return load_dataframe_from_pickle(pickle_path)
 
     result = calculate_cell_matrix_population()
@@ -24,14 +24,15 @@ def plot_heatmap_for_population_data(population_df):
         values=metric,
         vmin=None,
         vmax=None,
-        xlabel="Column",
-        ylabel="Row",
+        xlabel="Grid Column",
+        ylabel="Grid Row",
         filename=metric,
+        cbar_label="Population per grid cell",
     )
 
 
-def compute_and_visualise_ethnicity_data():
-    population_dataset_df = load_or_compute_ethnicity_dataset(CELL_POPULATION_PATH)
+def compute_and_visualise_population_data():
+    population_dataset_df = load_or_compute_population_dataset(CELL_POPULATION_PATH)
 
     plot_heatmap_for_population_data(population_dataset_df)
 
