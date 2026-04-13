@@ -34,14 +34,14 @@ except Exception:
 
 
 _BASE_STYLES: dict[str, dict] = {
-    "Distance": dict(color="#FFFFFF", linewidth=2.4, linestyle="-"),
+    "Distance": dict(color="#FFFFFF", linewidth=2.4, linestyle="-", markersize=0, zorder=1),
 }
 
 _MIXED_STYLES_BY_ALPHA: dict[str, dict] = {
-    "0.25": dict(color="#FF7F0E", linewidth=2.4, linestyle=":"),  # orange
-    "0.50": dict(color="#00E5FF", linewidth=2.4, linestyle=":"),  # cyan
-    "0.75": dict(color="#FF00FF", linewidth=2.6, linestyle=":"),  # magenta
-    "1.00": dict(color="#FF0000", linewidth=2.6, linestyle=":"),  # red
+    "0.25": dict(color="#FF00FF", linewidth=2.4, linestyle="--", markersize=0, zorder=2),
+    "0.50": dict(color="#00E5FF", linewidth=2.4, linestyle="--",  markersize=0, zorder=4),
+    "0.75": dict(color="#FF7F0E", linewidth=2.6, linestyle="--", markersize=0, zorder=3),
+    "1.00": dict(color="#FF0000", linewidth=2.6, linestyle="-",  markersize=0, zorder=1),
 }
 
 _DEFAULT_STYLE = dict(color="#FFFFFF", linewidth=2.2, linestyle="-")
@@ -253,16 +253,21 @@ def plot_routes_on_noise_grid(
     end_node: tuple[int, int],
     save_figure_path: str,
     square: bool = True,
-    dpi: int = 600,
+    dpi: int = 500,
     also_save_png: bool = True,
 ):
+    add_font_style()
+
     grid, r0, c0 = _graph_to_noise_grid(graph)
 
     top = left = 0
     if square:
         grid, top, left = _pad_to_square(grid)
 
-    fig, ax = plt.subplots(figsize=(10, 10))
+    H, W = grid.shape
+    aspect = W / H
+
+    fig, ax = plt.subplots(figsize=(10 * aspect, 10))
     ax.axis("off")
 
     vmin = np.nanmin(grid)
@@ -323,10 +328,13 @@ def plot_routes_on_noise_grid(
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="2.2%", pad=0.08)
     cbar = fig.colorbar(im, cax=cax)
-    cbar.set_label("Noise level")
+    cbar.set_label("Noise level (dB)")
 
-    ax.legend(loc="lower left", frameon=True, fontsize=10)
-    add_font_style()
+    ax.legend(
+        loc="upper left",
+        frameon=True,
+        fontsize=plt.rcParams.get("legend.fontsize", 15),
+    )
 
     pos = cax.get_position(fig)
     shrink = 0.8
@@ -395,7 +403,7 @@ def get_noise_route_navigation(
         start_node=start_node,
         end_node=end_node,
         save_figure_path=figure_save_path,
-        square=True,
+        square=False,
         dpi=300,
         also_save_png=True,
     )
