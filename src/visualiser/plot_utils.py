@@ -11,58 +11,61 @@ matplotlib.use(PATH_CONFIGS.matplotlib_backend)
 COLORMAP = "viridis"
 
 
+def add_font_style():
+    plt.rcParams.update({
+        "font.family": "serif",
+        "font.serif": ["Times New Roman", "Times", "DejaVu Serif"],
+        "font.size": 15,
+        "axes.titlesize": 15,
+        "axes.labelsize": 15,
+        "xtick.labelsize": 14,
+        "ytick.labelsize": 14,
+        "legend.fontsize": 15,
+        "legend.title_fontsize": 15,
+        "figure.titlesize": 15,
+    })
+
+add_font_style()
+
+
 def get_color_map(dataset_types):
     cmap = plt.get_cmap('tab10')
     return {ds: cmap(i) for i, ds in enumerate(dataset_types)}
 
 
 def plot_standalone_heatmap(
-        dataframe,
-        index,
-        columns,
-        values,
-        vmin=None,
-        vmax=None,
-        xlabel=None,
-        ylabel=None,
-        filename='',
-        invert_yaxis=True
+        dataframe, index, columns, values,
+        vmin=None, vmax=None, xlabel=None, ylabel=None,
+        filename='', invert_yaxis=True, cbar_label=None   # ← add this
 ):
     fig = plt.figure(figsize=(10, 8))
     fig.filename = filename
-
-    _prepare_heatmap(dataframe, index, columns, values, vmin, vmax, xlabel, ylabel, invert_yaxis)
+    _prepare_heatmap(dataframe, index, columns, values, vmin, vmax, xlabel, ylabel, invert_yaxis, cbar_label)
 
 
 def plot_multiple_heatmaps(
-        dataframes,
-        axes,
-        index,
-        columns,
-        values,
-        titles,
-        vmin=None,
-        vmax=None,
-        xlabel=None,
-        ylabel=None,
-        invert_yaxis=True
+        dataframes, axes, index, columns, values, titles,
+        vmin=None, vmax=None, xlabel=None, ylabel=None, invert_yaxis=True, cbar_labels=None
 ):
     dataframes = _ensure_list_length(dataframes, len(values))
     vmin = _ensure_list_length(vmin, len(values))
     vmax = _ensure_list_length(vmax, len(values))
+    cbar_labels = _ensure_list_length(cbar_labels, len(values))
 
     for i in range(len(values)):
         plt.sca(axes[i])
         _prepare_heatmap(
             dataframes[i], index, columns, values[i],
-            vmin[i], vmax[i], xlabel, ylabel, invert_yaxis
+            vmin[i], vmax[i], xlabel, ylabel, invert_yaxis, cbar_label=cbar_labels[i]
         )
         axes[i].set_title(titles[i])
 
 
-def _prepare_heatmap(dataframe, index, columns, values, vmin, vmax, xlabel, ylabel, invert_yaxis):
+def _prepare_heatmap(dataframe, index, columns, values, vmin, vmax, xlabel, ylabel, invert_yaxis, cbar_label=None):
     heatmap_data = dataframe.pivot(index=index, columns=columns, values=values)
-    sns.heatmap(heatmap_data, cmap=COLORMAP, annot=False, cbar=True, vmin=vmin, vmax=vmax)
+
+    cbar_kws = {"label": cbar_label} if cbar_label else {}
+    sns.heatmap(heatmap_data, cmap=COLORMAP, annot=False, cbar=True, vmin=vmin, vmax=vmax, cbar_kws=cbar_kws)
 
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -84,21 +87,10 @@ def save_figures(output_directory: str = "figures"):
 
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
-        fig.savefig(out_path, dpi=300, format="eps", bbox_inches="tight")
-
-
-def add_font_style():
-    plt.rcParams.update({
-        "font.size": 15,
-        "axes.titlesize": 15,
-        "axes.labelsize": 15,
-        "xtick.labelsize": 15,
-        "ytick.labelsize": 15,
-    })
+        fig.savefig(out_path, dpi=1000, format="eps", bbox_inches="tight")
 
 
 def finalise_visualisation(output_directory: str = "figures"):
-    add_font_style()
     save_figures(output_directory=output_directory)
     plot_figures()
 

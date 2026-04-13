@@ -168,14 +168,12 @@ def _plot_bars(
     ax.barh(y_positions, values, height=0.75)
     ax.set_yticks(y_positions, display_codes)
     ax.invert_yaxis()
-    ax.tick_params(axis="y", labelsize=9)
+    ax.tick_params(axis="y", labelsize=11)
 
     if value_col == "pct":
         ax.xaxis.set_major_formatter(mtick.StrMethodFormatter("{x:,.2f}%"))
-        ax.set_xlabel("% of group impacted")
     else:
         ax.xaxis.set_major_formatter(mtick.StrMethodFormatter("{x:,.0f}"))
-        ax.set_xlabel("People impacted")
 
     ax.set_title(title)
     ax.grid(axis="x", linestyle="--", alpha=0.35)
@@ -186,7 +184,7 @@ def _plot_bars(
         for y_position, value in zip(y_positions, values):
             if value > 0:
                 label = f"{value:,.2f}%" if value_col == "pct" else f"{value:,.0f}"
-                ax.text(value + padding, y_position, label, va="center", ha="left", fontsize=9)
+                ax.text(value + padding, y_position, label, va="center", ha="left", fontsize=11)
 
         ax.set_xlim(right=max_value * 1.12)
 
@@ -309,7 +307,7 @@ def plot_single_sim_group_impact(
         mapping = _plot_bars(
             summary,
             value_col="pct",
-            title=f"{label}: % of group newly exposed over {threshold} dB",
+            title=None,
             filename=f"{prefix}_{threshold_int}",
             sort=sort,
             annotate=annotate,
@@ -332,7 +330,7 @@ def plot_single_sim_group_impact(
     mapping = _plot_bars(
         summary,
         value_col="impacted",
-        title=f"{label}: people newly exposed over {threshold} dB",
+        title=None,
         filename=f"{prefix}_{threshold_int}",
         sort=sort,
         annotate=annotate,

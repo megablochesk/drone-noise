@@ -6,6 +6,7 @@ from typing import Iterable
 import matplotlib
 import pandas as pd
 from matplotlib import pyplot as plt
+from matplotlib.ticker import MaxNLocator, FuncFormatter, AutoMinorLocator
 
 from common.file_utils import load_dataframe_from_pickle
 from common.path_configs import PATH_CONFIGS, CELL_POPULATION_PATH
@@ -17,13 +18,29 @@ matplotlib.use(PATH_CONFIGS.matplotlib_backend)
 _DATASET_LABEL = {
     "furthest": "Worst Stocking",
     "closest": "Best Stocking",
-    "random": "Random Stocking"
+    "random": "Random Stocking",
 }
 
 _DATASET_STYLE = {
     "furthest": ("-", None),
     "random": ("--", None),
     "closest": (":", None),
+}
+
+_NAV_LINESTYLE = {
+    "STRAIGHT": "-",
+    "A25":      "--",
+    "A50":      ":",
+    "A75":      "-.",
+    "A100":     "-",
+}
+
+_NAV_MARKER = {
+    "STRAIGHT": "o",
+    "A25":      "s",
+    "A50":      "^",
+    "A75":      "D",
+    "A100":     "x",
 }
 
 
@@ -42,8 +59,7 @@ def plot_impacted_population_lines(
     plot_metric_lines_facet_by_dataset(
         series_df,
         "impacted_population",
-        ylabel=f"Extra population exposed over {threshold} dB",
-        #title=f"Impacted population vs drones — faceted by dataset (>{threshold} dB)",
+        ylabel=f"Newly Exposed Population",
         filename=f"{filename_prefix}_facet_dataset_t{threshold}",
     )
 
@@ -53,7 +69,6 @@ def plot_average_noise_lines_facet(df: pd.DataFrame):
         df,
         "avg_noise_diff",
         ylabel="Average Noise Increase (dB)",
-        #title="Average noise vs drones — navigation types (faceted by dataset)",
         filename="line_avg_noise_facet_dataset",
     )
 
@@ -62,8 +77,7 @@ def plot_delivered_orders_lines_facet(df: pd.DataFrame):
     plot_metric_lines_facet_by_dataset(
         df,
         "delivered_orders_number",
-        ylabel="Delivered orders",
-        #title="Delivered orders vs drones — navigation types (faceted by dataset)",
+        ylabel="Delivered Orders",
         filename="line_orders_facet_dataset",
     )
 
@@ -102,10 +116,10 @@ def plot_metric_lines_facet_by_dataset(
 
     fig.filename = filename or f"lines_{value_col}_facet_dataset"
 
-    for ax, ds in zip(axes, ds_order):
+    for i, (ax, ds) in enumerate(zip(axes, ds_order)):
         sub = df[df[dataset_col] == ds]
         _plot_lines_for_nav(ax, sub, value_col, x_col, nav_col, nav_order, nav_colors, label_on=True)
-        _format_axis(ax, x=sub[x_col], xlabel=xlabel, ylabel=ylabel, title=_dataset_label(ds))
+        _format_axis(ax, x=sub[x_col], xlabel=xlabel, ylabel=ylabel if i == 0 else "", title=_dataset_label(ds))
 
     _add_figure_legend(fig, axes[0])
 
@@ -118,16 +132,28 @@ def plot_metric_lines_facet_by_dataset(
     return fig, axes
 
 
+def _nav_style_key(name: str) -> str:
+    if name == "STRAIGHT":
+        return "STRAIGHT"
+    a = _alpha(name)
+    if a is None:
+        return "STRAIGHT"
+    return f"A{int(round(a * 100))}"
+
+
 def _plot_lines_for_nav(ax, sub, value_col, x_col, nav_col, nav_order, nav_colors, label_on: bool):
     for nav in nav_order:
         s = sub[sub[nav_col] == nav].sort_values(x_col)
         if s.empty:
             continue
+        key = _nav_style_key(nav)
         ax.plot(
             s[x_col],
             s[value_col],
-            marker="o",
+            marker=_NAV_MARKER.get(key, "o"),
+            markersize=6,
             linewidth=2,
+            linestyle=_NAV_LINESTYLE.get(key, "-"),
             color=nav_colors[nav],
             label=_nav_label(nav) if label_on else None,
         )
@@ -141,16 +167,29 @@ def _format_axis(ax, *, x, xlabel, ylabel, title):
         ax.set_ylabel(ylabel)
     if title:
         ax.set_title(title)
-    ax.grid(axis="y", linestyle=":", linewidth=0.7, alpha=0.6)
+    ax.grid(axis="y", linestyle=":", linewidth=0.7, alpha=0.5)
+    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.grid(axis="y", which="minor", linestyle=":", linewidth=0.4, alpha=0.3)
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=8))
+    ax.yaxis.set_major_formatter(FuncFormatter(_smart_formatter))
+    ax.tick_params(axis="y", labelleft=True)
+
+
+def _smart_formatter(x: float, _) -> str:
+    if x >= 1000:
+        return f"{int(x / 1000)}k"
+    if x == int(x):
+        return str(int(x))
+    return f"{x:.2f}".rstrip("0").rstrip(".")
 
 
 def _add_figure_legend(
     fig,
     ax,
     *,
-    fontsize: int = 13,
+    fontsize: int | None = None,
     title: str | None = None,
-    title_fontsize: int = 14,
+    title_fontsize: int | None = None,
     ncol: int | None = None,
 ):
     handles, labels = ax.get_legend_handles_labels()
@@ -210,8 +249,7 @@ def _nav_label(name: str) -> str:
     a = _alpha(name)
     if a is None:
         return name.replace("_", " ").title()
-    base = name.split("_A", 1)[0].replace("_", " ").title()
-    return f"{base} α={a:.2f}"
+    return f"Mixed (α={a:.2f})"
 
 
 def _alpha(name: str) -> float | None:

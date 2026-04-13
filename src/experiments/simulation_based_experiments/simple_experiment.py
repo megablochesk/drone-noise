@@ -7,12 +7,19 @@ from visualiser.single_sim_group_impact import plot_single_sim_age_impact_counts
 from visualiser.statistics import plot_noise_difference_barchart
 
 
+METRICS = ['noise_level', 'average_noise', 'noise_difference']
+TITLES = ['Base City Noise', 'Drone Noise', 'City Noise Increase']
+CBAR_LABELS = ['Noise level (dB)', 'Noise level (dB)', 'Noise increase (dB)']
+
 def plot_all_statistics(experiment_results):
     noise_impact_df = experiment_results.iloc[0]['noise_impact_df']
 
     plot_noise_difference_barchart(noise_impact_df)
     plot_noise_level_comparison(
         noise_impact_df,
+        metrics=METRICS,
+        titles=TITLES,
+        cbar_labels=CBAR_LABELS,
         vmin=[40, 25, 0],
         vmax=[80, 55, 9]
     )

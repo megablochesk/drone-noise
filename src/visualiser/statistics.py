@@ -11,9 +11,9 @@ from orders.order_generator import load_orders
 matplotlib.use(PATH_CONFIGS.matplotlib_backend)
 
 DATASET_TYPE_TO_LEGEND = {
-    "furthest": "worst",
-    "closest": "best",
-    "random": "random"
+    "furthest": "worst-case warehouse stocking",
+    "closest": "best-case warehouse stocking",
+    "random": "random warehouse stocking",
 }
 
 
@@ -76,7 +76,7 @@ def _plot_delivery_distance_barchart(ax, x, stats, width):
     def add_value_labels(bar_set):
         for bar in bar_set:
             height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width() / 2, height, f'{height:.0f}', ha='center', va='bottom', fontsize=12)
+            ax.text(bar.get_x() + bar.get_width() / 2, height, f'{height:.0f}', ha='center', va='bottom', fontsize=11)
 
     for bar_set in bars.values():
         add_value_labels(bar_set)
@@ -102,9 +102,9 @@ def _plot_barchart(x_labels, counts, title, xlabel, ylabel, filename='barchart_d
     bars = ax.bar(x_labels, counts, color='skyblue', edgecolor='black')
 
     ax.bar_label(bars, fmt='{:,.0f}')
-    ax.set_title(title, fontsize=16)
-    ax.set_xlabel(xlabel, fontsize=12)
-    ax.set_ylabel(ylabel, fontsize=12)
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
     ax.grid(axis='y', linestyle='--', alpha=0.7)
 
     plt.xticks(rotation=45, ha='right')
@@ -150,6 +150,6 @@ def plot_dataset_stat_difference(
     ax.set_ylabel(ylabel)
     ax.set_title(title)
     for i, val in enumerate(y):
-        ax.text(i, val, f"{val:.1f}%", ha="center", va="bottom", fontsize=9)
+        ax.text(i, val, f"{val:.1f}%", ha="center", va="bottom", fontsize=11)
     fig.tight_layout()
     return fig, ax

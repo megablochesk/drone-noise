@@ -11,6 +11,7 @@ _DATASET_TITLES = {
     "random": "Random Stocking",
     "furthest": "Worst Stocking",
 }
+CBAR_LABELS = ['Noise level (dB)', 'Noise level (dB)', 'Noise increase (dB)']
 
 
 def plot_heatmaps_per_drone_number_and_navigation_type(
@@ -76,6 +77,7 @@ def plot_noise_heatmaps_per_navigation_type(
             vmin=vmin,
             vmax=vmax,
             suptitle=None,
+            cbar_labels=CBAR_LABELS
         )
 
 

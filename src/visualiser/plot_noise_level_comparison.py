@@ -8,9 +8,6 @@ from visualiser.plot_utils import plot_multiple_heatmaps
 
 matplotlib.use(PATH_CONFIGS.matplotlib_backend)
 
-METRICS = ['noise_level', 'average_noise', 'noise_difference']
-TITLES = ['Base City Noise', 'Drone Noise', 'City Noise Increase']
-
 
 def plot_noise_level_comparison(
     dataframe, file_name='noise_level_comparison',
@@ -18,15 +15,10 @@ def plot_noise_level_comparison(
     titles=None,
     vmin=None,
     vmax=None,
-    suptitle: str | None = None
+    suptitle: str | None = None,
+    cbar_labels: list[str] | None = None,
 ):
-    if titles is None:
-        titles = TITLES
-
-    if metrics is None:
-        metrics = METRICS
-
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5), constrained_layout=True)
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5), constrained_layout=True)
 
     if isinstance(vmin, list):
         fig.filename = f'{file_name}_{vmin[0] or "min"}_{vmax[0] or "max"}'
@@ -50,8 +42,10 @@ def plot_noise_level_comparison(
         titles=titles,
         vmin=vmin,
         vmax=vmax,
-        xlabel='Column',
-        ylabel='Row')
+        xlabel='',
+        ylabel='',
+        cbar_labels=cbar_labels
+    )
 
 
 def create_heatmap_figure(num_dfs, file_name, vmin, vmax):

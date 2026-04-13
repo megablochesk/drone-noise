@@ -24,8 +24,9 @@ class CensusHeatmapPlotter:
         figsize: Tuple[float, float] = (6, 6),
         index: str = "row",
         columns: str = "col",
-        xlabel: str = "Column",
-        ylabel: str = "Row",
+        xlabel: str = "",
+        ylabel: str = "",
+        cbar_label: str = "",
     ) -> None:
         self.df = dataframe
         self.data_category = data_category
@@ -37,12 +38,13 @@ class CensusHeatmapPlotter:
         self.columns = columns
         self.xlabel = xlabel
         self.ylabel = ylabel
+        self.cbar_label = cbar_label
 
         self._code_to_name: Dict[int, str] = self.df.attrs.get(
             f"{self.data_category}_code_to_name", {}
         )
 
-    def plot_code(self, data_code: int) -> Tuple[plt.Figure, plt.Axes]:
+    def plot_code(self, data_code: int, with_heatmap_name: bool = False) -> Tuple[plt.Figure, plt.Axes]:
         fig, ax = plt.subplots(1, 1, figsize=self.figsize, constrained_layout=True)
         fig.filename = self._make_filename(data_code)
 
@@ -52,11 +54,12 @@ class CensusHeatmapPlotter:
             index=self.index,
             columns=self.columns,
             values=[data_code],
-            titles=[self._title_for_code(data_code)],
+            titles=[self._title_for_code(data_code) if with_heatmap_name else ""],
             vmin=[self.vmin],
             vmax=[self.vmax],
             xlabel=self.xlabel,
             ylabel=self.ylabel,
+            cbar_labels=self.cbar_label,
         )
 
         self._apply_y_tick_style(ax)
@@ -95,6 +98,7 @@ def plot_heatmaps_for_census_data(
     vmin: Optional[float],
     vmax: Optional[float],
     folder: Optional[str] = None,
+    cbar_label: str = "",
 ) -> None:
     CensusHeatmapPlotter(
         df,
@@ -102,4 +106,5 @@ def plot_heatmaps_for_census_data(
         vmin=vmin,
         vmax=vmax,
         output_dir=folder,
+        cbar_label=cbar_label,
     ).plot_all()

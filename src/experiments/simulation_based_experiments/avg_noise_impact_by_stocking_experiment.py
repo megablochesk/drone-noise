@@ -12,6 +12,10 @@ ORDER_DATASETS = {
     'furthest': ORDER_BASE_PATH_FURTHEST,
 }
 
+METRICS = ['average_noise', 'average_noise', 'average_noise']
+TITLES = ['Best-Case Warehouse Stocking', 'Random Warehouse Stocking', 'Worst-Case Warehouse Stocking']
+CBAR_LABELS = ['Noise level (dB)', 'Noise level (dB)', 'Noise level (dB)']
+
 
 def generate_configs():
     return generate_configs_for_datasets(
@@ -26,8 +30,9 @@ def plot_noise_comparison_for_different_stocking(results_df):
 
     plot_noise_level_comparison(
         dataframes,
-        metrics=['average_noise', 'average_noise', 'average_noise'],
-        titles=['Best Stocking', 'Random Stocking', 'Worst Stocking'],
+        metrics=METRICS,
+        titles=TITLES,
+        cbar_labels=CBAR_LABELS,
         file_name='noise_maps',
         vmin=33,
         vmax=53

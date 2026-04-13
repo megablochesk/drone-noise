@@ -5,8 +5,8 @@ from common.path_configs import CELL_ETHNICITY_PATH
 from visualiser.plot_utils import finalise_visualisation
 
 
-def load_or_compute_ethnicity_dataset(pickle_path: str, try_from_file: bool = False):
-    if try_from_file and path_exists(pickle_path):
+def load_or_compute_ethnicity_dataset(pickle_path: str):
+    if path_exists(pickle_path):
         return load_dataframe_from_pickle(pickle_path)
 
     result = calculate_cell_matrix_ethnicity()
@@ -23,7 +23,8 @@ def compute_and_visualise_ethnicity_data():
         ethnicity_dataset_df,
         data_category="ethnicity",
         vmin=0.0, vmax=1000.0,
-        folder="ethnicity_pop_maps"
+        folder="ethnicity_pop_maps",
+        cbar_label="Population per cell",
     )
 
     finalise_visualisation()

@@ -9,10 +9,12 @@ from visualiser.plot_utils import get_color_map
 
 DATASET_TYPE_LINE_ORDER = ["furthest", "closest", "random"]
 
+LEGEND_TITLE = "Warehouse Stock Conditions"
+
 DATASET_TYPE_TO_LEGEND = {
-    "furthest": "worst",
-    "closest": "best",
-    "random": "random",
+    "furthest": "worst-case stocking",
+    "closest": "best-case stocking",
+    "random": "random stocking",
 }
 
 
@@ -118,7 +120,7 @@ def _plot_dataset_linegraph(
             markersize=6,
         )
 
-    _finalise_axes(ax, xlabel=xlabel, ylabel=ylabel, title=title or "", legend_title="Dataset type")
+    _finalise_axes(ax, xlabel=xlabel, ylabel=ylabel, title=title or "", legend_title=LEGEND_TITLE)
     return fig
 
 
