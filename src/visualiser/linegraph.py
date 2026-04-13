@@ -4,6 +4,7 @@ from typing import Sequence, Mapping
 
 import pandas as pd
 from matplotlib import pyplot as plt
+from matplotlib.ticker import AutoMinorLocator
 
 from visualiser.plot_utils import get_color_map
 
@@ -16,6 +17,21 @@ DATASET_TYPE_TO_LEGEND = {
     "closest": "best-case stocking",
     "random": "random stocking",
 }
+
+_DATASET_LINESTYLE = {
+    "furthest": "-",
+    "closest": "--",
+    "random": ":",
+}
+
+_DATASET_MARKER = {
+    "furthest": "o",
+    "closest": "s",
+    "random": "^",
+}
+
+_NAV_LINESTYLE = ["-", "--", ":", "-."]
+_NAV_MARKER    = ["o", "s", "^", "D"]
 
 
 def plot_linegraph_stats(
@@ -113,7 +129,8 @@ def _plot_dataset_linegraph(
         ax.plot(
             num_drones,
             values,
-            marker="o",
+            marker=_DATASET_MARKER.get(ds, "o"),
+            linestyle=_DATASET_LINESTYLE.get(ds, "-"),
             color=color_map[ds],
             label=legend_label,
             linewidth=2,
@@ -139,10 +156,9 @@ def _plot_nav_grouped_lines(
 ):
     cmap = plt.get_cmap("tab10")
     colors = {ds: cmap(i % 10) for i, ds in enumerate(datasets)}
-    linestyles = {nav_types[i]: style for i, style in enumerate(["-", "--", ":", "-."])}
 
-    for dataset_value in datasets:
-        for nav in nav_types:
+    for i, dataset_value in enumerate(datasets):
+        for j, nav in enumerate(nav_types):
             vals = []
             for drone_count in drone_counts:
                 match = df.loc[
@@ -157,9 +173,9 @@ def _plot_nav_grouped_lines(
             ax.plot(
                 drone_counts,
                 vals,
-                marker="o",
+                marker=_NAV_MARKER[j % len(_NAV_MARKER)],
+                linestyle=_NAV_LINESTYLE[j % len(_NAV_LINESTYLE)],
                 color=colors[dataset_value],
-                linestyle=linestyles.get(nav, "-"),
                 label=legend_label,
                 linewidth=2,
                 markersize=5,
@@ -171,6 +187,8 @@ def _finalise_axes(ax, *, xlabel, ylabel, title, legend_ncol=1, legend_title=Non
     ax.set_ylabel(ylabel)
     if title:
         ax.set_title(title)
-    ax.legend(ncol=legend_ncol, title=legend_title)
-    ax.grid(axis="both", linestyle=":", linewidth=0.7, alpha=0.6)
+    ax.legend(ncol=legend_ncol, title=legend_title, frameon=True, edgecolor="black", fancybox=False)
+    ax.grid(axis="y", linestyle=":", linewidth=0.7, alpha=0.5)
+    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.grid(axis="y", which="minor", linestyle=":", linewidth=0.4, alpha=0.3)
     ax.figure.tight_layout()

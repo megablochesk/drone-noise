@@ -1,6 +1,5 @@
 import matplotlib
 
-from common.model_configs import model_config
 from common.path_configs import PATH_CONFIGS
 from visualiser.linegraph import plot_linegraph_stats
 
@@ -22,7 +21,7 @@ def plot_delivered_orders_linegraph(results_df, filename="del_orders"):
         results_df,
         value_column='delivered_orders_number',
         xlabel='Number of Drones',
-        ylabel=f'Number of Orders Delivered in {model_config.time.hours} Hours',
+        ylabel=f'Number of Delivered Orders',
         filename=filename
     )
 
