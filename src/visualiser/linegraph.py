@@ -99,7 +99,7 @@ def plot_combined_lines(
         value_col=value_column,
     )
 
-    _finalise_axes(ax, xlabel=xlabel, ylabel=ylabel, title=title or value_column, legend_ncol=2)
+    _finalise_axes(ax, xlabel=xlabel, ylabel=ylabel, title=title or value_column, legend_ncol=2, xticks=drone_counts)
     return fig, ax
 
 
@@ -137,7 +137,7 @@ def _plot_dataset_linegraph(
             markersize=6,
         )
 
-    _finalise_axes(ax, xlabel=xlabel, ylabel=ylabel, title=title or "", legend_title=LEGEND_TITLE)
+    _finalise_axes(ax, xlabel=xlabel, ylabel=ylabel, title=title or "", legend_title=LEGEND_TITLE, xticks=num_drones)
     return fig
 
 
@@ -182,11 +182,13 @@ def _plot_nav_grouped_lines(
             )
 
 
-def _finalise_axes(ax, *, xlabel, ylabel, title, legend_ncol=1, legend_title=None):
+def _finalise_axes(ax, *, xlabel, ylabel, title, legend_ncol=1, legend_title=None, xticks=None):
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     if title:
         ax.set_title(title)
+    if xticks is not None:
+        ax.set_xticks(xticks)
     ax.legend(ncol=legend_ncol, title=legend_title, frameon=True, edgecolor="black", fancybox=False)
     ax.grid(axis="y", linestyle=":", linewidth=0.7, alpha=0.5)
     ax.yaxis.set_minor_locator(AutoMinorLocator(2))
