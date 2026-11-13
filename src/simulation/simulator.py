@@ -17,10 +17,11 @@ class Simulator:
         self,
         planned_route_cache: PlannedRouteCache | None = None,
         warehouse_locations=None,
+        orders=None,
     ):
         self.configs = get_simulation_config()
 
-        self.undelivered_orders_number = self.configs.orders_to_process
+        self.undelivered_orders_number = self.configs.orders_to_process if orders is None else len(orders)
 
         model = self.configs.model
         selected_warehouse_locations = warehouse_locations or list(model.warehouses.bng_coordinates.values())
@@ -35,7 +36,9 @@ class Simulator:
         )
         self.drones_by_warehouse = dict(Counter(drone.return_location for drone in self.fleet.free_drones))
         self.activity_log = FlightActivityLog()
-        self.dispatcher = DeliveryDispatcher(self.configs.orders_to_process, self.configs.order_dataset_path)
+        self.dispatcher = DeliveryDispatcher(
+            self.configs.orders_to_process, self.configs.order_dataset_path, orders=orders
+        )
         self.plotter = Plotter(selected_warehouse_locations)
 
     @property
