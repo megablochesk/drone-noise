@@ -4,6 +4,7 @@ import pytest
 
 from metrics.map_postprocessing import (
     rebase_baseline_default,
+    summarise_exposure_by_distance_band,
     summarise_map_exposure,
     summarise_per_thousand_deliveries,
 )
@@ -56,3 +57,17 @@ def test_per_thousand_delivery_columns():
         "newly_exposed_population_55db_per_1000_deliveries": 300.0,
         "mean_noise_increase_db_per_1000_deliveries": 1.29,
     })
+
+
+def test_exposure_is_split_between_cells_within_and_beyond_a_distance():
+    """Cells at 1, 2, 20 and 30 km from the centre, 10 km limit. Within (cells 1-2): mean increase
+    (0.414 + 1.455) / 2 = 0.935 dB, newly exposed 200. Beyond (cells 3-4): (5.455 + 3.010) / 2 = 4.233 dB,
+    newly exposed 400."""
+    split = summarise_exposure_by_distance_band(
+        DRONE_LEVELS_DB, BASELINE_LEVELS_DB, POPULATION,
+        distances_to_centre_m=np.array([1_000.0, 2_000.0, 20_000.0, 30_000.0]), distance_limit_m=10_000.0,
+    )
+    assert split["mean_noise_increase_db_within"] == pytest.approx(0.935, abs=0.001)
+    assert split["mean_noise_increase_db_beyond"] == pytest.approx(4.233, abs=0.001)
+    assert split["newly_exposed_population_55db_within"] == 200.0
+    assert split["newly_exposed_population_55db_beyond"] == 400.0
