@@ -1,0 +1,87 @@
+"""Phase 6: replication statistics per configuration and paired stocking differences within seed.
+
+Usage (from src/): python -m experiments.revision.summarise_phase6_replication
+"""
+import matplotlib
+
+matplotlib.use("Agg")
+
+import pandas as pd
+from matplotlib import pyplot as plt
+
+from experiments.revision.batch_runner import REPOSITORY_ROOT
+from experiments.revision.phase_outputs import phase_directory, write_phase_table
+from experiments.revision.run_guard import ensure_clean_working_tree, read_git_hash
+from metrics.replication_tables import summarise_metric_by_configuration, summarise_paired_differences_between_levels
+
+PHASE_NAME = "phase6"
+RUN_TABLE_PATTERN = "replication_runs*.csv"
+HEADLINE_METRICS = ("delivered_orders", "mean_noise_increase_db", "newly_exposed_population_55db")
+CONFIGURATION_COLUMNS = ["number_of_drones", "terminal_phases", "stocking"]
+RELATIVE_HALF_WIDTH_TARGET = 0.05
+STOCKING_ORDER = ("closest", "random", "furthest")
+STOCKING_LABELS = {"closest": "best", "random": "random", "furthest": "worst"}
+
+
+def load_replication_runs() -> pd.DataFrame:
+    tables = [pd.read_csv(path) for path in sorted(phase_directory(PHASE_NAME).glob(RUN_TABLE_PATTERN))]
+    return pd.concat(tables, ignore_index=True).drop_duplicates(subset="run_key")
+
+
+def summarise_configurations(runs: pd.DataFrame) -> pd.DataFrame:
+    summaries = [
+        summarise_metric_by_configuration(runs, metric, CONFIGURATION_COLUMNS, RELATIVE_HALF_WIDTH_TARGET)
+        for metric in HEADLINE_METRICS
+    ]
+    return pd.concat(summaries, ignore_index=True).sort_values(["metric", *CONFIGURATION_COLUMNS], ignore_index=True)
+
+
+def summarise_stocking_differences(runs: pd.DataFrame) -> pd.DataFrame:
+    differences = [
+        summarise_paired_differences_between_levels(
+            runs, metric, level_column="stocking", pair_column="seed", group_columns=["number_of_drones", "terminal_phases"]
+        )
+        for metric in HEADLINE_METRICS
+    ]
+    return pd.concat(differences, ignore_index=True)
+
+
+def plot_metric_panel(axis, summary: pd.DataFrame, metric: str, terminal_phases: bool):
+    panel = summary[(summary["metric"] == metric) & (summary["terminal_phases"] == terminal_phases)]
+    for stocking in STOCKING_ORDER:
+        line = panel[panel["stocking"] == stocking].sort_values("number_of_drones")
+        axis.errorbar(
+            line["number_of_drones"], line["mean"], yerr=line["confidence_half_width"],
+            marker="o", capsize=3, label=STOCKING_LABELS[stocking],
+        )
+    axis.set_title(f"{metric}\n{'terminal phases' if terminal_phases else 'no terminal phases'}", fontsize=9)
+    axis.set_xlabel("fleet size")
+
+
+def plot_replication_summary(summary: pd.DataFrame, figure_path):
+    figure, axes = plt.subplots(2, len(HEADLINE_METRICS), figsize=(14, 7), sharex=True)
+    for row, terminal_phases in enumerate((False, True)):
+        for column, metric in enumerate(HEADLINE_METRICS):
+            plot_metric_panel(axes[row][column], summary, metric, terminal_phases)
+    axes[0][0].legend(title="stocking")
+    figure.suptitle("Mean over seeds with 95 % confidence half-width")
+    figure.tight_layout()
+    figure.savefig(figure_path, dpi=150)
+    plt.close(figure)
+
+
+def main():
+    ensure_clean_working_tree(REPOSITORY_ROOT)
+    git_hash = read_git_hash(REPOSITORY_ROOT)
+    runs = load_replication_runs()
+    summary = summarise_configurations(runs).assign(git_hash=git_hash)
+    differences = summarise_stocking_differences(runs).assign(git_hash=git_hash)
+
+    directory = phase_directory(PHASE_NAME)
+    write_phase_table(summary, directory, "replication_summary.csv")
+    write_phase_table(differences, directory, "paired_stocking_differences.csv")
+    plot_replication_summary(summary, directory / "replication_summary.png")
+
+
+if __name__ == "__main__":
+    main()
