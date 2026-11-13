@@ -5,18 +5,34 @@ from orders.order_generator import load_orders
 
 class DeliveryDispatcher:
     def __init__(self, number_of_orders, dataset):
-        self.pending_orders = load_orders(number_of_orders, dataset)
+        self.pending_orders_by_warehouse = self.group_orders_by_warehouse(load_orders(number_of_orders, dataset))
+        self.pending_orders_number = sum(len(queue) for queue in self.pending_orders_by_warehouse.values())
+
+    @staticmethod
+    def group_orders_by_warehouse(orders):
+        queues = defaultdict(deque)
+        for dataset_position, order in enumerate(orders):
+            queues[order.start_location].append((dataset_position, order))
+        return queues
 
     @property
     def has_pending_orders(self):
-        return bool(self.pending_orders)
+        return self.pending_orders_number > 0
+
+    @property
+    def pending_orders(self):
+        positioned_orders = [entry for queue in self.pending_orders_by_warehouse.values() for entry in queue]
+        return [order for _, order in sorted(positioned_orders, key=self.dataset_position)]
+
+    def pending_orders_per_warehouse(self):
+        return {warehouse: len(queue) for warehouse, queue in self.pending_orders_by_warehouse.items() if queue}
 
     def process_orders(self, fleet):
         if not self.can_process(fleet):
             return
 
         drones_by_loc = self.group_free_drones(fleet.free_drones)
-        self.pending_orders = self.assign_orders(drones_by_loc, fleet)
+        self.assign_orders(drones_by_loc, fleet)
         fleet.free_drones = self.update_free_drones_list(drones_by_loc)
 
     def can_process(self, fleet):
@@ -30,21 +46,23 @@ class DeliveryDispatcher:
         return grouped_free_drones
 
     def assign_orders(self, free_drones, fleet):
-        remaining_orders = []
+        assignments = []
+        for warehouse, drones in free_drones.items():
+            orders = self.pending_orders_by_warehouse.get(warehouse)
+            while drones and orders:
+                dataset_position, order = orders.popleft()
+                assignments.append((dataset_position, order, drones.pop()))
 
-        for order in self.pending_orders:
-            drones = free_drones.get(order.start_location)
-            if drones:
-                drone = drones.pop()
-                if not drones:
-                    del free_drones[order.start_location]
+        # Drones start planning in dataset order, exactly as the former scan over all pending orders did.
+        for _, order, drone in sorted(assignments, key=self.dataset_position):
+            drone.accept_order(order)
+            fleet.waiting_planning_drones.append(drone)
 
-                drone.accept_order(order)
-                fleet.waiting_planning_drones.append(drone)
-            else:
-                remaining_orders.append(order)
+        self.pending_orders_number -= len(assignments)
 
-        return remaining_orders
+    @staticmethod
+    def dataset_position(positioned_entry):
+        return positioned_entry[0]
 
     @staticmethod
     def update_free_drones_list(drones_grouped_by_location):

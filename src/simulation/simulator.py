@@ -35,7 +35,11 @@ class Simulator:
 
     @property
     def delivered_orders_number(self):
-        return self.undelivered_orders_number - len(self.dispatcher.pending_orders) - len(self.fleet.delivering_drones)
+        return (
+            self.undelivered_orders_number
+            - self.dispatcher.pending_orders_number
+            - len(self.fleet.delivering_drones)
+        )
 
     @property
     def has_pending_deliveries(self):
@@ -76,7 +80,7 @@ class Simulator:
 
     def print_drones_statistics(self):
         print(f"Drone Statistics at iteration {self.timer.iteration}, time {self.timer.now}:")
-        print(f"  Pending Orders: {len(self.dispatcher.pending_orders)}")
+        print(f"  Pending Orders: {self.dispatcher.pending_orders_number}")
         print(f"  Delivered Orders: {self.delivered_orders_number}")
         print(f"  Free Drones: {len(self.fleet.free_drones)}")
         print(f"  Delivering Drones: {len(self.fleet.delivering_drones)}")
