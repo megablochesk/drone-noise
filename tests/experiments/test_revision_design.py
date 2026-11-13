@@ -39,3 +39,25 @@ def test_published_headline_configurations_are_the_four_of_phase_one():
     assert [(s.stocking, s.terminal_phases, s.number_of_drones) for s in published] == \
            list(PUBLISHED_HEADLINE_CONFIGURATIONS)
     assert {specification.order_source for specification in published} == {OrderSource.PUBLISHED_DATASET}
+
+
+def test_adaptive_block_adds_seeds_only_to_configurations_that_need_them():
+    """Hand-built summary at 1,250 drones with 5 seeds each: closest/terminal needs 9 for one metric (more
+    than 5 -> gets the new seeds), random/cruise needs at most 4 (enough already). Other fleets are ignored."""
+    import pandas as pd
+
+    from experiments.revision.revision_design import build_adaptive_specifications
+
+    summary = pd.DataFrame({
+        "number_of_drones": [1250, 1250, 1250, 1250, 500],
+        "terminal_phases": [True, True, False, False, True],
+        "stocking": ["closest", "closest", "random", "random", "closest"],
+        "metric": ["delivered_orders", "newly_exposed_population_55db"] * 2 + ["newly_exposed_population_55db"],
+        "number_of_replicates": [5, 5, 5, 5, 5],
+        "required_replicates": [2, 9, 2, 4, 41],
+    })
+    specifications = build_adaptive_specifications(summary, number_of_drones=1250, new_seeds=[6, 7])
+
+    assert [(s.stocking, s.terminal_phases, s.number_of_drones, s.seed) for s in specifications] == [
+        (OrderDatasetType.CLOSEST, True, 1250, 6), (OrderDatasetType.CLOSEST, True, 1250, 7),
+    ]
