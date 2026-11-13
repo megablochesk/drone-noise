@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import numpy as np
+import pandas as pd
 from numba import njit, prange
 
 
@@ -12,11 +13,32 @@ class FlightSamples:
     altitudes_m: np.ndarray
 
 
+@dataclass(frozen=True)
+class DistinctFlightSamples:
+    """Every distinct drone position once, with the number of samples flown at it."""
+    northings: np.ndarray
+    eastings: np.ndarray
+    altitudes_m: np.ndarray
+    occurrences: np.ndarray
+
+
+def count_distinct_samples(samples: FlightSamples) -> DistinctFlightSamples:
+    """Drones retrace their routes and wait in place, so most positions are sampled several times."""
+    positions = pd.DataFrame({
+        "northing": samples.northings, "easting": samples.eastings, "altitude_m": samples.altitudes_m,
+    })
+    counted = positions.groupby(list(positions.columns), sort=False, dropna=False).size().reset_index(name="occurrences")
+    return DistinctFlightSamples(
+        northings=counted["northing"].to_numpy(), eastings=counted["easting"].to_numpy(),
+        altitudes_m=counted["altitude_m"].to_numpy(), occurrences=counted["occurrences"].to_numpy(),
+    )
+
+
 # reassoc lets the inner reduction vectorise; the result differs from strict summation order by rounding only.
 @njit(parallel=True, fastmath={"reassoc", "contract"})
 def _sum_inverse_squared_distances_kernel(
         cell_northings, cell_eastings, sample_northings, sample_eastings, sample_squared_altitudes_m2,
-        minimum_squared_distance_m2, maximum_squared_distance_m2
+        sample_occurrences, minimum_squared_distance_m2, maximum_squared_distance_m2
 ):
     sums = np.zeros(len(cell_northings), dtype=np.float64)
 
@@ -32,11 +54,26 @@ def _sum_inverse_squared_distances_kernel(
                 delta_northing * delta_northing + delta_easting * delta_easting + sample_squared_altitudes_m2[sample]
             )
             if squared_distance_m2 < maximum_squared_distance_m2:
-                cell_sum += 1.0 / max(squared_distance_m2, minimum_squared_distance_m2)
+                cell_sum += sample_occurrences[sample] / max(squared_distance_m2, minimum_squared_distance_m2)
 
         sums[cell] = cell_sum
 
     return sums
+
+
+def sum_inverse_squared_distances_of_distinct_samples(
+        cell_northings: np.ndarray,
+        cell_eastings: np.ndarray,
+        distinct_samples: DistinctFlightSamples,
+        minimum_slant_distance_m: float,
+        maximum_slant_distance_m: float,
+) -> np.ndarray:
+    """Per cell, the sum of occurrences/d^2 over all positions closer than the maximum; d is floored at the minimum."""
+    return _sum_inverse_squared_distances_kernel(
+        cell_northings, cell_eastings, distinct_samples.northings, distinct_samples.eastings,
+        distinct_samples.altitudes_m ** 2, distinct_samples.occurrences.astype(np.float64),
+        minimum_slant_distance_m ** 2, maximum_slant_distance_m ** 2,
+    )
 
 
 def sum_inverse_squared_distances(
@@ -47,9 +84,8 @@ def sum_inverse_squared_distances(
         maximum_slant_distance_m: float,
 ) -> np.ndarray:
     """Per cell, the sum of 1/d^2 over all samples closer than the maximum; d is floored at the minimum."""
-    return _sum_inverse_squared_distances_kernel(
-        cell_northings, cell_eastings, samples.northings, samples.eastings, samples.altitudes_m ** 2,
-        minimum_slant_distance_m ** 2, maximum_slant_distance_m ** 2,
+    return sum_inverse_squared_distances_of_distinct_samples(
+        cell_northings, cell_eastings, count_distinct_samples(samples), minimum_slant_distance_m, maximum_slant_distance_m
     )
 
 
