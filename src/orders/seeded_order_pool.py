@@ -141,6 +141,60 @@ def build_orders_from_indices(
     ]
 
 
+class PooledOrderQueue:
+    """Orders of one warehouse in pool order; an Order object is built only when the order leaves the queue.
+
+    Entries are (position in the pool, order), like the entries of the dispatcher's own queues.
+    """
+
+    def __init__(
+            self, warehouse: Coordinate, pool_positions: np.ndarray, order_ids: np.ndarray,
+            end_northings: np.ndarray, end_eastings: np.ndarray,
+    ):
+        self.warehouse = warehouse
+        self._pool_positions = pool_positions
+        self._order_ids = order_ids
+        self._end_northings = end_northings
+        self._end_eastings = end_eastings
+        self._next_entry = 0
+
+    def __len__(self):
+        return len(self._pool_positions) - self._next_entry
+
+    def __iter__(self):
+        return (self._build_entry(entry) for entry in range(self._next_entry, len(self._pool_positions)))
+
+    def popleft(self) -> tuple[int, Order]:
+        if not self:
+            raise IndexError("pop from an empty order queue")
+
+        entry = self._build_entry(self._next_entry)
+        self._next_entry += 1
+        return entry
+
+    def _build_entry(self, entry: int) -> tuple[int, Order]:
+        end_location = Coordinate(self._end_northings[entry].item(), self._end_eastings[entry].item())
+        order = Order(order_id=self._order_ids[entry].item(), start_location=self.warehouse, end_location=end_location)
+        return self._pool_positions[entry].item(), order
+
+
+def build_order_queues(
+        destinations: pd.DataFrame, warehouses: list[Coordinate], warehouse_indices: np.ndarray
+) -> dict[Coordinate, PooledOrderQueue]:
+    """One queue per warehouse that has orders; together they hold the orders of build_orders_from_indices."""
+    order_ids = destinations["order_id"].to_numpy()
+    end_northings, end_eastings = destinations["end_northing"].to_numpy(), destinations["end_easting"].to_numpy()
+
+    queues = {}
+    for warehouse_index in np.unique(warehouse_indices).tolist():
+        pool_positions = np.flatnonzero(warehouse_indices == warehouse_index)
+        queues[warehouses[warehouse_index]] = PooledOrderQueue(
+            warehouses[warehouse_index], pool_positions, order_ids[pool_positions],
+            end_northings[pool_positions], end_eastings[pool_positions],
+        )
+    return queues
+
+
 def build_orders(
         destinations: pd.DataFrame, warehouses: list[Coordinate], stocking: OrderDatasetType, seed: int
 ) -> list[Order]:

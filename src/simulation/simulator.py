@@ -18,10 +18,11 @@ class Simulator:
         planned_route_cache: PlannedRouteCache | None = None,
         warehouse_locations=None,
         orders=None,
+        pending_orders_by_warehouse=None,
     ):
         self.configs = get_simulation_config()
 
-        self.undelivered_orders_number = self.configs.orders_to_process if orders is None else len(orders)
+        self.undelivered_orders_number = self.count_orders_to_deliver(orders, pending_orders_by_warehouse)
 
         model = self.configs.model
         selected_warehouse_locations = warehouse_locations or list(model.warehouses.bng_coordinates.values())
@@ -37,9 +38,16 @@ class Simulator:
         self.drones_by_warehouse = dict(Counter(drone.return_location for drone in self.fleet.free_drones))
         self.activity_log = FlightActivityLog()
         self.dispatcher = DeliveryDispatcher(
-            self.configs.orders_to_process, self.configs.order_dataset_path, orders=orders
+            self.configs.orders_to_process, self.configs.order_dataset_path, orders=orders,
+            pending_orders_by_warehouse=pending_orders_by_warehouse,
         )
         self.plotter = Plotter(selected_warehouse_locations)
+
+    def count_orders_to_deliver(self, orders, pending_orders_by_warehouse):
+        if pending_orders_by_warehouse is not None:
+            return sum(len(queue) for queue in pending_orders_by_warehouse.values())
+
+        return self.configs.orders_to_process if orders is None else len(orders)
 
     @property
     def delivered_orders_number(self):

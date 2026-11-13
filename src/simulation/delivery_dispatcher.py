@@ -4,11 +4,14 @@ from orders.order_loader import load_orders
 
 
 class DeliveryDispatcher:
-    def __init__(self, number_of_orders, dataset, orders=None):
-        if orders is None:
-            orders = load_orders(number_of_orders, dataset)
+    def __init__(self, number_of_orders, dataset, orders=None, pending_orders_by_warehouse=None):
+        if pending_orders_by_warehouse is None:
+            if orders is None:
+                orders = load_orders(number_of_orders, dataset)
 
-        self.pending_orders_by_warehouse = self.group_orders_by_warehouse(orders)
+            pending_orders_by_warehouse = self.group_orders_by_warehouse(orders)
+
+        self.pending_orders_by_warehouse = pending_orders_by_warehouse
         self.pending_orders_number = sum(len(queue) for queue in self.pending_orders_by_warehouse.values())
         self.assigned_orders = []
 

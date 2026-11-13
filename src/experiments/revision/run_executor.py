@@ -1,9 +1,8 @@
 """Runs one specification end to end and stores its row, drone-only map and trip log."""
 from __future__ import annotations
 
-import math
 import time
-from collections import Counter
+from collections import Counter, deque
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -18,7 +17,6 @@ from experiments.revision.run_specification import (
     FleetAllocation,
     OrderSource,
     RunSpecification,
-    build_model_config,
     build_run_key,
     build_simulation_config,
     specification_to_record,
@@ -26,14 +24,15 @@ from experiments.revision.run_specification import (
 from metrics.cell_table import align_to_grid, load_cell_table
 from metrics.exposure_metrics import calculate_mean_noise_increase_db, calculate_newly_exposed_population
 from noise.noise_grid import load_noise_grid
-from orders.order import Order
 from orders.order_loader import load_orders
 from orders.seeded_order_pool import (
+    PooledOrderQueue,
     assign_warehouse_indices,
-    build_orders_from_indices,
+    build_order_queues,
     count_orders_per_warehouse,
     load_destination_pool,
 )
+from simulation.delivery_dispatcher import DeliveryDispatcher
 from simulation.fleet_allocation import allocate_fleet_equally, allocate_fleet_in_proportion_to_orders
 from simulation.run_statistics import RunStatistics, summarise_run
 from simulation.simulator import Simulator
@@ -42,13 +41,11 @@ PUBLISHED_ORDERS_IN_DATASET = 100_000
 HEADLINE_EXPOSURE_THRESHOLD_DB = 55.0
 DELIVERY_RANGE_M = 12_000.0
 ORDER_POOLS_DIRECTORY_NAME = "order_pools"
-# Even a zero-distance delivery occupies a drone for three time steps (out, at the customer, back).
-MINIMUM_ROUND_TRIP_TIME_STEPS = 3
 
 
 @dataclass(frozen=True)
 class PlannedDemand:
-    orders: list[Order]
+    pending_orders_by_warehouse: dict[Coordinate, deque | PooledOrderQueue]
     drone_homes: list[Coordinate]
     pool_orders_by_warehouse: dict[Coordinate, int]
 
@@ -73,18 +70,10 @@ def choose_drone_homes(specification: RunSpecification, order_counts: dict[Coord
 def plan_published_demand(specification: RunSpecification) -> PlannedDemand:
     orders = load_orders(PUBLISHED_ORDERS_IN_DATASET, published_dataset_path(specification))
     pool_orders_by_warehouse = dict(Counter(order.start_location for order in orders))
-    return PlannedDemand(orders, choose_drone_homes(specification, pool_orders_by_warehouse), pool_orders_by_warehouse)
-
-
-def calculate_dispatchable_orders(
-        specification: RunSpecification, drone_homes: list[Coordinate], depot_locations: list[Coordinate]
-) -> dict[int, int]:
-    """Per depot index, an upper bound on the orders its drones can start within the simulated day."""
-    time_configuration = build_model_config(specification).time
-    number_of_time_steps = math.ceil((time_configuration.end_s - time_configuration.start_s) / time_configuration.step_s)
-    round_trips_per_drone = math.ceil(number_of_time_steps / MINIMUM_ROUND_TRIP_TIME_STEPS)
-    drones_by_home = Counter(drone_homes)
-    return {index: drones_by_home[depot] * round_trips_per_drone for index, depot in enumerate(depot_locations)}
+    return PlannedDemand(
+        DeliveryDispatcher.group_orders_by_warehouse(orders),
+        choose_drone_homes(specification, pool_orders_by_warehouse), pool_orders_by_warehouse,
+    )
 
 
 def plan_seeded_demand(
@@ -94,12 +83,10 @@ def plan_seeded_demand(
     destinations = load_destination_pool(destination_pool_path(store, specification))
     warehouse_indices = assign_warehouse_indices(destinations, depot_locations, specification.stocking, specification.seed)
     pool_orders_by_warehouse = count_orders_per_warehouse(warehouse_indices, depot_locations)
-    drone_homes = choose_drone_homes(specification, pool_orders_by_warehouse)
-    orders = build_orders_from_indices(
-        destinations, depot_locations, warehouse_indices,
-        maximum_orders_per_warehouse=calculate_dispatchable_orders(specification, drone_homes, depot_locations),
+    return PlannedDemand(
+        build_order_queues(destinations, depot_locations, warehouse_indices),
+        choose_drone_homes(specification, pool_orders_by_warehouse), pool_orders_by_warehouse,
     )
-    return PlannedDemand(orders, drone_homes, pool_orders_by_warehouse)
 
 
 def plan_demand(specification: RunSpecification, store: ResultStore, depots: dict[str, Coordinate]) -> PlannedDemand:
@@ -109,9 +96,12 @@ def plan_demand(specification: RunSpecification, store: ResultStore, depots: dic
 
 
 def run_simulation(specification: RunSpecification, demand: PlannedDemand) -> Simulator:
-    config = build_simulation_config(specification, published_dataset_path(specification), len(demand.orders))
+    number_of_orders = sum(demand.pool_orders_by_warehouse.values())
+    config = build_simulation_config(specification, published_dataset_path(specification), number_of_orders)
     with use_simulation_config(config):
-        simulator = Simulator(warehouse_locations=demand.drone_homes, orders=demand.orders)
+        simulator = Simulator(
+            warehouse_locations=demand.drone_homes, pending_orders_by_warehouse=demand.pending_orders_by_warehouse
+        )
         simulator.run()
     return simulator
 
