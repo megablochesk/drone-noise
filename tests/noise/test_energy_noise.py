@@ -69,6 +69,35 @@ def test_maximum_slant_distance_selects_nearby_samples_only():
     assert inverse_square_sums(samples, maximum_m=50.0)[0] == pytest.approx(1.0 / 900.0, rel=1e-12)
 
 
+def sum_inverse_squared_distances_by_broadcasting(samples: FlightSamples, minimum_m: float, maximum_m: float):
+    """Independent oracle: the full cell-by-sample distance matrix in numpy, one term per sample."""
+    squared_distances_m2 = (
+        (CELL_NORTHINGS[:, np.newaxis] - samples.northings) ** 2
+        + (CELL_EASTINGS[:, np.newaxis] - samples.eastings) ** 2
+        + samples.altitudes_m ** 2
+    )
+    contributions = 1.0 / np.maximum(squared_distances_m2, minimum_m ** 2)
+    return np.where(squared_distances_m2 < maximum_m ** 2, contributions, 0.0).sum(axis=1)
+
+
+def repeat_and_shuffle(samples: FlightSamples, seed: int) -> FlightSamples:
+    """Every position one to four times, in random order, as drones retracing a route produce them."""
+    generator = np.random.default_rng(seed)
+    order = generator.permutation(np.repeat(np.arange(len(samples.northings)), generator.integers(1, 5, len(samples.northings))))
+    return FlightSamples(samples.northings[order], samples.eastings[order], samples.altitudes_m[order])
+
+
+@pytest.mark.parametrize("minimum_m, maximum_m", [(0.0, np.inf), (150.0, np.inf), (0.0, 2_000.0), (150.0, 2_000.0)])
+def test_repeated_positions_contribute_once_per_occurrence(minimum_m, maximum_m):
+    """Characterisation against the broadcasting oracle: a position flown k times counts k times."""
+    samples = repeat_and_shuffle(random_samples(200, seed=3), seed=4)
+    np.testing.assert_allclose(
+        inverse_square_sums(samples, minimum_m, maximum_m),
+        sum_inverse_squared_distances_by_broadcasting(samples, minimum_m, maximum_m),
+        rtol=1e-12,
+    )
+
+
 def test_energy_of_two_sample_sets_flown_together_is_the_sum_of_the_separate_maps():
     """Invariant (energy additivity): sum over A union B equals sum over A plus sum over B."""
     first_set, second_set = random_samples(300, seed=1), random_samples(500, seed=2)
