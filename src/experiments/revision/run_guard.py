@@ -12,6 +12,10 @@ class FailingTestSuiteError(RuntimeError):
     pass
 
 
+class RepositoryChangedError(RuntimeError):
+    pass
+
+
 def run_git(repository: Path, *arguments: str) -> str:
     completed = subprocess.run(["git", *arguments], cwd=repository, capture_output=True, text=True, check=True)
     return completed.stdout
@@ -36,7 +40,15 @@ def ensure_fast_suite_passes(repository: Path):
 
 
 def ensure_ready_to_run(repository: Path) -> str:
-    """Returns the commit hash that the results of this batch must cite."""
+    """Returns the commit hash that the results of this batch must cite.
+
+    The suite takes about a minute; the tree and HEAD are checked again afterwards so that the returned
+    commit is the code that was tested.
+    """
     ensure_clean_working_tree(repository)
+    git_hash = read_git_hash(repository)
     ensure_fast_suite_passes(repository)
-    return read_git_hash(repository)
+    ensure_clean_working_tree(repository)
+    if read_git_hash(repository) != git_hash:
+        raise RepositoryChangedError("HEAD moved while the fast suite was running; start the batch again")
+    return git_hash
