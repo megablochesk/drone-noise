@@ -5,8 +5,10 @@ import pytest
 from experiments.revision.run_guard import (
     DirtyWorkingTreeError,
     FailingTestSuiteError,
+    RepositoryChangedError,
     ensure_clean_working_tree,
     ensure_fast_suite_passes,
+    ensure_ready_to_run,
     read_git_hash,
 )
 
@@ -22,7 +24,8 @@ def repository(tmp_path):
     run_git(tmp_path, "config", "user.email", "tester@example.org")
     run_git(tmp_path, "config", "user.name", "Tester")
     (tmp_path / "tracked.txt").write_text("first version\n")
-    run_git(tmp_path, "add", "tracked.txt")
+    (tmp_path / ".gitignore").write_text("__pycache__/\n.pytest_cache/\n")
+    run_git(tmp_path, "add", "tracked.txt", ".gitignore")
     run_git(tmp_path, "commit", "--quiet", "-m", "initial")
     return tmp_path
 
@@ -58,3 +61,37 @@ def test_failing_suite_is_refused(repository):
     (repository / "test_failing.py").write_text("def test_falsehood():\n    assert False\n")
     with pytest.raises(FailingTestSuiteError):
         ensure_fast_suite_passes(repository)
+
+
+def test_ready_repository_returns_the_commit_to_cite(repository):
+    """Clean tree and passing suite: the returned hash is HEAD."""
+    (repository / "test_passing.py").write_text("def test_truth():\n    assert True\n")
+    run_git(repository, "add", "test_passing.py")
+    run_git(repository, "commit", "--quiet", "-m", "add a passing test")
+    assert ensure_ready_to_run(repository) == run_git(repository, "rev-parse", "HEAD")
+
+
+def test_commit_made_while_the_suite_runs_is_refused(repository):
+    """The cited commit must be the code that was checked: if HEAD moves during the checks, refuse."""
+    (repository / "test_commits.py").write_text(
+        "import subprocess\n\n"
+        "def test_moves_head():\n"
+        "    subprocess.run(['git', 'commit', '--quiet', '--allow-empty', '-m', 'sneaky'], check=True)\n"
+    )
+    run_git(repository, "add", "test_commits.py")
+    run_git(repository, "commit", "--quiet", "-m", "add a test that commits")
+    with pytest.raises(RepositoryChangedError):
+        ensure_ready_to_run(repository)
+
+
+def test_file_created_while_the_suite_runs_is_refused(repository):
+    """Likewise an edit that appears during the checks leaves the tree dirty and must be refused."""
+    (repository / "test_writes.py").write_text(
+        "from pathlib import Path\n\n"
+        "def test_leaves_a_file():\n"
+        "    Path('left_behind.txt').write_text('x')\n"
+    )
+    run_git(repository, "add", "test_writes.py")
+    run_git(repository, "commit", "--quiet", "-m", "add a test that writes")
+    with pytest.raises(DirtyWorkingTreeError, match="left_behind.txt"):
+        ensure_ready_to_run(repository)
