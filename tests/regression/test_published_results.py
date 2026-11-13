@@ -77,3 +77,30 @@ def test_published_result_is_reproduced(published: PublishedResult):
         assert newly_exposed_population(results) == pytest.approx(
             published.newly_exposed_population, rel=POPULATION_RELATIVE_TOLERANCE
         )
+
+
+SAVED_PUBLISHED_RESULT_FILES = {False: "drone_number_change", True: "drone_landing_on"}
+PER_CELL_TOLERANCE_DB = 1e-9
+
+
+def load_saved_published_map(published: PublishedResult) -> pd.DataFrame:
+    from common.file_utils import load_dataframe_from_pickle
+    from common.path_configs import get_experiment_results_full_file_path
+
+    saved_results = load_dataframe_from_pickle(
+        get_experiment_results_full_file_path(SAVED_PUBLISHED_RESULT_FILES[published.terminal_phases])
+    )
+    run_name = f"{published.stocking}_d{published.number_of_drones}"
+    return saved_results.loc[saved_results["run_name"] == run_name, "noise_impact_df"].iloc[0]
+
+
+@pytest.mark.parametrize("published", PUBLISHED_RESULTS, ids=describe)
+def test_per_cell_maps_match_the_saved_published_run(published: PublishedResult):
+    """Characterisation: expected maps are the result pickles saved in April 2026 for the manuscript figures."""
+    results = run_published_configuration(published.stocking, published.terminal_phases, published.number_of_drones)
+    current_map = results.iloc[0]["noise_impact_df"].set_index(["row", "col"]).sort_index()
+    saved_map = load_saved_published_map(published).set_index(["row", "col"]).sort_index()
+
+    assert current_map.index.equals(saved_map.index)
+    for column in ["average_noise", "combined_noise", "noise_difference"]:
+        assert (current_map[column] - saved_map[column]).abs().max() < PER_CELL_TOLERANCE_DB
