@@ -59,7 +59,7 @@ def test_dispatching_from_order_queues_matches_dispatching_from_the_order_list(s
 
     list_dispatcher = DeliveryDispatcher(
         400, UNUSED_DATASET_PATH,
-        orders=build_orders_from_indices(destinations, warehouses, warehouse_indices, maximum_orders_per_warehouse=None),
+        orders=build_orders_from_indices(destinations, warehouses, warehouse_indices),
     )
     queue_dispatcher = DeliveryDispatcher(
         400, UNUSED_DATASET_PATH,
@@ -101,7 +101,7 @@ def test_injected_order_queues_give_the_same_run_as_the_injected_order_list(tmp_
 
     list_run = run_small_simulation(
         config, warehouse_locations=warehouses,
-        orders=build_orders_from_indices(destinations, warehouses, warehouse_indices, maximum_orders_per_warehouse=None),
+        orders=build_orders_from_indices(destinations, warehouses, warehouse_indices),
     )
     queue_run = run_simulation_from_queues(
         config, warehouses, build_order_queues(destinations, warehouses, warehouse_indices)

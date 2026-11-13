@@ -88,7 +88,7 @@ def test_queues_hold_the_same_orders_as_the_eager_order_list():
         "end_easting": generator.uniform(0.0, 9_000.0, 300).round(2),
     })
     warehouse_indices = generator.integers(0, len(WAREHOUSES), 300)
-    eager_orders = build_orders_from_indices(destinations, WAREHOUSES, warehouse_indices, maximum_orders_per_warehouse=None)
+    eager_orders = build_orders_from_indices(destinations, WAREHOUSES, warehouse_indices)
 
     queued = [entry for queue in build_order_queues(destinations, WAREHOUSES, warehouse_indices).values() for entry in queue]
     assert [order for _, order in sorted(queued, key=lambda entry: entry[0])] == eager_orders

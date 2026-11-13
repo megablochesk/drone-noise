@@ -137,18 +137,15 @@ def test_destination_pool_survives_a_parquet_round_trip(tmp_path):
     pd.testing.assert_frame_equal(load_destination_pool(pool_path), destinations)
 
 
-def test_orders_can_be_limited_to_the_first_few_per_warehouse():
-    """Hand-built case: warehouse indices 0, 1, 0, 0, 1 with limits {0: 2, 1: 1} keep orders 1, 2 and 3
-    (the third order of warehouse 0 and the second of warehouse 1 are dropped), in pool order."""
+def test_orders_are_built_in_pool_order_at_their_assigned_warehouse():
+    """Hand-built case: warehouse indices 0, 1, 0 put orders 1 and 3 at the first warehouse and 2 at the second."""
     destinations = pd.DataFrame({
-        "order_id": [1, 2, 3, 4, 5],
-        "zone_code": ["WEST"] * 5,
-        "end_northing": [10.0, 20.0, 30.0, 40.0, 50.0],
-        "end_easting": [11.0, 21.0, 31.0, 41.0, 51.0],
+        "order_id": [1, 2, 3],
+        "zone_code": ["WEST"] * 3,
+        "end_northing": [10.0, 20.0, 30.0],
+        "end_easting": [11.0, 21.0, 31.0],
     })
-    orders = build_orders_from_indices(
-        destinations, WAREHOUSES, np.array([0, 1, 0, 0, 1]), maximum_orders_per_warehouse={0: 2, 1: 1}
-    )
+    orders = build_orders_from_indices(destinations, WAREHOUSES, np.array([0, 1, 0]))
     assert [order.order_id for order in orders] == [1, 2, 3]
     assert [order.start_location for order in orders] == [WAREHOUSES[0], WAREHOUSES[1], WAREHOUSES[0]]
     assert orders[2].end_location == Coordinate(northing=30.0, easting=31.0)
