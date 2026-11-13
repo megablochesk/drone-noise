@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from common.model_configs import model_config
 from common.runtime_configs import get_simulation_config
 from simulation.delivery_dispatcher import DeliveryDispatcher
 from simulation.fleet import Fleet
@@ -8,9 +7,6 @@ from simulation.noise_monitor import NoiseMonitor
 from simulation.planned_route_cache import PlannedRouteCache
 from simulation.plotter import Plotter
 from simulation.timer import Timer
-
-LONDON_WAREHOUSES = list(model_config.warehouses.bng_coordinates.items())
-DEFAULT_WAREHOUSE_LOCATIONS = [location for _, location in LONDON_WAREHOUSES]
 
 
 class Simulator:
@@ -23,9 +19,10 @@ class Simulator:
 
         self.undelivered_orders_number = self.configs.orders_to_process
 
-        selected_warehouse_locations = warehouse_locations or DEFAULT_WAREHOUSE_LOCATIONS
+        model = self.configs.model
+        selected_warehouse_locations = warehouse_locations or list(model.warehouses.bng_coordinates.values())
 
-        self.timer = Timer()
+        self.timer = Timer(start=model.time.start_s, end=model.time.end_s, step=model.time.step_s)
         self.noise_monitor = NoiseMonitor()
         self.fleet = Fleet(
             self.configs.number_of_drones,

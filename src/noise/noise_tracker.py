@@ -1,4 +1,5 @@
 import numpy as np
+from common.runtime_configs import get_simulation_config
 from noise.grid_generator import compute_grid_dimensions, build_cell_matrix
 from noise.noise_math_utils import calculate_noise_at_distance, calculate_mixed_noise_level, calculate_distance
 
@@ -7,7 +8,9 @@ from tqdm import tqdm
 
 
 @njit(parallel=True)
-def calculate_cells_noise(cell_northings, cell_eastings, drone_northings, drone_eastings, drone_altitudes):
+def calculate_cells_noise(
+        cell_northings, cell_eastings, drone_northings, drone_eastings, drone_altitudes, noise_at_source_db
+):
     num_cells = len(cell_northings)
     num_drones = len(drone_northings)
 
@@ -24,7 +27,7 @@ def calculate_cells_noise(cell_northings, cell_eastings, drone_northings, drone_
 
             distance = calculate_distance(delta_northing, delta_easting, drone_altitudes[j])
 
-            noises[j] = calculate_noise_at_distance(distance)
+            noises[j] = calculate_noise_at_distance(distance, noise_at_source_db)
 
         total_noise_result[i] = calculate_mixed_noise_level(noises)
 
@@ -34,6 +37,7 @@ def calculate_cells_noise(cell_northings, cell_eastings, drone_northings, drone_
 class NoiseTracker:
     def __init__(self):
         self.rows, self.cols = compute_grid_dimensions()
+        self.noise_at_source_db = get_simulation_config().model.drone.noise_at_source_db
         self.drone_location_history = []
         self.drone_altitude_history = []
 
@@ -69,7 +73,8 @@ class NoiseTracker:
                     cell_eastings,
                     drone_northings,
                     drone_eastings,
-                    drone_altitudes
+                    drone_altitudes,
+                    self.noise_at_source_db
                 )
 
                 for cell, noise in zip(self.noise_cells, total_noise):

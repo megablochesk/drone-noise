@@ -4,8 +4,11 @@ import numpy as np
 from numba import njit, prange
 from tqdm import tqdm
 
+from common.model_configs import model_config
 from noise.grid_generator import compute_grid_dimensions, build_cell_matrix
 from noise.noise_math_utils import calculate_noise_at_distance, calculate_mixed_noise_level
+
+DRONE_NOISE_AT_SOURCE_DB = model_config.drone.noise_at_source_db
 
 
 @njit(parallel=True)
@@ -22,7 +25,7 @@ def calculate_cells_noise_parallel(cell_northings, cell_eastings, drone_northing
         noises = np.empty(num_drones, dtype=np.float64)
         for j in range(num_drones):
             dist = (centroid_n - drone_northings[j]) ** 2 + (centroid_e - drone_eastings[j]) ** 2
-            noises[j] = calculate_noise_at_distance(dist)
+            noises[j] = calculate_noise_at_distance(dist, DRONE_NOISE_AT_SOURCE_DB)
 
         total_noise_result[i] = calculate_mixed_noise_level(noises)
 
@@ -41,7 +44,7 @@ def calculate_cells_noise_sequential(cell_northings, cell_eastings, drone_northi
         noises = np.empty(num_drones, dtype=np.float64)
         for j in range(num_drones):
             dist = (centroid_n - drone_northings[j]) ** 2 + (centroid_e - drone_eastings[j]) ** 2
-            noises[j] = calculate_noise_at_distance(dist)
+            noises[j] = calculate_noise_at_distance(dist, DRONE_NOISE_AT_SOURCE_DB)
 
         total_noise_result[i] = calculate_mixed_noise_level(noises)
 
