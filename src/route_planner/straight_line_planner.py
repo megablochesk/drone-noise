@@ -1,19 +1,21 @@
 from common.coordinate import Coordinate, calculate_distance
-from common.model_configs import model_config
+from common.runtime_configs import get_simulation_config
 from route_planner.route_planner import RoutePlanner
-
-MODEL_TIME_STEP = model_config.time.step_s
-DRONE_SPEED = model_config.drone.speed_mps
 
 
 class StraightLinePlanner(RoutePlanner):
+    def __init__(self):
+        model = get_simulation_config().model
+        self.time_step_s = model.time.step_s
+        self.speed_mps = model.drone.speed_mps
+
     def plan_route(self, start, end):
         distance = calculate_distance(start, end)
         if distance == 0:
             return [start]
 
-        total_time = distance / DRONE_SPEED
-        steps = int(total_time // MODEL_TIME_STEP)
+        total_time = distance / self.speed_mps
+        steps = int(total_time // self.time_step_s)
 
         if steps == 0:
             return [start, end]

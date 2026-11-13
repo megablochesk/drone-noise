@@ -1,21 +1,20 @@
-from common.model_configs import model_config
 from common.runtime_configs import get_simulation_config
-
-NUMBER_OF_LANDING_STEPS = model_config.landing_steps
-
-DRONE_FLIGHT_ALTITUDE = model_config.drone.flight_altitude_m
-
-INTERMEDIATE_ALTITUDES_ASCENDING = model_config.intermediate_altitudes_ascending
-INTERMEDIATE_ALTITUDES_DESCENDING = model_config.intermediate_altitudes_descending
 
 
 class LandingPlanner:
     def __init__(self):
-        self.use_drone_landing = get_simulation_config().drone_landing
+        simulation_config = get_simulation_config()
+        model = simulation_config.model
+
+        self.use_drone_landing = simulation_config.drone_landing
+        self.number_of_landing_steps = model.landing_steps
+        self.flight_altitude_m = model.drone.flight_altitude_m
+        self.intermediate_altitudes_ascending = model.intermediate_altitudes_ascending
+        self.intermediate_altitudes_descending = model.intermediate_altitudes_descending
 
     def add_landing_sequence(self, route, start, end):
         if self.is_zero_distance_route(route) and self.use_drone_landing:
-            count = 1 + 2 * NUMBER_OF_LANDING_STEPS
+            count = 1 + 2 * self.number_of_landing_steps
             return [start] * count
 
         if self.use_drone_landing:
@@ -25,26 +24,24 @@ class LandingPlanner:
 
     def assign_altitudes(self, route):
         if self.is_zero_distance_route(route):
-            return [DRONE_FLIGHT_ALTITUDE]
+            return [self.flight_altitude_m]
 
         if self.use_drone_landing:
-            path_len = len(route) - 2 * NUMBER_OF_LANDING_STEPS
+            path_len = len(route) - 2 * self.number_of_landing_steps
             return self._landing_altitudes(path_len)
 
-        return [DRONE_FLIGHT_ALTITUDE] * len(route)
+        return [self.flight_altitude_m] * len(route)
 
     @staticmethod
     def is_zero_distance_route(route):
         return len(route) == 1
 
-    @staticmethod
-    def _landing_altitudes(mid_len):
+    def _landing_altitudes(self, mid_len):
         return (
-            INTERMEDIATE_ALTITUDES_ASCENDING +
-            [DRONE_FLIGHT_ALTITUDE] * mid_len +
-            INTERMEDIATE_ALTITUDES_DESCENDING
+            self.intermediate_altitudes_ascending +
+            [self.flight_altitude_m] * mid_len +
+            self.intermediate_altitudes_descending
         )
 
-    @staticmethod
-    def _pad_landing_sequence(route, start, end):
-        return [start] * NUMBER_OF_LANDING_STEPS + route + [end] * NUMBER_OF_LANDING_STEPS
+    def _pad_landing_sequence(self, route, start, end):
+        return [start] * self.number_of_landing_steps + route + [end] * self.number_of_landing_steps

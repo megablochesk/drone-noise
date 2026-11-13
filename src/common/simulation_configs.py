@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 
 from common.enum import NavigationType
+from common.model_configs import ModelConfig, model_config
 from common.path_configs import ORDER_BASE_PATH_RANDOM
 
 
@@ -20,6 +21,8 @@ class SimulationConfig:
     navigator_type: NavigationType = NavigationType.STRAIGHT
 
     order_dataset_path: str = ORDER_BASE_PATH_RANDOM
+
+    model: ModelConfig = model_config
 
     def with_overrides(self, **kwargs) -> "SimulationConfig":
         return replace(self, **kwargs)
