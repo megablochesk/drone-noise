@@ -2,6 +2,7 @@ import math
 from dataclasses import dataclass, field
 
 import geopandas as gpd
+import shapely
 from shapely.geometry import box
 
 from common.coordinate import Coordinate
@@ -57,7 +58,11 @@ def create_grid():
 
 
 def filter_cells_in_polygon(cells, boundary_polygon):
-    return [cell for cell in cells if cell["geometry"].intersects(boundary_polygon)]
+    # A prepared polygon answers the intersection test from a spatial index instead of all its edges;
+    # the index is only used when the prepared polygon is the one asked.
+    shapely.prepare(boundary_polygon)
+
+    return [cell for cell in cells if boundary_polygon.intersects(cell["geometry"])]
 
 
 def get_valid_cells():
