@@ -20,6 +20,8 @@ class PathsConfiguration:
     base_noise_dir: str = f"{data_dir}/base_noise"
     noise_graph_navigation_dir: str = f"{data_dir}/noise_graph_navigation"
     experiment_results_dir: str = "recourses/experiment_results"
+    revision_results_dir: str = "../results"
+    revision_artifacts_dir: str = f"{revision_results_dir}/artifacts"
 
     msoa_population_path: str = f"{data_dir}/MSOA_population_dataset_filtered.geojson"
     london_boundaries_path: str = f"{data_dir}/greater-london-boundaries.geo.json"
