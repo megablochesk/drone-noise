@@ -1,8 +1,10 @@
 """Runs one specification end to end and stores its row, drone-only map and trip log."""
 from __future__ import annotations
 
+import math
 import time
 from collections import Counter
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -16,6 +18,7 @@ from experiments.revision.run_specification import (
     FleetAllocation,
     OrderSource,
     RunSpecification,
+    build_model_config,
     build_run_key,
     build_simulation_config,
     specification_to_record,
@@ -25,7 +28,12 @@ from metrics.exposure_metrics import calculate_mean_noise_increase_db, calculate
 from noise.noise_grid import load_noise_grid
 from orders.order import Order
 from orders.order_loader import load_orders
-from orders.seeded_order_pool import build_orders, load_destination_pool
+from orders.seeded_order_pool import (
+    assign_warehouse_indices,
+    build_orders_from_indices,
+    count_orders_per_warehouse,
+    load_destination_pool,
+)
 from simulation.fleet_allocation import allocate_fleet_equally, allocate_fleet_in_proportion_to_orders
 from simulation.run_statistics import RunStatistics, summarise_run
 from simulation.simulator import Simulator
@@ -34,6 +42,15 @@ PUBLISHED_ORDERS_IN_DATASET = 100_000
 HEADLINE_EXPOSURE_THRESHOLD_DB = 55.0
 DELIVERY_RANGE_M = 12_000.0
 ORDER_POOLS_DIRECTORY_NAME = "order_pools"
+# Even a zero-distance delivery occupies a drone for three time steps (out, at the customer, back).
+MINIMUM_ROUND_TRIP_TIME_STEPS = 3
+
+
+@dataclass(frozen=True)
+class PlannedDemand:
+    orders: list[Order]
+    drone_homes: list[Coordinate]
+    pool_orders_by_warehouse: dict[Coordinate, int]
 
 
 def destination_pool_path(store: ResultStore, specification: RunSpecification) -> Path:
@@ -47,25 +64,54 @@ def published_dataset_path(specification: RunSpecification) -> str:
     return get_single_type_order_dataset_pattern(specification.stocking.value, PUBLISHED_ORDERS_IN_DATASET)
 
 
-def load_run_orders(specification: RunSpecification, store: ResultStore, depots: dict[str, Coordinate]) -> list[Order]:
-    if specification.order_source is OrderSource.PUBLISHED_DATASET:
-        return load_orders(PUBLISHED_ORDERS_IN_DATASET, published_dataset_path(specification))
-
-    destinations = load_destination_pool(destination_pool_path(store, specification))
-    return build_orders(destinations, list(depots.values()), specification.stocking, specification.seed)
-
-
-def choose_drone_homes(specification: RunSpecification, orders: list[Order]) -> list[Coordinate]:
-    order_counts = Counter(order.start_location for order in orders)
+def choose_drone_homes(specification: RunSpecification, order_counts: dict[Coordinate, int]) -> list[Coordinate]:
     if specification.fleet_allocation is FleetAllocation.PROPORTIONAL_TO_ORDERS:
         return allocate_fleet_in_proportion_to_orders(order_counts, specification.number_of_drones)
     return allocate_fleet_equally(order_counts, specification.number_of_drones)
 
 
-def run_simulation(specification: RunSpecification, orders: list[Order]) -> Simulator:
-    config = build_simulation_config(specification, published_dataset_path(specification), len(orders))
+def plan_published_demand(specification: RunSpecification) -> PlannedDemand:
+    orders = load_orders(PUBLISHED_ORDERS_IN_DATASET, published_dataset_path(specification))
+    pool_orders_by_warehouse = dict(Counter(order.start_location for order in orders))
+    return PlannedDemand(orders, choose_drone_homes(specification, pool_orders_by_warehouse), pool_orders_by_warehouse)
+
+
+def calculate_dispatchable_orders(
+        specification: RunSpecification, drone_homes: list[Coordinate], depot_locations: list[Coordinate]
+) -> dict[int, int]:
+    """Per depot index, an upper bound on the orders its drones can start within the simulated day."""
+    time_configuration = build_model_config(specification).time
+    number_of_time_steps = math.ceil((time_configuration.end_s - time_configuration.start_s) / time_configuration.step_s)
+    round_trips_per_drone = math.ceil(number_of_time_steps / MINIMUM_ROUND_TRIP_TIME_STEPS)
+    drones_by_home = Counter(drone_homes)
+    return {index: drones_by_home[depot] * round_trips_per_drone for index, depot in enumerate(depot_locations)}
+
+
+def plan_seeded_demand(
+        specification: RunSpecification, store: ResultStore, depots: dict[str, Coordinate]
+) -> PlannedDemand:
+    depot_locations = list(depots.values())
+    destinations = load_destination_pool(destination_pool_path(store, specification))
+    warehouse_indices = assign_warehouse_indices(destinations, depot_locations, specification.stocking, specification.seed)
+    pool_orders_by_warehouse = count_orders_per_warehouse(warehouse_indices, depot_locations)
+    drone_homes = choose_drone_homes(specification, pool_orders_by_warehouse)
+    orders = build_orders_from_indices(
+        destinations, depot_locations, warehouse_indices,
+        maximum_orders_per_warehouse=calculate_dispatchable_orders(specification, drone_homes, depot_locations),
+    )
+    return PlannedDemand(orders, drone_homes, pool_orders_by_warehouse)
+
+
+def plan_demand(specification: RunSpecification, store: ResultStore, depots: dict[str, Coordinate]) -> PlannedDemand:
+    if specification.order_source is OrderSource.PUBLISHED_DATASET:
+        return plan_published_demand(specification)
+    return plan_seeded_demand(specification, store, depots)
+
+
+def run_simulation(specification: RunSpecification, demand: PlannedDemand) -> Simulator:
+    config = build_simulation_config(specification, published_dataset_path(specification), len(demand.orders))
     with use_simulation_config(config):
-        simulator = Simulator(warehouse_locations=choose_drone_homes(specification, orders), orders=orders)
+        simulator = Simulator(warehouse_locations=demand.drone_homes, orders=demand.orders)
         simulator.run()
     return simulator
 
@@ -74,16 +120,23 @@ def extract_drone_levels(simulator: Simulator) -> np.ndarray:
     return align_to_grid(load_noise_grid(), simulator.noise_monitor.impact, "average_noise")
 
 
-def summarise_warehouses(statistics: RunStatistics, depots: dict[str, Coordinate]) -> dict[str, dict]:
+def summarise_warehouses(
+        statistics: RunStatistics, demand: PlannedDemand, depots: dict[str, Coordinate]
+) -> dict[str, dict]:
+    """Per depot with orders or drones; orders left refer to the whole pool, not only to the built orders."""
     return {
         depot_name: {
-            "drones": statistics.drones_by_warehouse[location],
-            "airborne_drone_seconds": statistics.airborne_drone_seconds_by_warehouse[location],
-            "utilisation": statistics.utilisation_by_warehouse[location],
-            "orders_left": statistics.pending_orders_by_warehouse.get(location, 0),
+            "drones": statistics.drones_by_warehouse.get(location, 0),
+            "airborne_drone_seconds": statistics.airborne_drone_seconds_by_warehouse.get(location, 0),
+            "utilisation": statistics.utilisation_by_warehouse.get(location, 0.0),
+            "pool_orders": demand.pool_orders_by_warehouse.get(location, 0),
+            "orders_left": (
+                demand.pool_orders_by_warehouse.get(location, 0)
+                - statistics.assigned_orders_by_warehouse.get(location, 0)
+            ),
         }
         for depot_name, location in depots.items()
-        if location in statistics.drones_by_warehouse
+        if location in demand.pool_orders_by_warehouse or location in statistics.drones_by_warehouse
     }
 
 
@@ -101,7 +154,7 @@ def summarise_operations(statistics: RunStatistics, per_warehouse: dict[str, dic
     return {
         "delivered_orders": statistics.delivered_orders,
         "assigned_orders": statistics.assigned_orders,
-        "orders_left": sum(statistics.pending_orders_by_warehouse.values()),
+        "orders_left": sum(warehouse["orders_left"] for warehouse in per_warehouse.values()),
         "warehouses_out_of_orders": sum(1 for warehouse in per_warehouse.values() if warehouse["orders_left"] == 0),
         "simulated_duration_s": statistics.simulated_duration_s,
         "airborne_drone_seconds": statistics.airborne_drone_seconds,
@@ -115,9 +168,8 @@ def summarise_operations(statistics: RunStatistics, per_warehouse: dict[str, dic
 
 def build_result_row(
         specification: RunSpecification, git_hash: str, wall_time_s: float, statistics: RunStatistics,
-        drone_levels_db: np.ndarray, depots: dict[str, Coordinate],
+        drone_levels_db: np.ndarray, per_warehouse: dict[str, dict],
 ) -> dict:
-    per_warehouse = summarise_warehouses(statistics, depots)
     return {
         "run_key": build_run_key(specification),
         **specification_to_record(specification),
@@ -132,11 +184,13 @@ def build_result_row(
 def execute_run(specification: RunSpecification, store: ResultStore, git_hash: str) -> dict:
     started_at_s = time.perf_counter()
     depots = resolve_depot_layout(specification.depot_layout)
-    simulator = run_simulation(specification, load_run_orders(specification, store, depots))
+    demand = plan_demand(specification, store, depots)
+    simulator = run_simulation(specification, demand)
     statistics = summarise_run(simulator)
     drone_levels_db = extract_drone_levels(simulator)
+    per_warehouse = summarise_warehouses(statistics, demand, depots)
 
     wall_time_s = time.perf_counter() - started_at_s
-    row = build_result_row(specification, git_hash, wall_time_s, statistics, drone_levels_db, depots)
+    row = build_result_row(specification, git_hash, wall_time_s, statistics, drone_levels_db, per_warehouse)
     save_result(store, row["run_key"], row, drone_levels_db, statistics.trip_distances_m)
     return row
