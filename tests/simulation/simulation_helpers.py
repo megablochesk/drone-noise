@@ -7,6 +7,7 @@ from common.coordinate import Coordinate
 from common.model_configs import ModelConfig, model_config
 from common.runtime_configs import use_simulation_config
 from common.simulation_configs import SimulationConfig
+from orders.order import Order
 from simulation.simulator import Simulator
 
 WAREHOUSE = Coordinate(northing=182_049.78, easting=538_402.03)
@@ -32,8 +33,10 @@ def model_with_duration(duration_s: int, base_model: ModelConfig = model_config)
     return replace(base_model, time=replace(base_model.time, start_s=0, end_s=duration_s))
 
 
-def run_small_simulation(config: SimulationConfig, warehouse_locations: list[Coordinate] | None = None) -> Simulator:
+def run_small_simulation(
+        config: SimulationConfig, warehouse_locations: list[Coordinate] | None = None, orders: list[Order] | None = None
+) -> Simulator:
     with use_simulation_config(config):
-        simulator = Simulator(warehouse_locations=warehouse_locations or [WAREHOUSE])
+        simulator = Simulator(warehouse_locations=warehouse_locations or [WAREHOUSE], orders=orders)
         simulator.run()
     return simulator

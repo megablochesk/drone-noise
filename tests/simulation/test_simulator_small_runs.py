@@ -17,7 +17,9 @@ import pytest
 from common.enum import NoiseCalculation
 from common.model_configs import model_config
 from common.simulation_configs import SimulationConfig
+from orders.order import Order
 from tests.simulation.simulation_helpers import (
+    WAREHOUSE,
     destination_east_of_warehouse,
     model_with_duration,
     run_small_simulation,
@@ -76,3 +78,17 @@ def test_deliveries_never_exceed_the_fleet_throughput_bound(tmp_path, number_of_
     minimum_round_trip_s = round_trip_steps(min(distances_m), model_config.drone.speed_mps, time_step_s) * time_step_s
     delivered = run_small_simulation(config).delivered_orders_number
     assert 0 < delivered <= number_of_drones * TWO_HOURS_S / minimum_round_trip_s
+
+
+def test_injected_orders_replace_the_order_file(tmp_path):
+    """Same 9,000 m scenario as the first test (9 round trips in two hours), but the orders are passed in as
+    objects and the configured dataset path does not exist."""
+    orders = [
+        Order(order_id=order_id, start_location=WAREHOUSE, end_location=destination_east_of_warehouse(9_000.0))
+        for order_id in range(1, 41)
+    ]
+    config = SimulationConfig(
+        order_dataset_path=str(tmp_path / "missing.csv"), number_of_drones=1, print_model_stats=False,
+        noise_calculation=NoiseCalculation.ENERGY_SUM, model=model_with_duration(TWO_HOURS_S),
+    )
+    assert run_small_simulation(config, orders=orders).delivered_orders_number == 9
