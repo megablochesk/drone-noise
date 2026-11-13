@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
 
 import numpy as np
@@ -15,6 +16,7 @@ class RunStatistics:
     airborne_drone_seconds: int
     utilisation: float
     drones_by_warehouse: dict[Coordinate, int]
+    assigned_orders_by_warehouse: dict[Coordinate, int]
     airborne_drone_seconds_by_warehouse: dict[Coordinate, int]
     utilisation_by_warehouse: dict[Coordinate, float]
     pending_orders_by_warehouse: dict[Coordinate, int]
@@ -39,6 +41,7 @@ def summarise_run(simulator) -> RunStatistics:
         airborne_drone_seconds=airborne_drone_seconds,
         utilisation=airborne_drone_seconds / (sum(drones_by_warehouse.values()) * simulated_duration_s),
         drones_by_warehouse=drones_by_warehouse,
+        assigned_orders_by_warehouse=dict(Counter(order.start_location for order in simulator.dispatcher.assigned_orders)),
         airborne_drone_seconds_by_warehouse=airborne_by_warehouse,
         utilisation_by_warehouse={
             warehouse: airborne_by_warehouse[warehouse] / (number_of_drones * simulated_duration_s)
