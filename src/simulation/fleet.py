@@ -33,13 +33,16 @@ class Fleet:
         return bool(self.waiting_planning_drones)
 
     def plan_drones_path(self):
+        delivering_drones = set(self.delivering_drones)
+
         for drone in self.waiting_planning_drones:
             self._plan_for_drone(drone)
 
-            if drone not in self.delivering_drones:
+            if drone not in delivering_drones:
                 self.delivering_drones.append(drone)
+                delivering_drones.add(drone)
 
-        self.waiting_planning_drones = self._get_difference(self.waiting_planning_drones, self.delivering_drones)
+        self.waiting_planning_drones = self._get_difference(self.waiting_planning_drones, delivering_drones)
 
     def _plan_for_drone(self, drone):
         if drone.status is DroneStatus.RETURNING:
@@ -71,11 +74,11 @@ class Fleet:
             if drone.status is DroneStatus.FREE:
                 self.free_drones.append(drone)
 
-        self.delivering_drones = [drone for drone in self.delivering_drones if drone not in self.free_drones]
+        self.delivering_drones = self._get_difference(self.delivering_drones, set(self.free_drones))
         self.waiting_planning_drones.extend([
             drone for drone in self.delivering_drones if drone.need_planning is True
         ])
 
     @staticmethod
-    def _get_difference(primary_list, exclusion_list):
-        return [element for element in primary_list if element not in exclusion_list]
+    def _get_difference(primary_list, excluded_elements: set):
+        return [element for element in primary_list if element not in excluded_elements]
