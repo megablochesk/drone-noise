@@ -11,16 +11,21 @@ def calculate_mean_noise_increase_db(drone_levels_db: np.ndarray, baseline_level
     return np.mean(combine_levels_db(baseline_levels_db, drone_levels_db) - baseline_levels_db)
 
 
-def calculate_newly_exposed_population(
-        drone_levels_db: np.ndarray, baseline_levels_db: np.ndarray, population: np.ndarray, threshold_db: float
-) -> float:
-    """Population of cells whose baseline is below the threshold and whose combined level is above it.
+def find_newly_exposed_cells(
+        drone_levels_db: np.ndarray, baseline_levels_db: np.ndarray, threshold_db: float
+) -> np.ndarray:
+    """Mask of cells whose baseline is below the threshold and whose combined level is above it.
 
     Both inequalities are strict, as in the published `_impacted_cells`.
     """
     combined_levels_db = combine_levels_db(baseline_levels_db, drone_levels_db)
-    newly_exposed_cells = (combined_levels_db > threshold_db) & (baseline_levels_db < threshold_db)
-    return population[newly_exposed_cells].sum()
+    return (combined_levels_db > threshold_db) & (baseline_levels_db < threshold_db)
+
+
+def calculate_newly_exposed_population(
+        drone_levels_db: np.ndarray, baseline_levels_db: np.ndarray, population: np.ndarray, threshold_db: float
+) -> float:
+    return population[find_newly_exposed_cells(drone_levels_db, baseline_levels_db, threshold_db)].sum()
 
 
 def calculate_population_inside_contour(
