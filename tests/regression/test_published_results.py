@@ -71,8 +71,7 @@ def test_published_result_is_reproduced(published: PublishedResult):
     assert run["delivered_orders_number"] == published.delivered_orders
 
     if published.mean_noise_increase_db is not None:
-        # The manuscript rounds to two decimals, so the comparison is made at that precision.
-        assert round(run["avg_noise_diff"], 2) == pytest.approx(published.mean_noise_increase_db, abs=NOISE_TOLERANCE_DB)
+        assert run["avg_noise_diff"] == pytest.approx(published.mean_noise_increase_db, abs=NOISE_TOLERANCE_DB)
 
     if published.newly_exposed_population is not None:
         assert newly_exposed_population(results) == pytest.approx(
