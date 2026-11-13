@@ -76,3 +76,22 @@ def test_same_specification_gives_the_same_result(store, row):
     np.testing.assert_array_equal(
         load_drone_levels(store, build_run_key(SPECIFICATION)), load_drone_levels(store, repeated["run_key"])
     )
+
+
+def test_orders_left_are_counted_against_the_whole_pool(store):
+    """With one drone per warehouse only the first 400 orders of a warehouse can ever be dispatched, and the
+    executor builds no more than that; the leftover count must still refer to all 6,000 pool orders."""
+    specification = RunSpecification(
+        stocking=OrderDatasetType.CLOSEST, number_of_drones=14, terminal_phases=False, seed=2, pool_size=6_000
+    )
+    save_destination_pool(
+        generate_destinations(2, 6_000, load_population_zones()), destination_pool_path(store, specification)
+    )
+    large_pool_row = execute_run(specification, store, GIT_HASH)
+
+    assert large_pool_row["orders_left"] == 6_000 - large_pool_row["assigned_orders"]
+    assert sum(warehouse["orders_left"] for warehouse in large_pool_row["per_warehouse"].values()) == \
+           large_pool_row["orders_left"]
+    assert large_pool_row["warehouses_out_of_orders"] == sum(
+        1 for warehouse in large_pool_row["per_warehouse"].values() if warehouse["orders_left"] == 0
+    )
