@@ -11,7 +11,7 @@ from experiments.revision.revision_design import (
     REDUCED_DESIGN_SEEDS,
     build_factorial_specifications,
 )
-from experiments.revision.run_specification import DemandModel, FleetAllocation, RunSpecification
+from experiments.revision.run_specification import DemandModel, FleetAllocation, RunSpecification, build_run_key
 
 BASELINE_VARIANT = "baseline"
 LAYOUT_STOCKINGS = (OrderDatasetType.CLOSEST, OrderDatasetType.RANDOM)
@@ -81,3 +81,14 @@ def rank_stockings(comparison: pd.DataFrame, metric: str) -> pd.DataFrame:
     rankings = rankings.merge(baseline, on="number_of_drones", suffixes=("", "_baseline"))
     rankings["ranking_differs_from_baseline"] = rankings["stocking_ranking"] != rankings["stocking_ranking_baseline"]
     return rankings.assign(metric=metric)
+
+
+def label_phase_runs(batch_runs: pd.DataFrame, variants: dict[str, list[RunSpecification]]) -> pd.DataFrame:
+    """The rows of a batch table that belong to one phase, with a `variant` column after the run key."""
+    variant_by_run_key = {
+        build_run_key(specification): variant_name
+        for variant_name, specifications in variants.items() for specification in specifications
+    }
+    phase_runs = batch_runs[batch_runs["run_key"].isin(variant_by_run_key)].drop_duplicates(subset="run_key").copy()
+    phase_runs.insert(1, "variant", phase_runs["run_key"].map(variant_by_run_key))
+    return phase_runs.reset_index(drop=True)

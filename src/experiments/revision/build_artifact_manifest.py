@@ -22,10 +22,10 @@ RUN_TABLE_COMMANDS = {
         "python -m experiments.revision.run_phase6_replication --seeds 1 2 3 4 5 --workers 3",
     "phase8/minimum_slant_distance_runs.csv": "python -m experiments.revision.run_phase8_batches --workers 3",
     "phase8/time_step_runs.csv": "python -m experiments.revision.run_phase8_batches --workers 3",
-    "phase9/runs.csv": "python -m experiments.revision.run_reduced_design_phase --phase phase9 --workers 3",
-    "phase10/runs.csv": "python -m experiments.revision.run_reduced_design_phase --phase phase10 --workers 3",
-    "phase11/runs.csv": "python -m experiments.revision.run_reduced_design_phase --phase phase11 --workers 3",
-    "phase12/runs.csv": "python -m experiments.revision.run_reduced_design_phase --phase phase12 --workers 3",
+    "phase9/runs.csv": "python -m experiments.revision.run_reduced_design_phase --phases phase9 --workers 3",
+    "phase10/runs.csv": "python -m experiments.revision.run_reduced_design_phase --phases phase10 --workers 3",
+    "phase11/runs.csv": "python -m experiments.revision.run_reduced_design_phase --phases phase11 --workers 3",
+    "phase12/runs.csv": "python -m experiments.revision.run_reduced_design_phase --phases phase12 --workers 3",
 }
 ADAPTIVE_TABLE_PATTERN = "phase6/replication_runs_fleet*_seeds*.csv"
 ADAPTIVE_COMMAND = "python -m experiments.revision.run_phase6_adaptive_block (fleet and seeds as in the table name)"
