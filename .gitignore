@@ -56,3 +56,6 @@ analysis/
 /src/simulation/avg_noise_map.html
 /src/simulation/avg_noises.png
 /src/recourses/data/MSOA_population_dataset_filtered.geojson
+
+# Revision experiments: large or regenerable artefacts (listed in results/MANIFEST.csv)
+results/artifacts/
