@@ -104,3 +104,38 @@ def test_per_cell_maps_match_the_saved_published_run(published: PublishedResult)
     assert current_map.index.equals(saved_map.index)
     for column in ["average_noise", "combined_noise", "noise_difference"]:
         assert (current_map[column] - saved_map[column]).abs().max() < PER_CELL_TOLERANCE_DB
+
+
+@lru_cache(maxsize=None)
+def run_published_configuration_on_the_energy_path(stocking: str, terminal_phases: bool, number_of_drones: int) -> dict:
+    from common.enum import OrderDatasetType
+    from experiments.revision.result_store import ResultStore
+    from experiments.revision.run_executor import execute_run
+    from experiments.revision.run_specification import OrderSource, RunSpecification
+
+    import tempfile
+    from pathlib import Path
+
+    specification = RunSpecification(
+        stocking=OrderDatasetType(stocking), number_of_drones=number_of_drones, terminal_phases=terminal_phases,
+        order_source=OrderSource.PUBLISHED_DATASET,
+    )
+    return execute_run(specification, ResultStore(Path(tempfile.mkdtemp())), git_hash="regression-test")
+
+
+@pytest.mark.parametrize("published", PUBLISHED_RESULTS, ids=describe)
+def test_energy_sum_runner_reproduces_the_published_result(published: PublishedResult):
+    """Phase 4 acceptance: the revision runner with the energy-sum noise stage against the manuscript numbers."""
+    row = run_published_configuration_on_the_energy_path(
+        published.stocking, published.terminal_phases, published.number_of_drones
+    )
+
+    assert row["delivered_orders"] == published.delivered_orders
+
+    if published.mean_noise_increase_db is not None:
+        assert row["mean_noise_increase_db"] == pytest.approx(published.mean_noise_increase_db, abs=NOISE_TOLERANCE_DB)
+
+    if published.newly_exposed_population is not None:
+        assert row["newly_exposed_population_55db"] == pytest.approx(
+            published.newly_exposed_population, rel=POPULATION_RELATIVE_TOLERANCE
+        )
