@@ -11,6 +11,10 @@ SPEED_MPS = 27.0
 ALTITUDE_M = 100.0
 PASS_HALF_DURATION_S = 8_000.0
 CLOSED_FORM_PASS_SEL_DB = SOURCE_LEVEL_DB + 10.0 * math.log10(math.pi / (SPEED_MPS * ALTITUDE_M))
+# The sampled pass is finite, so its exact limit is the integral over [-T, T]: 2*atan(v*T/h) / (v*h).
+FINITE_PASS_SEL_DB = SOURCE_LEVEL_DB + 10.0 * math.log10(
+    2.0 * math.atan(SPEED_MPS * PASS_HALF_DURATION_S / ALTITUDE_M) / (SPEED_MPS * ALTITUDE_M)
+)
 
 
 def sample_overhead_pass_levels(time_step_s: float) -> np.ndarray:
@@ -35,13 +39,20 @@ def test_closed_form_pass_value_is_the_quoted_one():
     assert CLOSED_FORM_PASS_SEL_DB == pytest.approx(60.66, abs=0.005)
 
 
+def test_finite_pass_is_a_negligible_truncation_of_the_infinite_one():
+    """Tail energy beyond +-T is 2*h/(pi*v*T) of the total: 0.03 % for T = 8000 s, i.e. about 0.001 dB."""
+    assert FINITE_PASS_SEL_DB == pytest.approx(CLOSED_FORM_PASS_SEL_DB, abs=0.002)
+
+
 def test_sampled_straight_pass_converges_to_the_closed_form():
     """The sampled SEL approaches the closed form monotonically as the time step shrinks."""
-    time_steps_s = [8.0, 4.0, 2.0, 1.0, 0.5]
+    time_steps_s = [8.0, 4.0, 2.0, 1.0]
     absolute_errors_db = [
-        abs(calculate_sound_exposure_level(sample_overhead_pass_levels(time_step_s), time_step_s) - CLOSED_FORM_PASS_SEL_DB)
+        abs(calculate_sound_exposure_level(sample_overhead_pass_levels(time_step_s), time_step_s) - FINITE_PASS_SEL_DB)
         for time_step_s in time_steps_s
     ]
     assert absolute_errors_db == sorted(absolute_errors_db, reverse=True)
     assert absolute_errors_db[0] > 0.1
-    assert absolute_errors_db[-1] < 0.01
+    assert absolute_errors_db[-1] < 1e-4
+    finest_sampled_sel_db = calculate_sound_exposure_level(sample_overhead_pass_levels(1.0), 1.0)
+    assert finest_sampled_sel_db == pytest.approx(60.66, abs=0.005)
