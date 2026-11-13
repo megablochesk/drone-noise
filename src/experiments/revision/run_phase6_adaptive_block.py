@@ -27,6 +27,10 @@ def main():
     directory = phase_directory(PHASE_NAME)
     summary = pd.read_csv(directory / SUMMARY_TABLE_NAME)
     specifications = build_adaptive_specifications(summary, arguments.fleet, arguments.seeds)
+    if not specifications:
+        print(f"No configuration of fleet {arguments.fleet} needs more seeds")
+        return
+
     runs = run_guarded_batch(specifications, arguments.workers)
     table_name = f"replication_runs_fleet{arguments.fleet}_seeds{min(arguments.seeds)}-{max(arguments.seeds)}.csv"
     write_phase_table(runs, directory, table_name)

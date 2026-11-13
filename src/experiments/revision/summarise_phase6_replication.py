@@ -6,6 +6,8 @@ import matplotlib
 
 matplotlib.use("Agg")
 
+from pathlib import Path
+
 import pandas as pd
 from matplotlib import pyplot as plt
 
@@ -23,9 +25,14 @@ STOCKING_ORDER = ("closest", "random", "furthest")
 STOCKING_LABELS = {"closest": "best", "random": "random", "furthest": "worst"}
 
 
+def read_run_tables(table_paths: list[Path]) -> pd.DataFrame:
+    """All runs of the given tables once each; a block with nothing to run leaves a file without columns."""
+    tables = [pd.read_csv(path) for path in table_paths if path.read_text().strip()]
+    return pd.concat(tables, ignore_index=True).drop_duplicates(subset="run_key", ignore_index=True)
+
+
 def load_replication_runs() -> pd.DataFrame:
-    tables = [pd.read_csv(path) for path in sorted(phase_directory(PHASE_NAME).glob(RUN_TABLE_PATTERN))]
-    return pd.concat(tables, ignore_index=True).drop_duplicates(subset="run_key")
+    return read_run_tables(sorted(phase_directory(PHASE_NAME).glob(RUN_TABLE_PATTERN)))
 
 
 def summarise_configurations(runs: pd.DataFrame) -> pd.DataFrame:
