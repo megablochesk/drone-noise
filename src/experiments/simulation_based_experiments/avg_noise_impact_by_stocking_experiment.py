@@ -13,7 +13,7 @@ ORDER_DATASETS = {
 }
 
 METRICS = ['average_noise', 'average_noise', 'average_noise']
-TITLES = ['Best-Case Warehouse Stocking', 'Random Warehouse Stocking', 'Worst-Case Warehouse Stocking']
+TITLES = ['Best Stocking', 'Random Stocking', 'Worst Stocking']
 CBAR_LABELS = ['Noise level (dB)', 'Noise level (dB)', 'Noise level (dB)']
 
 

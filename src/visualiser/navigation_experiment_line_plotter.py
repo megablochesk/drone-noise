@@ -54,6 +54,8 @@ def plot_impacted_population_lines(
     population_df = load_dataframe_from_pickle(CELL_POPULATION_PATH)
     summary_df = calculate_population_impacted_by_noise(results_df, population_df, threshold=threshold)
 
+    print(summary_df)
+
     series_df = _aggregate_metric(summary_df, value_col="impacted_population", aggregation_method=aggregation_method)
 
     plot_metric_lines_facet_by_dataset(
@@ -110,7 +112,7 @@ def plot_metric_lines_facet_by_dataset(
     nav_order = _nav_order(df[nav_col].unique())
     nav_colors = _nav_color_map(nav_order)
 
-    fig, axes = plt.subplots(1, len(ds_order), figsize=(5 * len(ds_order), 4), sharey=True)
+    fig, axes = plt.subplots(1, len(ds_order), figsize=(5 * len(ds_order), 6), sharey=True)
     if len(ds_order) == 1:
         axes = [axes]
 

@@ -1,3 +1,5 @@
+import pandas as pd
+
 from common.path_configs import ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
 from experiments.config_generator import build_configs_for_datasets_and_drones
 from experiments.experiment_executor import run_complex_experiment
@@ -24,6 +26,13 @@ def generate_configs():
 
 def plot_all_statistics(experiment_results):
     plot_execution_time_linegraph(experiment_results)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', None)
+    pd.set_option('display.max_colwidth', None)
+
+    print(experiment_results[['dataset_name', 'run_name', 'num_drones',
+                              'avg_noise_diff',
+                              'delivered_orders_number']])
 
     plot_avg_noise_linegraph(experiment_results)
     plot_delivered_orders_linegraph(experiment_results)

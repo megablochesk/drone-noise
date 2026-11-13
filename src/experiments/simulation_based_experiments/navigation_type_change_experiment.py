@@ -1,3 +1,5 @@
+import pandas as pd
+
 from common.enum import NavigationType
 from common.path_configs import ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
 from experiments.config_generator import build_configs_for_datasets_drones_and_navigation_types
@@ -35,13 +37,22 @@ def generate_configs(drone_landing):
 
 
 def plot_all_statistics(experiment_results, noise_level_threshold=55):
-    plot_average_noise_lines_facet(experiment_results)
-
     plot_delivered_orders_lines_facet(experiment_results)
 
-    plot_heatmaps_per_drone_number_and_navigation_type(experiment_results)
+    plot_average_noise_lines_facet(experiment_results)
+
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', None)
+    pd.set_option('display.max_colwidth', None)
+    pd.set_option('display.max_rows', None)
+
+    print(experiment_results[['dataset_name', 'run_name', 'num_drones',
+                              'avg_noise_diff',
+                              'delivered_orders_number']])
 
     plot_impacted_population_lines(experiment_results, threshold=noise_level_threshold)
+
+    #plot_heatmaps_per_drone_number_and_navigation_type(experiment_results)
 
 
 def run_navigation_type_change_experiment(load_saved_results=True, drone_landing=True):

@@ -136,6 +136,9 @@ def analyze_and_plot_noise_increase(main_df: pd.DataFrame, threshold: int = 55, 
 
 def analyze_and_plot_population_impact(main_df: pd.DataFrame, threshold: int = 55, filename="del_pop_imp"):
     summary_df = calculate_population_impacted_by_noise(main_df, CELL_POPULATION, threshold)
+
+    print(summary_df)
+
     return plot_linegraph_stats(
         summary_df,
         value_column="impacted_population",
