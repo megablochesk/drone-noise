@@ -36,3 +36,15 @@ def test_manifest_lists_run_artefacts_and_sidecar_provenance(tmp_path):
     assert manifest["sha256"].tolist() == [ABC_SHA256, ABC_SHA256]
     assert manifest["generating_commit"].tolist() == ["commit-of-pool", "commit-of-run"]
     assert manifest["command"].tolist() == ["generate --seeds 1", "run_phase6 --seeds 1"]
+
+
+def test_artefact_without_any_provenance_is_listed_with_blank_provenance(tmp_path):
+    """A file that has neither a sidecar nor a run row must still appear, visibly unattributed."""
+    (tmp_path / "phase8").mkdir()
+    (tmp_path / "phase8" / "orphan.npz").write_bytes(b"abc")
+
+    manifest = build_manifest(tmp_path, command_by_run_key={})
+
+    assert manifest["path"].tolist() == ["phase8/orphan.npz"]
+    assert manifest["generating_commit"].tolist() == [""]
+    assert manifest["command"].tolist() == [""]
