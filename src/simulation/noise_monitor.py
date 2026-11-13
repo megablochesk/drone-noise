@@ -1,10 +1,19 @@
-from noise.noise_data_processor import combine_base_and_drone_noise
+from common.enum import NoiseCalculation
+from common.runtime_configs import get_simulation_config
+from noise.energy_noise_tracker import EnergyNoiseTracker
+from noise.noise_data_processor import BASE_NOISE_DATA, combine_base_and_drone_noise, combine_noise_levels
 from noise.noise_tracker import NoiseTracker
 
 
 class NoiseMonitor:
     def __init__(self):
-        self.tracker = NoiseTracker()
+        simulation_config = get_simulation_config()
+        self.uses_energy_sum = simulation_config.noise_calculation is NoiseCalculation.ENERGY_SUM
+
+        if not self.uses_energy_sum and simulation_config.model.drone.minimum_slant_distance_m > 0:
+            raise ValueError("A minimum slant distance is only supported by the energy-sum noise calculation")
+
+        self.tracker = EnergyNoiseTracker() if self.uses_energy_sum else NoiseTracker()
 
         self.impact = None
 
@@ -12,6 +21,10 @@ class NoiseMonitor:
         self.tracker.track_drones(drones)
 
     def finish(self):
+        if self.uses_energy_sum:
+            self.impact = combine_noise_levels(self.tracker.build_drone_noise_dataframe(), BASE_NOISE_DATA)
+            return
+
         self.tracker.calculate_noise_cells()
 
         self.impact = combine_base_and_drone_noise(self.tracker.noise_cells)

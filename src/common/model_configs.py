@@ -20,6 +20,7 @@ class DroneConfig:
     speed_mps: int = 27
     flight_altitude_m: float = 100.0
     landing_delay_s: int = 60
+    minimum_slant_distance_m: float = 0.0
 
 @dataclass(frozen=True)
 class TimeConfig:

@@ -25,6 +25,11 @@ class NavigationType(Enum):
     NOISE_A100 = 7
 
 
+class NoiseCalculation(Enum):
+    PER_STEP_LEVELS = "per_step_levels"
+    ENERGY_SUM = "energy_sum"
+
+
 class OrderDatasetType(Enum):
     RANDOM = "random"
     FURTHEST = "furthest"
