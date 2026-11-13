@@ -17,6 +17,14 @@ from common.enum import OrderDatasetType
 from depots.depot_layouts import load_population_centre
 from experiments.revision.batch_runner import REPOSITORY_ROOT, default_result_store
 from experiments.revision.phase_outputs import phase_directory, write_phase_table
+from experiments.revision.plot_style import (
+    SIGNED_PERCENT_FORMATTER,
+    STOCKING_COLOURS,
+    STOCKING_LABELS,
+    STOCKING_ORDER,
+    add_figure_legend,
+    describe_variant,
+)
 from experiments.revision.reduced_design import (
     BASELINE_VARIANT,
     ONE_AT_A_TIME_CHANGES,
@@ -36,6 +44,17 @@ HEADLINE_METRICS = ["delivered_orders", "mean_trip_distance_m", "mean_noise_incr
 RANKED_METRICS = ["delivered_orders", "mean_noise_increase_db", "newly_exposed_population_55db"]
 CENTRAL_AREA_RADIUS_M = 10_000.0
 PLOTTED_FLEET = 1250
+PLOTTED_CHANGES = {
+    "mean_noise_increase_db_change": "change of mean noise increase (dB)",
+    "delivered_orders_relative_change": "change of deliveries",
+    "newly_exposed_population_55db_relative_change": "change of newly exposed population at 55 dB",
+}
+PHASE_TITLES = {
+    "phase9": "Depot layouts",
+    "phase10": "One-at-a-time parameters",
+    "phase11": "Fleet allocation",
+    "phase12": "Demand model",
+}
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -77,21 +96,28 @@ def describe_altitude_ladders() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def plot_change_panel(axis, panel: pd.DataFrame, column: str, axis_label: str):
+    table = panel.pivot(index="variant", columns="stocking", values=column)
+    stockings = [stocking for stocking in STOCKING_ORDER if stocking in table.columns]
+    table = table[stockings].rename(index=describe_variant, columns=lambda stocking: f"{STOCKING_LABELS[stocking]} stocking")
+    table.plot.bar(ax=axis, width=0.8, color=[STOCKING_COLOURS[stocking] for stocking in stockings], legend=False)
+    axis.axhline(0.0, color="black", linewidth=0.6)
+    axis.set_xlabel("")
+    axis.set_ylabel(axis_label)
+    axis.tick_params(axis="x", labelrotation=35, labelsize=8)
+    plt.setp(axis.get_xticklabels(), ha="right")
+    axis.grid(axis="y", alpha=0.25)
+    if column.endswith("_relative_change"):
+        axis.yaxis.set_major_formatter(SIGNED_PERCENT_FORMATTER)
+
+
 def plot_relative_changes(comparison: pd.DataFrame, figure_path, phase_name: str):
     panel = comparison[(comparison["number_of_drones"] == PLOTTED_FLEET) & (comparison["variant"] != BASELINE_VARIANT)]
-    metrics = ["delivered_orders", "newly_exposed_population_55db"]
-    figure, axes = plt.subplots(1, len(metrics) + 1, figsize=(16, 4.8))
-    for axis, column, title in [
-        (axes[0], "mean_noise_increase_db_change", "change of mean noise increase (dB)"),
-        *[(axis, f"{metric}_relative_change", f"relative change of {metric}") for axis, metric in zip(axes[1:], metrics)],
-    ]:
-        table = panel.pivot(index="variant", columns="stocking", values=column)
-        table.plot.bar(ax=axis, width=0.8)
-        axis.axhline(0.0, color="black", linewidth=0.6)
-        axis.set_title(title, fontsize=9)
-        axis.tick_params(axis="x", labelrotation=45, labelsize=7)
-    figure.suptitle(f"{phase_name}: change from the baseline, {PLOTTED_FLEET} drones, mean over seeds")
-    figure.tight_layout()
+    figure, axes = plt.subplots(1, len(PLOTTED_CHANGES), figsize=(16, 5.2))
+    for axis, (column, axis_label) in zip(axes, PLOTTED_CHANGES.items()):
+        plot_change_panel(axis, panel, column, axis_label)
+    title = f"{PHASE_TITLES[phase_name]}: change from the baseline of the same seeds, {PLOTTED_FLEET:,} drones, terminal phases"
+    add_figure_legend(figure, axes[0], title=title)
     figure.savefig(figure_path, dpi=150)
     plt.close(figure)
 

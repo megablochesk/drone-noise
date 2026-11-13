@@ -78,6 +78,11 @@ def summarise_seed_energy_shares(seed: int, shares: dict[str, np.ndarray]) -> li
         for source in ("samples_below_10m_altitude", "samples_within_50m_slant_distance")
     ]
 
+ENERGY_SHARE_TITLES = {
+    "samples_below_10m_altitude": "Energy from drone positions below 10 m altitude",
+    "samples_within_50m_slant_distance": "Energy from drone positions within 50 m of the cell centroid",
+}
+
 
 def to_grid_image(grid: NoiseGrid, values: np.ndarray) -> np.ndarray:
     image = np.full((grid.rows.max() + 1, grid.columns.max() + 1), np.nan)
@@ -87,12 +92,14 @@ def to_grid_image(grid: NoiseGrid, values: np.ndarray) -> np.ndarray:
 
 def plot_energy_share_maps(shares: dict[str, np.ndarray], figure_path: Path):
     grid = load_noise_grid()
-    figure, axes = plt.subplots(1, 2, figsize=(13, 4.8))
-    for axis, source in zip(axes, ("samples_below_10m_altitude", "samples_within_50m_slant_distance")):
+    figure, axes = plt.subplots(1, len(ENERGY_SHARE_TITLES), figsize=(13, 5))
+    for axis, (source, title) in zip(axes, ENERGY_SHARE_TITLES.items()):
         image = axis.imshow(to_grid_image(grid, shares[source]), origin="lower", vmin=0.0, vmax=1.0, cmap="viridis")
-        axis.set_title(f"share of drone energy from {source.replace('_', ' ')}", fontsize=9)
-        figure.colorbar(image, ax=axis, shrink=0.8)
-    figure.suptitle("Random stocking, terminal phases, 1,250 drones, seed 1")
+        axis.set_title(title, fontsize=10)
+        axis.set_xticks([])
+        axis.set_yticks([])
+        figure.colorbar(image, ax=axis, shrink=0.8, label="share of the cell's drone noise energy")
+    figure.suptitle("Greater London, 500 m cells: random stocking, terminal phases, 1,250 drones, seed 1")
     figure.tight_layout()
     figure.savefig(figure_path, dpi=150)
     plt.close(figure)

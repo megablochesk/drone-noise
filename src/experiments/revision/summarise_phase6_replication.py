@@ -13,6 +13,15 @@ from matplotlib import pyplot as plt
 
 from experiments.revision.batch_runner import REPOSITORY_ROOT
 from experiments.revision.phase_outputs import phase_directory, write_phase_table
+from experiments.revision.plot_style import (
+    FLIGHT_PROFILE_LABELS,
+    METRIC_LABELS,
+    STOCKING_COLOURS,
+    STOCKING_LABELS,
+    STOCKING_ORDER,
+    THOUSANDS_FORMATTER,
+    add_figure_legend,
+)
 from experiments.revision.run_guard import ensure_clean_working_tree, read_git_hash
 from metrics.replication_tables import summarise_metric_by_configuration, summarise_paired_differences_between_levels
 
@@ -21,8 +30,6 @@ RUN_TABLE_PATTERN = "replication_runs*.csv"
 HEADLINE_METRICS = ("delivered_orders", "mean_noise_increase_db", "newly_exposed_population_55db")
 CONFIGURATION_COLUMNS = ["number_of_drones", "terminal_phases", "stocking"]
 RELATIVE_HALF_WIDTH_TARGET = 0.05
-STOCKING_ORDER = ("closest", "random", "furthest")
-STOCKING_LABELS = {"closest": "best", "random": "random", "furthest": "worst"}
 
 
 def read_run_tables(table_paths: list[Path]) -> pd.DataFrame:
@@ -59,20 +66,25 @@ def plot_metric_panel(axis, summary: pd.DataFrame, metric: str, terminal_phases:
         line = panel[panel["stocking"] == stocking].sort_values("number_of_drones")
         axis.errorbar(
             line["number_of_drones"], line["mean"], yerr=line["confidence_half_width"],
-            marker="o", capsize=3, label=STOCKING_LABELS[stocking],
+            marker="o", markersize=4, capsize=3, color=STOCKING_COLOURS[stocking], label=f"{STOCKING_LABELS[stocking]} stocking",
         )
-    axis.set_title(f"{metric}\n{'terminal phases' if terminal_phases else 'no terminal phases'}", fontsize=9)
-    axis.set_xlabel("fleet size")
+    axis.set_title(FLIGHT_PROFILE_LABELS[terminal_phases], fontsize=9)
+    axis.set_xlabel("fleet size (drones)")
+    axis.set_ylabel(METRIC_LABELS[metric])
+    axis.set_xticks(sorted(panel["number_of_drones"].unique()))
+    axis.xaxis.set_major_formatter(THOUSANDS_FORMATTER)
+    axis.tick_params(labelbottom=True)
+    axis.grid(alpha=0.25)
+    if metric != "mean_noise_increase_db":
+        axis.yaxis.set_major_formatter(THOUSANDS_FORMATTER)
 
 
 def plot_replication_summary(summary: pd.DataFrame, figure_path):
-    figure, axes = plt.subplots(2, len(HEADLINE_METRICS), figsize=(14, 7), sharex=True)
+    figure, axes = plt.subplots(2, len(HEADLINE_METRICS), figsize=(14, 7.5), sharex=True)
     for row, terminal_phases in enumerate((False, True)):
         for column, metric in enumerate(HEADLINE_METRICS):
             plot_metric_panel(axes[row][column], summary, metric, terminal_phases)
-    axes[0][0].legend(title="stocking")
-    figure.suptitle("Mean over seeds with 95 % confidence half-width")
-    figure.tight_layout()
+    add_figure_legend(figure, axes[0][0], title="Mean over seeds, bars = 95 % confidence half-width")
     figure.savefig(figure_path, dpi=150)
     plt.close(figure)
 
