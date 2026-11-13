@@ -46,7 +46,11 @@ def read_sidecar_provenance(file_path: Path) -> dict | None:
 
 def read_run_provenance(file_path: Path, command_by_run_key: dict[str, str]) -> dict:
     run_key = file_path.name.split(RUN_KEY_SEPARATOR)[0]
-    row = json.loads((file_path.parent / f"{run_key}{RUN_ROW_SUFFIX}").read_text())
+    row_path = file_path.parent / f"{run_key}{RUN_ROW_SUFFIX}"
+    if not row_path.exists():
+        return {"generating_commit": "", "command": ""}
+
+    row = json.loads(row_path.read_text())
     return {"generating_commit": row["git_hash"], "command": command_by_run_key.get(run_key, "")}
 
 

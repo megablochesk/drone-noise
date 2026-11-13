@@ -6,6 +6,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 
+import sys
 from dataclasses import replace
 from pathlib import Path
 
@@ -23,7 +24,7 @@ from experiments.revision.phase8_tables import (
     summarise_energy_shares,
     summarise_round_trip_times,
 )
-from experiments.revision.phase_outputs import phase_directory, write_phase_table
+from experiments.revision.phase_outputs import phase_directory, write_artifact_provenance, write_phase_table
 from experiments.revision.revision_design import REDUCED_DESIGN_SEEDS, REVISION_POOL_SIZE
 from experiments.revision.run_executor import HEADLINE_EXPOSURE_THRESHOLD_DB, plan_demand, run_simulation
 from experiments.revision.run_guard import ensure_clean_working_tree, read_git_hash
@@ -97,13 +98,15 @@ def plot_energy_share_maps(shares: dict[str, np.ndarray], figure_path: Path):
     plt.close(figure)
 
 
-def analyse_energy_shares(directory: Path) -> pd.DataFrame:
+def analyse_energy_shares(directory: Path, git_hash: str) -> pd.DataFrame:
     artifact_directory = Path(default_result_store().root) / PHASE_NAME
     artifact_directory.mkdir(parents=True, exist_ok=True)
     rows = []
     for seed in REDUCED_DESIGN_SEEDS:
         shares = calculate_energy_shares_for_seed(seed)
-        np.savez_compressed(artifact_directory / f"energy_shares_seed{seed}.npz", **shares)
+        shares_path = artifact_directory / f"energy_shares_seed{seed}.npz"
+        np.savez_compressed(shares_path, **shares)
+        write_artifact_provenance(shares_path, git_hash, command=" ".join(sys.argv))
         rows.extend(summarise_seed_energy_shares(seed, shares))
         if seed == REDUCED_DESIGN_SEEDS[0]:
             plot_energy_share_maps(shares, directory / "terminal_energy_shares_seed1.png")
@@ -154,7 +157,7 @@ def main():
         "straight_pass_sel": build_straight_pass_table(),
         "terminal_event_sel": build_terminal_event_table(),
         **build_batch_comparisons(directory),
-        "terminal_energy_shares": analyse_energy_shares(directory),
+        "terminal_energy_shares": analyse_energy_shares(directory, git_hash),
     }
     for table_name, table in tables.items():
         write_phase_table(table.assign(git_hash=git_hash), directory, f"{table_name}.csv")
