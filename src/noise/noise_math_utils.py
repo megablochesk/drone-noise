@@ -41,3 +41,7 @@ def add_two_decibel_levels(first_dbl_level: float, second_dbl_level: float) -> f
 
 def calculate_leq(noise_levels_db: np.ndarray) -> float:
     return 10.0 * np.log10(np.mean(10.0 ** (noise_levels_db / 10.0)))
+
+
+def calculate_sound_exposure_level(noise_levels_db: np.ndarray, time_step_s: float) -> float:
+    return 10.0 * np.log10(np.sum(10.0 ** (noise_levels_db / 10.0)) * time_step_s)
