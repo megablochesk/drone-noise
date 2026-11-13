@@ -18,7 +18,7 @@ DECIBEL_TOLERANCE = 0.005
 def test_single_source_at_one_hundred_metres():
     """Inverse-square spreading: 90 - 20*log10(100) = 90 - 40 = 50.0 dB."""
     squared_distance_m2 = calculate_distance(0.0, 0.0, 100.0)
-    assert calculate_noise_at_distance(squared_distance_m2) == pytest.approx(50.0, abs=1e-9)
+    assert calculate_noise_at_distance(squared_distance_m2, 90.0) == pytest.approx(50.0, abs=1e-9)
 
 
 def test_slant_distance_combines_horizontal_offsets_and_altitude():
