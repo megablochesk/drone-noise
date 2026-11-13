@@ -99,24 +99,10 @@ def count_orders_per_warehouse(warehouse_indices: np.ndarray, warehouses: list[C
     return {warehouse: count for warehouse, count in zip(warehouses, counts) if count > 0}
 
 
-def select_first_orders_per_warehouse(
-        warehouse_indices: np.ndarray, maximum_orders_per_warehouse: dict[int, int]
-) -> np.ndarray:
-    """Mask of the orders that are among the first `limit` of their warehouse, in pool order."""
-    indices = pd.Series(warehouse_indices)
-    position_within_warehouse = indices.groupby(indices).cumcount()
-    return (position_within_warehouse < indices.map(maximum_orders_per_warehouse)).to_numpy()
-
-
 def build_orders_from_indices(
-        destinations: pd.DataFrame, warehouses: list[Coordinate], warehouse_indices: np.ndarray,
-        maximum_orders_per_warehouse: dict[int, int] | None,
+        destinations: pd.DataFrame, warehouses: list[Coordinate], warehouse_indices: np.ndarray
 ) -> list[Order]:
-    """Order objects in pool order; with limits, only the first few of each warehouse are built."""
-    if maximum_orders_per_warehouse is not None:
-        kept = select_first_orders_per_warehouse(warehouse_indices, maximum_orders_per_warehouse)
-        destinations, warehouse_indices = destinations[kept], warehouse_indices[kept]
-
+    """Order objects in pool order, each at its assigned warehouse."""
     return [
         Order(order_id=order_id, start_location=warehouses[warehouse_index], end_location=Coordinate(northing, easting))
         for order_id, warehouse_index, northing, easting in zip(
@@ -184,7 +170,7 @@ def build_orders(
         destinations: pd.DataFrame, warehouses: list[Coordinate], stocking: OrderDatasetType, seed: int
 ) -> list[Order]:
     warehouse_indices = assign_warehouse_indices(destinations, warehouses, stocking, seed)
-    return build_orders_from_indices(destinations, warehouses, warehouse_indices, maximum_orders_per_warehouse=None)
+    return build_orders_from_indices(destinations, warehouses, warehouse_indices)
 
 
 def save_destination_pool(destinations: pd.DataFrame, pool_path: Path):
