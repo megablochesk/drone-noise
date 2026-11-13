@@ -8,7 +8,9 @@ from experiments.revision.run_executor import destination_pool_path, execute_run
 from experiments.revision.run_specification import RunSpecification, build_run_key
 from metrics.cell_table import load_cell_table
 from metrics.exposure_metrics import calculate_mean_noise_increase_db, calculate_newly_exposed_population
+from orders import seeded_order_pool
 from orders.msoa_zones import load_population_zones
+from orders.order import Order
 from orders.seeded_order_pool import generate_destinations, save_destination_pool
 
 GIT_HASH = "0" * 40
@@ -95,3 +97,20 @@ def test_orders_left_are_counted_against_the_whole_pool(store):
     assert large_pool_row["warehouses_out_of_orders"] == sum(
         1 for warehouse in large_pool_row["per_warehouse"].values() if warehouse["orders_left"] == 0
     )
+
+
+def test_executor_builds_an_order_object_only_for_dispatched_orders(store, row, monkeypatch):
+    """The 6,000-order pool of the previous test: far more orders than 14 drones can fly in a day."""
+    built_order_ids = []
+
+    def build_and_record(order_id, start_location, end_location):
+        built_order_ids.append(order_id)
+        return Order(order_id=order_id, start_location=start_location, end_location=end_location)
+
+    monkeypatch.setattr(seeded_order_pool, "Order", build_and_record)
+    specification = RunSpecification(
+        stocking=OrderDatasetType.CLOSEST, number_of_drones=14, terminal_phases=False, seed=2, pool_size=6_000
+    )
+    large_pool_row = execute_run(specification, store, GIT_HASH)
+
+    assert len(built_order_ids) == large_pool_row["assigned_orders"] < 6_000
