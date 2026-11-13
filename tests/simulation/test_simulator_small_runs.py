@@ -4,6 +4,9 @@ Stepping rule used in the hand calculations (straight line, no terminal phases):
 N = floor(d / (speed * step)) intervals and N + 1 waypoints, one per time step; the drone spends one step at
 the destination; a round trip therefore takes 2 * (N + 1) + 1 steps, and a delivery counts once the drone is
 back at its warehouse.
+
+These runs use the energy-sum noise path because it shares one cached grid; the delivery logic does not depend
+on the noise path, and tests/noise/test_energy_noise_tracker.py runs the same simulator through both paths.
 """
 import math
 import random
@@ -11,6 +14,7 @@ from dataclasses import replace
 
 import pytest
 
+from common.enum import NoiseCalculation
 from common.model_configs import model_config
 from common.simulation_configs import SimulationConfig
 from tests.simulation.simulation_helpers import (
@@ -33,6 +37,7 @@ def test_single_drone_delivery_count_with_published_parameters(tmp_path):
     orders_path = write_order_dataset(tmp_path / "orders.csv", [destination_east_of_warehouse(9_000.0)] * 40)
     config = SimulationConfig(
         order_dataset_path=orders_path, orders_to_process=40, number_of_drones=1, print_model_stats=False,
+        noise_calculation=NoiseCalculation.ENERGY_SUM,
         model=model_with_duration(TWO_HOURS_S),
     )
     assert run_small_simulation(config).delivered_orders_number == 9
@@ -48,6 +53,7 @@ def test_single_drone_delivery_count_with_injected_speed_and_time_step(tmp_path)
     )
     config = SimulationConfig(
         order_dataset_path=orders_path, orders_to_process=40, number_of_drones=1, print_model_stats=False,
+        noise_calculation=NoiseCalculation.ENERGY_SUM,
         model=faster_model,
     )
     assert run_small_simulation(config).delivered_orders_number == 11
@@ -63,7 +69,8 @@ def test_deliveries_never_exceed_the_fleet_throughput_bound(tmp_path, number_of_
     )
     config = SimulationConfig(
         order_dataset_path=orders_path, orders_to_process=200, number_of_drones=number_of_drones,
-        print_model_stats=False, model=model_with_duration(TWO_HOURS_S),
+        print_model_stats=False,
+        noise_calculation=NoiseCalculation.ENERGY_SUM, model=model_with_duration(TWO_HOURS_S),
     )
     time_step_s = model_config.time.step_s
     minimum_round_trip_s = round_trip_steps(min(distances_m), model_config.drone.speed_mps, time_step_s) * time_step_s
