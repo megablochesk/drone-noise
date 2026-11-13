@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from collections import Counter
+
 from common.runtime_configs import get_simulation_config
 from simulation.delivery_dispatcher import DeliveryDispatcher
 from simulation.fleet import Fleet
+from simulation.flight_activity_log import FlightActivityLog
 from simulation.noise_monitor import NoiseMonitor
 from simulation.planned_route_cache import PlannedRouteCache
 from simulation.plotter import Plotter
@@ -30,6 +33,8 @@ class Simulator:
             selected_warehouse_locations,
             planned_route_cache=planned_route_cache,
         )
+        self.drones_by_warehouse = dict(Counter(drone.return_location for drone in self.fleet.free_drones))
+        self.activity_log = FlightActivityLog()
         self.dispatcher = DeliveryDispatcher(self.configs.orders_to_process, self.configs.order_dataset_path)
         self.plotter = Plotter(selected_warehouse_locations)
 
@@ -70,6 +75,7 @@ class Simulator:
         self.fleet.update_drones()
 
         self.noise_monitor.capture(self.fleet.delivering_drones)
+        self.activity_log.record(self.fleet.delivering_drones)
         self.plotter.update_drones(self.fleet.delivering_drones)
 
     def end_simulation(self):

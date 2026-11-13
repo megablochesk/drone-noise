@@ -7,6 +7,7 @@ class DeliveryDispatcher:
     def __init__(self, number_of_orders, dataset):
         self.pending_orders_by_warehouse = self.group_orders_by_warehouse(load_orders(number_of_orders, dataset))
         self.pending_orders_number = sum(len(queue) for queue in self.pending_orders_by_warehouse.values())
+        self.assigned_orders = []
 
     @staticmethod
     def group_orders_by_warehouse(orders):
@@ -57,6 +58,7 @@ class DeliveryDispatcher:
         for _, order, drone in sorted(assignments, key=self.dataset_position):
             drone.accept_order(order)
             fleet.waiting_planning_drones.append(drone)
+            self.assigned_orders.append(order)
 
         self.pending_orders_number -= len(assignments)
 
