@@ -22,7 +22,7 @@ RUN_TABLE_COMMANDS = {
         "python -m experiments.revision.run_phase6_replication --seeds 1 2 3 4 5 --workers 3",
     "phase8/minimum_slant_distance_runs.csv": "python -m experiments.revision.run_phase8_batches --workers 3",
     "phase8/time_step_runs.csv": "python -m experiments.revision.run_phase8_batches --workers 3",
-    "phase9/runs.csv": "python -m experiments.revision.run_reduced_design_phase --phases phase9 --workers 3",
+    "phase9/runs.csv": "python -m experiments.revision.run_reduced_design_phase --phase phase9 --workers 3 (flag before fd0b3e3)",
     "phase10/runs.csv": "python -m experiments.revision.run_reduced_design_phase --phases phase10 --workers 3",
     "phase11/runs.csv": "python -m experiments.revision.run_reduced_design_phase --phases phase11 --workers 3",
     "phase12/runs.csv": "python -m experiments.revision.run_reduced_design_phase --phases phase12 --workers 3",
