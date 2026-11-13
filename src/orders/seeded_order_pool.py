@@ -1,6 +1,5 @@
 """Seed-labelled order pools: one set of destinations per seed, stocking derived from the same destinations."""
 import random
-from bisect import bisect_left
 from dataclasses import dataclass, replace
 from itertools import accumulate
 from pathlib import Path
@@ -13,6 +12,7 @@ from shapely.geometry.base import BaseGeometry
 
 from common.coordinate import Coordinate
 from common.enum import OrderDatasetType
+from orders.destination_sampling import sample_destinations
 from orders.order import Order
 
 MAXIMUM_SAMPLING_ATTEMPTS = 10_000
@@ -49,14 +49,6 @@ def make_zone_samplable(zone: DemandZone) -> DemandZone:
     return replace(zone, polygon=polygon)
 
 
-def sample_destination(zone: DemandZone, random_generator: random.Random) -> Point:
-    if zone.polygon.area == 0:
-        return zone.polygon.centroid
-
-    point = sample_point_in_polygon(zone.polygon, random_generator, MAXIMUM_SAMPLING_ATTEMPTS)
-    return zone.polygon.centroid if point is None else point
-
-
 def cumulative_weight_shares(zones: list[DemandZone]) -> list[float]:
     total_weight = sum(zone.weight for zone in zones)
     return list(accumulate(zone.weight / total_weight for zone in zones))
@@ -64,24 +56,17 @@ def cumulative_weight_shares(zones: list[DemandZone]) -> list[float]:
 
 def generate_destinations(seed: int, number_of_orders: int, zones: list[DemandZone]) -> pd.DataFrame:
     """Destinations drawn zone by weight, then uniformly inside the zone, from a stream owned by the seed."""
-    random_generator = random.Random(f"destinations-{seed}")
     samplable_zones = [make_zone_samplable(zone) for zone in zones]
-    cumulative_shares = cumulative_weight_shares(samplable_zones)
-    last_zone_index = len(samplable_zones) - 1
-
-    zone_codes, northings, eastings = [], [], []
-    for _ in range(number_of_orders):
-        zone_index = min(bisect_left(cumulative_shares, random_generator.random()), last_zone_index)
-        point = sample_destination(samplable_zones[zone_index], random_generator)
-        zone_codes.append(samplable_zones[zone_index].code)
-        northings.append(round(point.y, COORDINATE_DECIMALS))
-        eastings.append(round(point.x, COORDINATE_DECIMALS))
+    sampled = sample_destinations(
+        random.Random(f"destinations-{seed}"), number_of_orders, [zone.polygon for zone in samplable_zones],
+        cumulative_weight_shares(samplable_zones), MAXIMUM_SAMPLING_ATTEMPTS,
+    )
 
     return pd.DataFrame({
         "order_id": np.arange(1, number_of_orders + 1),
-        "zone_code": zone_codes,
-        "end_northing": northings,
-        "end_easting": eastings,
+        "zone_code": [samplable_zones[zone_index].code for zone_index in sampled.zone_indices.tolist()],
+        "end_northing": [round(northing, COORDINATE_DECIMALS) for northing in sampled.northings.tolist()],
+        "end_easting": [round(easting, COORDINATE_DECIMALS) for easting in sampled.eastings.tolist()],
     })
 
 
