@@ -62,13 +62,18 @@ def main():
     demand_model = DemandModel(arguments.demand_model)
     zones = load_demand_zones(demand_model)
 
+    timing_rows = []
     for seed in arguments.seeds:
         timing_row = generate_pool(pool_specification(seed, arguments.pool_size, demand_model), zones, git_hash)
         if timing_row is None:
             print(f"seed {seed}: pool already exists", flush=True)
             continue
-        append_table_rows(pd.DataFrame([timing_row]), phase_directory("phase5") / TIMING_TABLE_NAME)
+        timing_rows.append(timing_row)
         print(f"seed {seed}: generated in {timing_row['generation_seconds']:.1f} s", flush=True)
+
+    # Written once at the end so that the working tree stays clean for other batches meanwhile.
+    if timing_rows:
+        append_table_rows(pd.DataFrame(timing_rows), phase_directory("phase5") / TIMING_TABLE_NAME)
 
 
 if __name__ == "__main__":

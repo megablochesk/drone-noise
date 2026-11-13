@@ -45,3 +45,22 @@ def build_published_configuration_specifications(order_source: OrderSource, seed
         )
         for stocking, terminal_phases, number_of_drones in PUBLISHED_HEADLINE_CONFIGURATIONS
     ]
+
+
+def build_adaptive_specifications(summary, number_of_drones: int, new_seeds: list[int]) -> list[RunSpecification]:
+    """New-seed runs for the configurations of one fleet whose pilot says more seeds are needed.
+
+    `summary` is the replication summary table (one row per configuration and metric); a configuration
+    qualifies if any metric requires more replicates than it has.
+    """
+    fleet_summary = summary[summary["number_of_drones"] == number_of_drones]
+    needs_more = fleet_summary[fleet_summary["required_replicates"] > fleet_summary["number_of_replicates"]]
+    configurations = needs_more[["stocking", "terminal_phases"]].drop_duplicates()
+    return [
+        RunSpecification(
+            stocking=OrderDatasetType(stocking), number_of_drones=number_of_drones,
+            terminal_phases=bool(terminal_phases), seed=seed, pool_size=REVISION_POOL_SIZE,
+        )
+        for stocking, terminal_phases in configurations.itertuples(index=False)
+        for seed in new_seeds
+    ]
