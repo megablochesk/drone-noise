@@ -1,3 +1,5 @@
+from array import array
+
 import numpy as np
 import pandas as pd
 
@@ -21,9 +23,9 @@ class EnergyNoiseTracker:
         self.grid = load_noise_grid()
         self.number_of_time_steps = 0
 
-        self._northings: list[float] = []
-        self._eastings: list[float] = []
-        self._altitudes_m: list[float] = []
+        self._northings = array("d")
+        self._eastings = array("d")
+        self._altitudes_m = array("d")
 
     def track_drones(self, drones):
         self._northings.extend(drone.current_location.northing for drone in drones)
