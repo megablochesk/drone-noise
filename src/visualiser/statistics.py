@@ -6,7 +6,7 @@ from common.coordinate import calculate_distance
 from common.path_configs import ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
 from common.path_configs import PATH_CONFIGS
 from common.runtime_configs import get_simulation_config
-from orders.order_generator import load_orders
+from orders.order_loader import load_orders
 
 matplotlib.use(PATH_CONFIGS.matplotlib_backend)
 

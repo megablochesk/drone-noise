@@ -3,7 +3,7 @@ from pathlib import Path
 from common.file_utils import save_data_as_pickle_highest_protocol
 from common.path_configs import PATH_CONFIGS
 from noise.navigator.warehouse_route_cache_generator import WarehouseRouteCacheGenerator
-from orders.order_generator import load_orders
+from orders.order_loader import load_orders
 
 ORDER_FOLDER = PATH_CONFIGS.order_dir
 

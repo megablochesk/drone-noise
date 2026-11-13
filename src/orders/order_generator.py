@@ -1,37 +1,14 @@
 import random
 
 from census_analysis.msoa_data import MSOA_DATA
-from common.coordinate import Coordinate
 from common.enum import OrderDatasetType
-from common.file_utils import save_df_to_csv, load_df_from_csv
+from common.file_utils import save_df_to_csv
 from common.model_configs import model_config
 from common.path_configs import get_single_type_order_dataset_pattern, get_mixed_order_dataset_pattern
-from common.runtime_configs import get_simulation_config
-from orders.order import Order
 from orders.seeded_order_pool import sample_point_in_polygon
 
 LONDON_WAREHOUSES = list(model_config.warehouses.bng_coordinates.items())
 ORDER_DATASET_TYPES = tuple(e.value for e in OrderDatasetType)
-
-
-def load_orders(number_of_orders, path=None):
-    if path is None:
-        path = get_simulation_config().order_dataset_path
-
-    order_df = load_df_from_csv(path)
-
-    limited_df = order_df.head(number_of_orders)
-
-    orders = [
-        Order(
-            order_id=int(row['Order ID']),
-            start_location=Coordinate(row['Start Northing'], row['Start Easting']),
-            end_location=Coordinate(row['End Northing'], row['End Easting'])
-        )
-        for _, row in limited_df.iterrows()
-    ]
-
-    return orders
 
 
 def generate_random_point_in_msoa(msoa_code, polygon, max_attempts=10000):

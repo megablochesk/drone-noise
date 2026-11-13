@@ -1,6 +1,6 @@
 from collections import defaultdict, deque
 
-from orders.order_generator import load_orders
+from orders.order_loader import load_orders
 
 
 class DeliveryDispatcher:
