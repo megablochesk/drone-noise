@@ -30,6 +30,9 @@ NOISE_MATH = "src/noise/noise_math_utils.py"
 ENERGY_NOISE = "src/noise/energy_noise.py"
 EXPOSURE = "src/metrics/exposure_metrics.py"
 REPLICATION = "src/metrics/replication_statistics.py"
+POSTPROCESSING = "src/metrics/map_postprocessing.py"
+DIAGNOSTICS = "src/noise/energy_diagnostics.py"
+PHASE8_TABLES = "src/experiments/revision/phase8_tables.py"
 
 MUTATIONS = (
     Mutation("calculate_noise_at_distance", NOISE_MATH, "10*log10 of squared distance -> 20*log10",
@@ -107,6 +110,38 @@ MUTATIONS = (
     Mutation("ModelConfig.intermediate_altitudes_ascending", "src/common/model_configs.py", "ladder spacing h/(n+1)",
              "return [h * (i / n) for i in range(0, n)]", "return [h * (i / (n + 1)) for i in range(0, n)]",
              ("tests/route_planner/test_landing_planner.py",)),
+    Mutation("rebase_baseline_default", POSTPROCESSING, "shift the mapped share instead of the unmapped share",
+             "(new_default_db - PUBLISHED_BASELINE_DEFAULT_DB) * (1.0 - mapped_share)",
+             "(new_default_db - PUBLISHED_BASELINE_DEFAULT_DB) * mapped_share",
+             ("tests/metrics/test_map_postprocessing.py",)),
+    Mutation("summarise_per_thousand_deliveries", POSTPROCESSING, "drop the factor 1,000",
+             "value * DELIVERIES_PER_REPORTING_UNIT / delivered_orders", "value / delivered_orders",
+             ("tests/metrics/test_map_postprocessing.py",)),
+    Mutation("summarise_exposure_by_distance_band", POSTPROCESSING, "'within' selects cells beyond the limit",
+             '(("within", distances_to_centre_m <= distance_limit_m)', '(("within", distances_to_centre_m >= distance_limit_m)',
+             ("tests/metrics/test_map_postprocessing.py",)),
+    Mutation("calculate_low_altitude_energy_shares", DIAGNOSTICS, "select samples above the altitude limit",
+             "samples.altitudes_m < altitude_limit_m", "samples.altitudes_m > altitude_limit_m",
+             ("tests/noise/test_energy_diagnostics.py",)),
+    Mutation("calculate_event_exposure_levels_db", DIAGNOSTICS, "drop the time step",
+             "np.log10(energy_sums * time_step_s)", "np.log10(energy_sums)",
+             ("tests/noise/test_energy_diagnostics.py",)),
+    Mutation("summarise_straight_pass", "src/experiments/revision/single_event_checks.py",
+             "energy mean over receivers -> arithmetic mean of decibels",
+             "10.0 * np.log10(np.mean(10.0 ** (levels_db / 10.0)))", "np.mean(levels_db)",
+             ("tests/experiments/test_single_event_checks.py",)),
+    Mutation("summarise_round_trip_times", PHASE8_TABLES, "seconds per delivery uses a product",
+             'runs["airborne_drone_seconds"] / runs["delivered_orders"]', 'runs["airborne_drone_seconds"] * runs["delivered_orders"]',
+             ("tests/experiments/test_phase8_tables.py",)),
+    Mutation("compare_time_steps", PHASE8_TABLES, "recommend when the run time ratio is above the limit",
+             'table["wall_time_ratio"] < MAXIMUM_WALL_TIME_RATIO', 'table["wall_time_ratio"] > MAXIMUM_WALL_TIME_RATIO',
+             ("tests/experiments/test_phase8_tables.py",)),
+    Mutation("compare_variants_with_baseline", "src/experiments/revision/reduced_design.py", "change = variant + baseline",
+             'paired[metric] - paired[f"{metric}_baseline"]', 'paired[metric] + paired[f"{metric}_baseline"]',
+             ("tests/experiments/test_reduced_design.py",)),
+    Mutation("snap_inside_boundary", "src/depots/depot_layouts.py", "inset pushes the depot outwards",
+             "line_from_centre.interpolate(exit_distance_m - inset_m)", "line_from_centre.interpolate(exit_distance_m + inset_m)",
+             ("tests/depots/test_depot_layouts.py",)),
 )
 
 
