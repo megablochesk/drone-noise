@@ -1,7 +1,16 @@
+import os
 from dataclasses import dataclass
+from typing import Mapping
 
 from common.file_utils import ensure_suffix
 from common.model_configs import model_config
+
+MATPLOTLIB_BACKEND_ENVIRONMENT_VARIABLE = "DRONE_NOISE_MATPLOTLIB_BACKEND"
+INTERACTIVE_MATPLOTLIB_BACKEND = "Qt5Agg"
+
+
+def resolve_matplotlib_backend(environment: Mapping[str, str]) -> str:
+    return environment.get(MATPLOTLIB_BACKEND_ENVIRONMENT_VARIABLE, INTERACTIVE_MATPLOTLIB_BACKEND)
 
 
 @dataclass(frozen=True)
@@ -17,7 +26,7 @@ class PathsConfiguration:
 
     map_file_path: str = "drone_delivery_simulation.html"
 
-    matplotlib_backend = "Qt5Agg"
+    matplotlib_backend = resolve_matplotlib_backend(os.environ)
 
     census_dir: str = "recourses/census2021"
     ethnicity_dataset_path: str = f"{census_dir}/ethnicity_msoa_dataset.csv"
