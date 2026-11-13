@@ -13,6 +13,8 @@ from orders.seeded_order_pool import (
     DemandZone,
     assign_warehouse_indices,
     build_orders,
+    build_orders_from_indices,
+    count_orders_per_warehouse,
     generate_destinations,
     load_destination_pool,
     save_destination_pool,
@@ -133,3 +135,26 @@ def test_destination_pool_survives_a_parquet_round_trip(tmp_path):
     pool_path = tmp_path / "destinations_seed4.parquet"
     save_destination_pool(destinations, pool_path)
     pd.testing.assert_frame_equal(load_destination_pool(pool_path), destinations)
+
+
+def test_orders_can_be_limited_to_the_first_few_per_warehouse():
+    """Hand-built case: warehouse indices 0, 1, 0, 0, 1 with limits {0: 2, 1: 1} keep orders 1, 2 and 3
+    (the third order of warehouse 0 and the second of warehouse 1 are dropped), in pool order."""
+    destinations = pd.DataFrame({
+        "order_id": [1, 2, 3, 4, 5],
+        "zone_code": ["WEST"] * 5,
+        "end_northing": [10.0, 20.0, 30.0, 40.0, 50.0],
+        "end_easting": [11.0, 21.0, 31.0, 41.0, 51.0],
+    })
+    orders = build_orders_from_indices(
+        destinations, WAREHOUSES, np.array([0, 1, 0, 0, 1]), maximum_orders_per_warehouse={0: 2, 1: 1}
+    )
+    assert [order.order_id for order in orders] == [1, 2, 3]
+    assert [order.start_location for order in orders] == [WAREHOUSES[0], WAREHOUSES[1], WAREHOUSES[0]]
+    assert orders[2].end_location == Coordinate(northing=30.0, easting=31.0)
+
+
+def test_orders_per_warehouse_are_counted_from_the_indices():
+    """Hand-built case: indices 0, 1, 0, 0, 1 are three orders for warehouse 0 and two for warehouse 1."""
+    counts = count_orders_per_warehouse(np.array([0, 1, 0, 0, 1]), WAREHOUSES)
+    assert counts == {WAREHOUSES[0]: 3, WAREHOUSES[1]: 2}

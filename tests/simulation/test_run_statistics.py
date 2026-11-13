@@ -54,6 +54,7 @@ def test_statistics_are_split_by_warehouse(tmp_path):
     statistics = summarise_run(simulator)
 
     assert statistics.drones_by_warehouse == {WAREHOUSE: 1, SECOND_WAREHOUSE: 1}
+    assert statistics.assigned_orders_by_warehouse == {WAREHOUSE: 10}
     assert statistics.airborne_drone_seconds_by_warehouse == {WAREHOUSE: 6_930, SECOND_WAREHOUSE: 0}
     assert statistics.utilisation_by_warehouse[WAREHOUSE] == pytest.approx(6_930 / 7_200)
     assert statistics.utilisation_by_warehouse[SECOND_WAREHOUSE] == 0
