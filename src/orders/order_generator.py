@@ -1,7 +1,5 @@
 import random
 
-from shapely.geometry import Point
-
 from census_analysis.msoa_data import MSOA_DATA
 from common.coordinate import Coordinate
 from common.enum import OrderDatasetType
@@ -10,6 +8,7 @@ from common.model_configs import model_config
 from common.path_configs import get_single_type_order_dataset_pattern, get_mixed_order_dataset_pattern
 from common.runtime_configs import get_simulation_config
 from orders.order import Order
+from orders.seeded_order_pool import sample_point_in_polygon
 
 LONDON_WAREHOUSES = list(model_config.warehouses.bng_coordinates.items())
 ORDER_DATASET_TYPES = tuple(e.value for e in OrderDatasetType)
@@ -42,15 +41,9 @@ def generate_random_point_in_msoa(msoa_code, polygon, max_attempts=10000):
     if not polygon.is_valid or polygon.area == 0:
         return polygon.centroid
 
-    # Proceed with random sampling if the polygon has a valid area
-    minx, miny, maxx, maxy = polygon.bounds
-
-    for _ in range(max_attempts):
-        randx = random.uniform(minx, maxx)
-        randy = random.uniform(miny, maxy)
-        point = Point(randx, randy)
-        if polygon.contains(point):
-            return point
+    point = sample_point_in_polygon(polygon, random, max_attempts)
+    if point is not None:
+        return point
 
     print(msoa_code)
     return polygon.centroid
