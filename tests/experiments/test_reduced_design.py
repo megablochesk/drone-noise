@@ -103,3 +103,19 @@ def test_stocking_ranking_and_whether_it_changed():
     faster = reversed_ranking[reversed_ranking["variant"] == "faster"].iloc[0]
     assert faster["stocking_ranking"] == "random > closest"
     assert bool(faster["ranking_differs_from_baseline"]) is True
+
+
+def test_runs_of_a_phase_are_selected_and_labelled_with_their_variant():
+    """Hand-built case: a batch table holding runs of two phases; phase 11 keeps only its own 36 runs
+    (18 baseline + 18 proportional), each labelled with its variant."""
+    from experiments.revision.reduced_design import label_phase_runs
+    from experiments.revision.run_specification import build_run_key
+
+    phase11, phase12 = build_phase_variants("phase11"), build_phase_variants("phase12")
+    all_keys = {build_run_key(s) for variants in (phase11, phase12) for specs in variants.values() for s in specs}
+    batch_table = pd.DataFrame({"run_key": sorted(all_keys), "delivered_orders": range(len(all_keys))})
+
+    labelled = label_phase_runs(batch_table, phase11)
+
+    assert labelled["variant"].value_counts().to_dict() == {"baseline": 18, "proportional_allocation": 18}
+    assert labelled.columns.tolist() == ["run_key", "variant", "delivered_orders"]
