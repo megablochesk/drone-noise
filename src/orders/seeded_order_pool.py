@@ -18,6 +18,7 @@ from orders.order import Order
 MAXIMUM_SAMPLING_ATTEMPTS = 10_000
 COORDINATE_DECIMALS = 2
 PARQUET_ENGINE = "fastparquet"
+DISTANCE_BLOCK_ROWS = 50_000
 
 
 @dataclass(frozen=True)
@@ -79,14 +80,27 @@ def calculate_squared_distances_to_warehouses(destinations: pd.DataFrame, wareho
     return delta_eastings ** 2 + delta_northings ** 2
 
 
+def choose_warehouse_indices_by_distance(
+        destinations: pd.DataFrame, warehouses: list[Coordinate], choose_index_along_axis
+) -> np.ndarray:
+    """np.argmin or np.argmax over the distance table, one block of destinations at a time to bound memory."""
+    block_starts = range(0, len(destinations), DISTANCE_BLOCK_ROWS)
+    chosen_indices = np.empty(len(destinations), dtype=np.int64)
+    for block_start in block_starts:
+        block = slice(block_start, block_start + DISTANCE_BLOCK_ROWS)
+        squared_distances = calculate_squared_distances_to_warehouses(destinations.iloc[block], warehouses)
+        chosen_indices[block] = choose_index_along_axis(squared_distances, axis=1)
+    return chosen_indices
+
+
 def assign_warehouse_indices(
         destinations: pd.DataFrame, warehouses: list[Coordinate], stocking: OrderDatasetType, seed: int
 ) -> np.ndarray:
     match stocking:
         case OrderDatasetType.CLOSEST:
-            return calculate_squared_distances_to_warehouses(destinations, warehouses).argmin(axis=1)
+            return choose_warehouse_indices_by_distance(destinations, warehouses, np.argmin)
         case OrderDatasetType.FURTHEST:
-            return calculate_squared_distances_to_warehouses(destinations, warehouses).argmax(axis=1)
+            return choose_warehouse_indices_by_distance(destinations, warehouses, np.argmax)
         case OrderDatasetType.RANDOM:
             random_generator = random.Random(f"random-stocking-{seed}")
             return np.array([random_generator.randrange(len(warehouses)) for _ in range(len(destinations))])

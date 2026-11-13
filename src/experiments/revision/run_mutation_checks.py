@@ -92,7 +92,7 @@ MUTATIONS = (
              "target_half_width = relative_half_width * abs(np.std(values, ddof=1))",
              ("tests/metrics/test_replication_statistics.py",)),
     Mutation("assign_warehouse_indices", "src/orders/seeded_order_pool.py", "closest uses argmax",
-             "warehouses).argmin(axis=1)", "warehouses).argmax(axis=1)",
+             "warehouses, np.argmin)", "warehouses, np.argmax)",
              ("tests/orders/test_seeded_order_pool.py",)),
     Mutation("summarise_run (utilisation)", "src/simulation/run_statistics.py", "drop the duration from the denominator",
              "(sum(drones_by_warehouse.values()) * simulated_duration_s)", "(sum(drones_by_warehouse.values()))",
