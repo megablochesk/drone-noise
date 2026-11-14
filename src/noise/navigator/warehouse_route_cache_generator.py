@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Callable, Optional
 
+import numpy as np
 from scipy.spatial import cKDTree
 
 from common.coordinate import Coordinate
@@ -57,6 +58,21 @@ class WarehouseRouteCacheGenerator(BaseNavigator):
             cache_path=cache_path,
             cache_tag=weight_id,
             max_workers=max_workers,
+        )
+        self._router_node_eastings, self._router_node_northings = self._read_router_node_coordinates()
+
+    def get_optimal_route_coordinates(self, start: Coordinate, end: Coordinate) -> tuple[np.ndarray, np.ndarray] | None:
+        route_indices = self._router.get_route_indices(self.find_nearest_node(start), self.find_nearest_node(end))
+        if len(route_indices) == 0:
+            return None
+
+        return self._router_node_eastings[route_indices], self._router_node_northings[route_indices]
+
+    def _read_router_node_coordinates(self) -> tuple[np.ndarray, np.ndarray]:
+        coordinates = self.nodes_to_coordinates(self._router.nodes)
+        return (
+            np.array([coordinate.easting for coordinate in coordinates]),
+            np.array([coordinate.northing for coordinate in coordinates]),
         )
 
     def find_nearest_node(self, point: Coordinate) -> tuple:

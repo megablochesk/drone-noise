@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Iterable, List, Tuple
 
 import networkx as nx
+import numpy as np
 
 from common.coordinate import Coordinate
 from noise.noise_graph_builder import load_or_build_graph
@@ -32,3 +33,15 @@ class BaseNavigator:
 
             out.append(Coordinate(northing=no, easting=e))
         return out
+
+    def get_optimal_route_coordinates(self, start: Coordinate, end: Coordinate) -> tuple[np.ndarray, np.ndarray] | None:
+        """Eastings and northings of the route's nodes; None if there is no route."""
+        path_nodes = self.get_optimal_route(start, end)
+        if not path_nodes:
+            return None
+
+        coordinates = self.nodes_to_coordinates(path_nodes)
+        return (
+            np.array([coordinate.easting for coordinate in coordinates]),
+            np.array([coordinate.northing for coordinate in coordinates]),
+        )

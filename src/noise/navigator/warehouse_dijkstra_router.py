@@ -8,6 +8,7 @@ from typing import Dict, Hashable, Iterable, List, Optional
 
 import networkx as nx
 import numpy as np
+from numba import njit
 
 from common.file_utils import load_data_from_pickle, path_exists
 from noise.navigator.cost_function_generator import WeightSpec, safe_weight
@@ -33,6 +34,21 @@ def _save_pickle_atomic(obj, path: str):
     with open(tmp, "wb") as f:
         pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
     os.replace(tmp, str(p))
+
+
+@njit
+def follow_parents_from_target(parents: np.ndarray, source_index: int, target_index: int) -> np.ndarray:
+    """Node indices from the target back to the source; empty if the target is unreachable or the parents loop."""
+    path = np.empty(len(parents) + 1, dtype=np.int64)
+    current = target_index
+    for step in range(len(parents) + 1):
+        path[step] = current
+        if current == source_index:
+            return path[:step + 1]
+        current = parents[current]
+        if current < 0:
+            break
+    return path[:0]
 
 
 @dataclass(frozen=True)
@@ -90,19 +106,26 @@ class WarehouseDijkstraRouter:
         self._load_or_build_cache()
 
     def get_route(self, start_node: Node, end_node: Node) -> List[Node]:
+        return [self._nodes[index] for index in self.get_route_indices(start_node, end_node).tolist()]
+
+    def get_route_indices(self, start_node: Node, end_node: Node) -> np.ndarray:
+        """The route as positions in the router's node order (see `nodes`)."""
         if start_node in self._warehouse_set:
-            spt = self._get_spt(start_node)
-            path = self._reconstruct_path(start_node, end_node, spt)
+            path = self._reconstruct_path(start_node, end_node, self._get_spt(start_node))
             if path is not None:
                 return path
 
         if end_node in self._warehouse_set:
-            spt = self._get_spt(end_node)
-            path = self._reconstruct_path(end_node, start_node, spt)
+            path = self._reconstruct_path(end_node, start_node, self._get_spt(end_node))
             if path is not None:
-                return list(reversed(path))
+                return path[::-1]
 
-        return nx.shortest_path(self._graph, start_node, end_node, weight=self._weight)
+        nodes = nx.shortest_path(self._graph, start_node, end_node, weight=self._weight)
+        return np.array([self._node_to_idx[node] for node in nodes], dtype=np.int64)
+
+    @property
+    def nodes(self) -> List[Node]:
+        return self._nodes
 
     def _stable_node_order(self) -> List[Node]:
         nodes = list(self._graph.nodes)
@@ -240,34 +263,10 @@ class WarehouseDijkstraRouter:
             return self._weight(start, end, edge_data)
         return edge_data.get(self._weight, DEFAULT_EDGE_WEIGHT)
 
-    def _reconstruct_path(self, source: Node, target: Node, spt: _SPT) -> Optional[List[Node]]:
-        tgt_i = self._node_to_idx.get(target)
-        if tgt_i is None:
+    def _reconstruct_path(self, source: Node, target: Node, spt: _SPT) -> Optional[np.ndarray]:
+        target_index, source_index = self._node_to_idx.get(target), self._node_to_idx.get(source)
+        if target_index is None or source_index is None:
             return None
 
-        src_i = self._node_to_idx.get(source)
-        if src_i is None:
-            return None
-
-        pred = spt.pred_idx
-
-        if int(pred[tgt_i]) == -1:
-            return None
-
-        idx_path: List[int] = []
-        cur = int(tgt_i)
-        n = int(pred.shape[0])
-
-        for _ in range(n + 1):
-            idx_path.append(cur)
-            if cur == src_i:
-                break
-            nxt = int(pred[cur])
-            if nxt < 0:
-                return None
-            cur = nxt
-        else:
-            return None
-
-        idx_path.reverse()
-        return [self._nodes[i] for i in idx_path]
+        path = follow_parents_from_target(spt.pred_idx, source_index, target_index)
+        return path[::-1] if len(path) > 0 else None

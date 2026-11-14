@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 from common.coordinate import Coordinate, calculate_distance
@@ -23,40 +25,51 @@ class NoiseBasedPlanner(RoutePlanner):
         if calculate_distance(start, end) == 0:
             return [start]
 
-        path_nodes = self.navigator.get_optimal_route(start, end)
-        if not path_nodes:
+        route = self.navigator.get_optimal_route_coordinates(start, end)
+        if route is None:
             return [start, end]
 
-        coords = self.navigator.nodes_to_coordinates(path_nodes)
-        sampled = resample_polyline_by_time(coords, speed=DRONE_SPEED, dt=MODEL_TIME_STEP)
-
+        sampled = to_coordinates(*resample_coordinates_by_time(*route, speed=DRONE_SPEED, dt=MODEL_TIME_STEP))
         sampled[0] = start
         sampled[-1] = end
         return sampled
+
+
+def to_coordinates(eastings: np.ndarray, northings: np.ndarray) -> list[Coordinate]:
+    return [Coordinate(northing=northing, easting=easting) for northing, easting in zip(northings.tolist(), eastings.tolist())]
 
 
 def resample_polyline_by_time(coords: list[Coordinate], speed: float, dt: float) -> list[Coordinate]:
     if len(coords) <= 2:
         return coords
 
+    eastings = np.array([coordinate.easting for coordinate in coords])
+    northings = np.array([coordinate.northing for coordinate in coords])
+    return to_coordinates(*resample_coordinates_by_time(eastings, northings, speed, dt))
+
+
+def resample_coordinates_by_time(
+        eastings: np.ndarray, northings: np.ndarray, speed: float, dt: float
+) -> tuple[np.ndarray, np.ndarray]:
+    """Points every `speed * dt` metres along the polyline, plus its last point."""
     step_dist = speed * dt
-    if step_dist <= 0:
-        return coords
+    if len(eastings) <= 2 or step_dist <= 0:
+        return eastings, northings
 
-    cumulative_distances = calculate_cumulative_distances(coords)
-    total = float(cumulative_distances[-1])
+    cumulative_distances = calculate_cumulative_distances(eastings, northings)
+    total = cumulative_distances[-1]
     if total <= 0:
-        return [coords[0], coords[-1]]
+        return eastings[[0, -1]], northings[[0, -1]]
 
-    targets = get_targets(total, step_dist)
-    return resample_by_targets(coords, cumulative_distances, targets)
+    return resample_by_targets(eastings, northings, cumulative_distances, get_targets(total, step_dist))
 
 
-def calculate_cumulative_distances(coords: list[Coordinate]) -> np.ndarray:
-    cum = np.zeros(len(coords), dtype=float)
-    for i in range(1, len(coords)):
-        cum[i] = cum[i - 1] + calculate_distance(coords[i - 1], coords[i])
-    return cum
+def calculate_cumulative_distances(eastings: np.ndarray, northings: np.ndarray) -> np.ndarray:
+    segment_lengths = [
+        math.hypot(delta_northing, delta_easting)
+        for delta_northing, delta_easting in zip(np.diff(northings).tolist(), np.diff(eastings).tolist())
+    ]
+    return np.concatenate([[0.0], np.cumsum(segment_lengths)])
 
 
 def get_targets(total: float, step_dist: float) -> np.ndarray:
@@ -68,27 +81,16 @@ def get_targets(total: float, step_dist: float) -> np.ndarray:
     return t
 
 
-def resample_by_targets(coords: list[Coordinate], cum: np.ndarray, targets: np.ndarray) -> list[Coordinate]:
-    out: list[Coordinate] = []
-    j = 0
-    n = len(coords)
+def resample_by_targets(
+        eastings: np.ndarray, northings: np.ndarray, cum: np.ndarray, targets: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
+    """Each target distance lies on the first segment that ends at or beyond it; zero-length segments give
+    their start point."""
+    segments = np.minimum(np.searchsorted(cum[1:], targets, side="left"), len(cum) - 2)
+    segment_starts, segment_lengths = cum[segments], cum[segments + 1] - cum[segments]
+    with np.errstate(divide="ignore", invalid="ignore"):
+        shares = np.where(segment_lengths > 0.0, (targets - segment_starts) / segment_lengths, 0.0)
 
-    for d in targets:
-        while j < n - 2 and cum[j + 1] < d:
-            j += 1
-
-        d0 = float(cum[j])
-        d1 = float(cum[j + 1])
-        seg = d1 - d0
-        if seg <= 0.0:
-            out.append(coords[j])
-            continue
-
-        t = (float(d) - d0) / seg
-        a = coords[j]
-        b = coords[j + 1]
-        e = a.easting + (b.easting - a.easting) * t
-        n_ = a.northing + (b.northing - a.northing) * t
-        out.append(Coordinate(northing=n_, easting=e))
-
-    return out
+    sampled_eastings = eastings[segments] + (eastings[segments + 1] - eastings[segments]) * shares
+    sampled_northings = northings[segments] + (northings[segments + 1] - northings[segments]) * shares
+    return sampled_eastings, sampled_northings
