@@ -64,7 +64,8 @@ python -m pytest                                                        # once, 
 sbatch --array=0-1799%400 --export=ALL,SEEDS="$(seq -s ' ' 1 100)" cluster/fine_grid_array.sbatch
 ```
 
-Each seed needs its order pool (`python -m experiments.revision.generate_order_pools`, about 10 s per pool).
+Each seed needs its order pool, about 10 s per pool:
+`python -m experiments.revision.generate_order_pools --seeds 1 2 3 --pool-size 650000`.
 
 ## Tests
 
