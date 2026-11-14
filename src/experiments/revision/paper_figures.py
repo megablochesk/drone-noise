@@ -1,7 +1,8 @@
 """The paper's figures redrawn on the fine-grid design (Round 4 baseline, 100 m cells, 10 s step), as EPS.
 
 Figure numbers follow the submitted paper. Figure 2 (a simulation snapshot on a street map) is not drawn: it
-needs map tiles from the internet. All runs are of one seed. This script only loads and saves; the tables are
+needs map tiles from the internet. Every line, bar and map is the mean over the seeds of the run table (maps
+as sound energy). This script only loads and saves; the tables are
 in visualiser/figure_tables.py and the drawing in visualiser/draw.py.
 
 Usage (from src/): python -m experiments.revision.paper_figures [--preview-directory DIRECTORY]
@@ -35,7 +36,10 @@ from noise.navigator.navigation_grid_loader import load_navigation_grid
 from noise.noise_grid import NoiseGrid, load_noise_grid, to_grid_image
 from visualiser import draw, style
 from visualiser.figure_tables import (
+    average_group_exposure,
+    average_levels_db,
     build_grid_image,
+    count_seeds,
     find_shared_colour_range,
     measure_route_lengths,
     read_navigation,
@@ -73,20 +77,25 @@ PERCENT = 100.0
 HALF_CELL = 0.5
 
 
-def select_run_key(runs: pd.DataFrame, stocking: str, navigation: str, terminal_phases: bool = True) -> str:
+def select_run_keys(runs: pd.DataFrame, stocking: str, navigation: str, terminal_phases: bool = True) -> list[str]:
+    """The runs of the largest fleet in one configuration, one per seed, in seed order."""
     selected = runs[
         (runs["number_of_drones"] == MAPPED_FLEET) & (runs["stocking"] == stocking)
         & (runs["terminal_phases"] == terminal_phases) & (read_navigation(runs) == navigation)
-    ]
-    if len(selected) != 1:
-        raise ValueError(f"Expected one run of {stocking}, {navigation}, found {len(selected)}")
-    return selected["run_key"].iloc[0]
+    ].sort_values("seed")
+    if selected.empty or selected["seed"].duplicated().any():
+        raise ValueError(f"Expected one run per seed of {stocking}, {navigation}, found {len(selected)} runs")
+    return selected["run_key"].tolist()
+
+
+def load_levels_of_every_seed(store: ResultStore, runs: pd.DataFrame, stocking: str, navigation: str) -> list[np.ndarray]:
+    return [load_drone_levels(store, run_key) for run_key in select_run_keys(runs, stocking, navigation)]
 
 
 def load_drone_maps(store: ResultStore, grid: NoiseGrid, runs: pd.DataFrame, navigation: str) -> list[np.ndarray]:
     """Drone-only level of the largest fleet as an image, one per stocking."""
     return [
-        to_grid_image(grid, load_drone_levels(store, select_run_key(runs, stocking, navigation)))
+        to_grid_image(grid, average_levels_db(load_levels_of_every_seed(store, runs, stocking, navigation)))
         for stocking in style.STOCKING_MAP_ORDER
     ]
 
@@ -136,9 +145,10 @@ def draw_fleet_figures(runs: pd.DataFrame, save):
         save(draw.plot_navigation_panels(tables, label), figure_name)
 
 
-def draw_map_figures(store: ResultStore, grid: NoiseGrid, runs: pd.DataFrame, baseline_levels_db: np.ndarray, save):
+def draw_map_figures(
+        store: ResultStore, grid: NoiseGrid, runs: pd.DataFrame, baseline_levels_db: np.ndarray, drone_levels_db: np.ndarray, save,
+):
     """Figure 3, and figures 10, 15 and 16 on one colour range so that they can be compared."""
-    drone_levels_db = load_drone_levels(store, select_run_key(runs, EXAMPLE_STOCKING, style.STRAIGHT))
     increases_db = combine_levels_db(baseline_levels_db, drone_levels_db) - baseline_levels_db
     images = [to_grid_image(grid, values) for values in (baseline_levels_db, drone_levels_db, increases_db)]
     colour_ranges = [
@@ -167,12 +177,19 @@ def draw_population_figures(grid: NoiseGrid, population: np.ndarray, ethnicity_c
     save(draw.plot_single_map(indian_image, indian_range, "Population per cell"), "fig21_indian_population")
 
 
-def draw_group_figures(newly_exposed: np.ndarray, grid: NoiseGrid, ethnicity_counts: dict, ethnicity_names: dict, save) -> pd.DataFrame:
+def draw_group_figures(
+        newly_exposed_by_seed: list[np.ndarray], grid: NoiseGrid, ethnicity_counts: dict, ethnicity_names: dict, save,
+) -> pd.DataFrame:
     """Figures 17-20; returns the numbers behind them."""
     age_table = load_cell_age(FINE_CELL_SIZE_M)
-    ethnicity = summarise_group_exposure(newly_exposed, ethnicity_counts, ethnicity_names)
+    age_counts, age_names = read_group_counts(grid, age_table), age_table.attrs["age_code_to_name"]
+    ethnicity = average_group_exposure([
+        summarise_group_exposure(newly_exposed, ethnicity_counts, ethnicity_names) for newly_exposed in newly_exposed_by_seed
+    ])
     ethnicity = ethnicity.assign(label=abbreviate_ethnic_groups(ethnicity["name"].tolist()))
-    age = summarise_group_exposure(newly_exposed, read_group_counts(grid, age_table), age_table.attrs["age_code_to_name"])
+    age = average_group_exposure([
+        summarise_group_exposure(newly_exposed, age_counts, age_names) for newly_exposed in newly_exposed_by_seed
+    ])
     age = age.assign(label=age["name"])
 
     by_share = ethnicity.sort_values("share", ascending=False, kind="mergesort")
@@ -223,17 +240,23 @@ def main():
     ethnicity_table = load_cell_ethnicity(FINE_CELL_SIZE_M)
     ethnicity_names = shorten_ethnicity_names(ethnicity_table.attrs["ethnicity_code_to_name"])
     ethnicity_counts = read_group_counts(grid, ethnicity_table)
-    example_levels_db = load_drone_levels(store, select_run_key(runs, EXAMPLE_STOCKING, style.STRAIGHT))
-    newly_exposed = find_newly_exposed_cells(example_levels_db, cell_table.baseline_levels_db, HEADLINE_EXPOSURE_THRESHOLD_DB)
+    example_levels_by_seed = load_levels_of_every_seed(store, runs, EXAMPLE_STOCKING, style.STRAIGHT)
+    newly_exposed_by_seed = [
+        find_newly_exposed_cells(levels_db, cell_table.baseline_levels_db, HEADLINE_EXPOSURE_THRESHOLD_DB)
+        for levels_db in example_levels_by_seed
+    ]
     population = align_to_grid(grid, load_cell_population(FINE_CELL_SIZE_M), "population")
 
     draw_fleet_figures(runs, save)
-    draw_map_figures(store, grid, runs, cell_table.baseline_levels_db, save)
+    draw_map_figures(store, grid, runs, cell_table.baseline_levels_db, average_levels_db(example_levels_by_seed), save)
     draw_population_figures(grid, population, ethnicity_counts, ethnicity_names, save)
-    group_exposure = draw_group_figures(newly_exposed, grid, ethnicity_counts, ethnicity_names, save)
+    group_exposure = draw_group_figures(newly_exposed_by_seed, grid, ethnicity_counts, ethnicity_names, save)
     route_lengths = draw_route_figure(save)
 
-    write_phase_table(group_exposure.assign(git_hash=git_hash), tables_directory, "paper_figure_group_exposure.csv")
+    number_of_seeds = count_seeds(runs)
+    write_phase_table(
+        group_exposure.assign(number_of_seeds=number_of_seeds, git_hash=git_hash), tables_directory, "paper_figure_group_exposure.csv"
+    )
     write_phase_table(route_lengths.assign(git_hash=git_hash), tables_directory, "paper_figure_route_lengths.csv")
 
 

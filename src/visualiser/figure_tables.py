@@ -5,6 +5,7 @@ import pandas as pd
 from visualiser.style import STRAIGHT
 
 METRES_PER_KILOMETRE = 1000.0
+NO_SEED = 0
 
 
 def read_navigation(runs: pd.DataFrame) -> pd.Series:
@@ -14,13 +15,36 @@ def read_navigation(runs: pd.DataFrame) -> pd.Series:
     return runs["navigation"].fillna(STRAIGHT)
 
 
+def read_seeds(runs: pd.DataFrame) -> pd.Series:
+    """The seed of every run; a table without seeds holds one run per configuration."""
+    return runs["seed"] if "seed" in runs else pd.Series(NO_SEED, index=runs.index)
+
+
+def count_seeds(runs: pd.DataFrame) -> int:
+    return read_seeds(runs).nunique()
+
+
+def has_one_run_per_seed_everywhere(runs: pd.DataFrame) -> bool:
+    """Whether every fleet x stocking combination is present with the same seeds, each seed once."""
+    seeds_by_cell = runs.groupby(["number_of_drones", "stocking"])["seed"].apply(lambda seeds: tuple(sorted(seeds)))
+    number_of_cells = runs["number_of_drones"].nunique() * runs["stocking"].nunique()
+    seeds_are_unique = all(len(set(seeds)) == len(seeds) for seeds in seeds_by_cell)
+    return len(runs) > 0 and len(seeds_by_cell) == number_of_cells and seeds_by_cell.nunique() == 1 and seeds_are_unique
+
+
 def tabulate_metric_by_fleet(runs: pd.DataFrame, metric: str, terminal_phases: bool, navigation: str) -> pd.DataFrame:
-    """Fleet sizes down, stockings across; every cell must come from exactly one run."""
+    """Fleet sizes down, stockings across, the mean over seeds in every cell.
+
+    Every fleet and stocking must have exactly one run per seed, and all of them the same seeds.
+    """
     selected = runs[(runs["terminal_phases"] == terminal_phases) & (read_navigation(runs) == navigation)]
-    runs_per_cell = selected.groupby(["number_of_drones", "stocking"]).size().unstack()
-    if selected.empty or runs_per_cell.isna().any().any() or (runs_per_cell != 1).any().any():
-        raise ValueError(f"Every fleet and stocking needs exactly one run of {navigation}, terminal phases {terminal_phases}")
-    return selected.pivot(index="number_of_drones", columns="stocking", values=metric).sort_index()
+    selected = selected.assign(seed=read_seeds(selected))
+    if not has_one_run_per_seed_everywhere(selected):
+        raise ValueError(
+            f"Every fleet and stocking needs exactly one run per seed and the same seeds, "
+            f"for {navigation} with terminal phases {terminal_phases}"
+        )
+    return selected.pivot_table(index="number_of_drones", columns="stocking", values=metric, aggfunc="mean").sort_index()
 
 
 def summarise_group_exposure(
@@ -34,6 +58,17 @@ def summarise_group_exposure(
         "total": [counts.sum() for counts in group_counts.values()],
     })
     return summary.assign(share=summary["newly_exposed"] / summary["total"])
+
+
+def average_group_exposure(summaries: list[pd.DataFrame]) -> pd.DataFrame:
+    """The mean over seeds of the residents exposed in every group; the share is of the mean."""
+    exposed = pd.concat(summaries).groupby(["code", "name"], sort=False)[["newly_exposed", "total"]].mean().reset_index()
+    return exposed.assign(share=exposed["newly_exposed"] / exposed["total"])
+
+
+def average_levels_db(maps: list[np.ndarray]) -> np.ndarray:
+    """The level of the mean sound energy of several maps of one grid, cell by cell."""
+    return 10.0 * np.log10(np.mean([10.0 ** (levels_db / 10.0) for levels_db in maps], axis=0))
 
 
 def find_shared_colour_range(maps: list[np.ndarray], lower_percentile: float, upper_percentile: float) -> tuple[float, float]:
