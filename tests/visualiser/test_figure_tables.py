@@ -99,3 +99,55 @@ def test_route_lengths_are_compared_with_the_straight_route():
 
     assert lengths["route_length_km"].tolist() == [5.0, 7.0]
     assert lengths.loc["NOISE_A100", "increase_over_straight"] == pytest.approx(0.4)
+
+
+def build_seeded_runs() -> pd.DataFrame:
+    """One fleet, two stockings, seeds 1 and 2."""
+    return pd.DataFrame({
+        "number_of_drones": 100, "stocking": ["closest", "closest", "furthest", "furthest"], "terminal_phases": True,
+        "navigation": "STRAIGHT", "seed": [1, 2, 1, 2], "delivered_orders": [10, 14, 6, 8],
+    })
+
+
+def test_a_metric_is_averaged_over_the_seeds_of_each_fleet_and_stocking():
+    from visualiser.figure_tables import count_seeds
+
+    runs = build_seeded_runs()
+    table = tabulate_metric_by_fleet(runs, "delivered_orders", terminal_phases=True, navigation="STRAIGHT")
+
+    assert table.loc[100, "closest"] == 12.0 and table.loc[100, "furthest"] == 7.0
+    assert count_seeds(runs) == 2
+
+
+def test_fleets_or_stockings_with_different_seeds_are_refused():
+    """A mean over seeds 1-2 next to a mean over seed 1 alone would not be comparable."""
+    runs = build_seeded_runs().iloc[:3]
+
+    with pytest.raises(ValueError, match="same seeds"):
+        tabulate_metric_by_fleet(runs, "delivered_orders", terminal_phases=True, navigation="STRAIGHT")
+
+
+def test_maps_of_several_seeds_are_averaged_as_sound_energy():
+    """50 dB and 60 dB: 10 log10((10^5 + 10^6) / 2) = 57.404 dB, not 55 dB."""
+    from visualiser.figure_tables import average_levels_db
+
+    averaged = average_levels_db([np.array([50.0, 40.0]), np.array([60.0, 40.0])])
+
+    assert averaged == pytest.approx([57.4036, 40.0], abs=1e-4)
+
+
+def test_group_exposure_is_averaged_over_seeds():
+    """Seed 1 exposes the first cell, seed 2 the first two: group 1 has (10 + 30) / 2 = 20 newly exposed of 60."""
+    from visualiser.figure_tables import average_group_exposure
+
+    group_counts = {1: np.array([10.0, 20.0, 30.0])}
+    summaries = [
+        summarise_group_exposure(mask, group_counts, {1: "first"})
+        for mask in (np.array([True, False, False]), np.array([True, True, False]))
+    ]
+
+    averaged = average_group_exposure(summaries)
+
+    assert averaged["name"].tolist() == ["first"]
+    assert averaged["newly_exposed"].tolist() == [20.0] and averaged["total"].tolist() == [60.0]
+    assert averaged["share"].tolist() == pytest.approx([20.0 / 60.0])
