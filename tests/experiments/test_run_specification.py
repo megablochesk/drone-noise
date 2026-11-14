@@ -35,6 +35,7 @@ ALTERNATIVE_FIELD_VALUES = {
     "minimum_slant_distance_m": 25.0,
     "time_step_s": 10,
     "noise_cell_m": 100,
+    "land_once_at_customer": True,
 }
 
 
