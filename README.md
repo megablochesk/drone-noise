@@ -42,6 +42,30 @@ After replacing an input on purpose, run `python -m datasets.prepare_data --writ
 The seeded order pools of the revision experiments are not part of the catalogue; they are written on demand
 by `python -m experiments.revision.generate_order_pools` and are a deterministic function of their seed.
 
+## Revision design: Round 4 baseline, 100 m cells, 10 s step
+
+Run parameters live in `RunSpecification` (`src/experiments/revision/run_specification.py`); every default
+reproduces the published model. The revision design changes three of them: `baseline_noise_map` (Round 4 road
+noise), `noise_cell_m` (100) and `time_step_s` (10). `land_once_at_customer` removes the second climb and
+descent that the published model flies at the customer.
+
+On one machine, from `src/` (refuses uncommitted code, runs the fast suite first, skips stored runs):
+
+```bash
+python -m experiments.revision.run_fine_grid_pilot --seeds 1 2 3 --workers 3
+python -m experiments.revision.summarise_fine_grid
+```
+
+On a cluster, one run per array task (`cluster/fine_grid_array.sbatch`, untested; a task takes under ten
+minutes and about 1 GB on a laptop core):
+
+```bash
+python -m pytest                                                        # once, before submitting
+sbatch --array=0-1799%400 --export=ALL,SEEDS="$(seq -s ' ' 1 100)" cluster/fine_grid_array.sbatch
+```
+
+Each seed needs its order pool (`python -m experiments.revision.generate_order_pools`, about 10 s per pool).
+
 ## Tests
 
 From the repository root:
