@@ -37,3 +37,15 @@ def test_seeds_without_a_coarse_twin_are_left_out():
     coarse = build_runs([1.0, 1.2], [1_000.0, 2_000.0], [100, 200]).query("seed == 1")
     fine = build_runs([1.5, 1.9], [1_500.0, 2_400.0], [110, 220])
     assert compare_fine_with_coarse(fine, coarse).iloc[0]["number_of_seeds"] == 1
+
+
+def test_two_variants_of_one_configuration_and_seed_are_refused():
+    """Found in review: a table holding several routings per configuration would be averaged over the routings
+    and the result labelled as seeds. Such a table has to be split by variant before it is compared."""
+    fine = build_runs([1.0, 1.2], [100.0, 120.0], [10, 12])
+    two_routings = pd.concat([fine, fine.assign(mean_noise_increase_db=2.0)])
+
+    with pytest.raises(ValueError, match="more than one run"):
+        compare_fine_with_coarse(two_routings, fine)
+    with pytest.raises(ValueError, match="more than one run"):
+        compare_fine_with_coarse(fine, two_routings)
