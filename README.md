@@ -11,8 +11,8 @@
 
 ## Data
 
-No data file is kept in this repository. The model reads its inputs from `src/recourses/`; its main
-inputs are listed in `src/datasets/data_catalogue.py` and, with size and SHA-256, in `DATA_MANIFEST.csv`.
+No data file is kept in this repository. The model reads its inputs from `src/recourses/`; every file it
+needs is listed in `src/datasets/data_catalogue.py` and, with size and SHA-256, in `DATA_MANIFEST.csv`.
 
 | Origin | Meaning | What to do when a file is missing |
 |---|---|---|

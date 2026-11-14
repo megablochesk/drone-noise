@@ -1,7 +1,7 @@
-"""The data files of the published model and the main files of the fine-grid design: what each is, where it comes from, and what can write it when it is missing.
+"""Every data file the model and the revision design read: what it is, where it comes from, and what can write
+it when it is missing.
 
-Not listed: the 100 m age and ethnicity tables and the Round 4 energy-mean baselines, which are written on
-first use. None of these files is under version control. Paths are relative to src/, like all data paths of the model.
+None of these files is under version control. Paths are relative to src/, like all data paths of the model.
 """
 from dataclasses import dataclass
 from enum import Enum
@@ -24,6 +24,7 @@ from common.path_configs import (
 
 PUBLISHED_NUMBER_OF_ORDERS = 100_000
 FINE_CELL_SIZE_M = 100
+PUBLISHED_CELL_SIZE_M = 500
 MIXED_STOCKING_RANDOM_SHARES_PERCENT = tuple(range(100, 0, -10))
 DEFRA_NOISE_MAPS = (
     "Defra strategic noise mapping, 2017 noise maps (https://www.gov.uk/government/publications/strategic-noise-mapping-2019): "
@@ -144,6 +145,30 @@ DERIVED_FILES = (
         "Round 4 road noise averaged over every 100 m cell, 40 dB where the map reports nothing",
         "datasets.round4_baseline.write_round4_baseline_file(ROUND_4_ROAD, 100)",
         generator="datasets.fine_grid_files:write_fine_round4_baseline_file", requires=("round 4 road noise raster",),
+    ),
+    DataFile(
+        "cell age 100 m", PATH_CONFIGS.cell_age_path(FINE_CELL_SIZE_M), DataOrigin.DERIVED,
+        "residents of every 100 m cell by age band", "census_analysis.cell_datasets.load_cell_age(100)",
+        generator="datasets.fine_grid_files:write_fine_cell_age_file",
+        requires=("study boundary", "msoa population", "census age"),
+    ),
+    DataFile(
+        "cell ethnicity 100 m", PATH_CONFIGS.cell_ethnicity_path(FINE_CELL_SIZE_M), DataOrigin.DERIVED,
+        "residents of every 100 m cell by ethnic group", "census_analysis.cell_datasets.load_cell_ethnicity(100)",
+        generator="datasets.fine_grid_files:write_fine_cell_ethnicity_file",
+        requires=("study boundary", "msoa population", "census ethnicity"),
+    ),
+    DataFile(
+        "baseline noise round 4 energy mean, 100 m", PATH_CONFIGS.round4_energy_base_noise_path(FINE_CELL_SIZE_M),
+        DataOrigin.DERIVED, "Round 4 road noise as the level of the mean sound energy of every 100 m cell",
+        "datasets.round4_baseline.write_round4_baseline_file(ROUND_4_ROAD_ENERGY, 100)",
+        generator="datasets.fine_grid_files:write_fine_round4_energy_baseline_file", requires=("round 4 road noise raster",),
+    ),
+    DataFile(
+        "baseline noise round 4 energy mean", PATH_CONFIGS.round4_energy_base_noise_path(PUBLISHED_CELL_SIZE_M),
+        DataOrigin.DERIVED, "Round 4 road noise as the level of the mean sound energy of every 500 m cell",
+        "datasets.round4_baseline.write_round4_baseline_file(ROUND_4_ROAD_ENERGY, 500)",
+        generator="datasets.fine_grid_files:write_round4_energy_baseline_file", requires=("round 4 road noise raster",),
     ),
     DataFile(
         "baseline noise round 4", ROUND4_BASE_NOISE_PATH, DataOrigin.DERIVED,
