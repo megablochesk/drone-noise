@@ -1,7 +1,7 @@
 """The design of the revision: Round 4 baseline, 100 m noise cells and a 10 s time step on the pilot factorial."""
 from dataclasses import replace
 
-from common.enum import BaselineNoiseMap
+from common.enum import BaselineNoiseMap, NavigationType
 from experiments.revision.revision_design import ALL_STOCKINGS, PILOT_FLEETS, TERMINAL_MODES, build_factorial_specifications
 from experiments.revision.run_specification import RunSpecification
 
@@ -12,6 +12,9 @@ FINE_BASELINE_NOISE_MAP = BaselineNoiseMap.ROUND_4_ROAD
 PHASE_NAME = "fine_grid"
 SLANT_FLOOR_FLEET = 1250
 SLANT_FLOOR_M = 10.0
+NOISE_AWARE_NAVIGATIONS = (
+    NavigationType.NOISE_A025, NavigationType.NOISE_A050, NavigationType.NOISE_A075, NavigationType.NOISE_A100,
+)
 
 
 def build_fine_grid_specifications(seeds: list[int]) -> list[RunSpecification]:
@@ -34,12 +37,27 @@ def build_single_landing_specifications(seeds: list[int]) -> list[RunSpecificati
     ]
 
 
+def select_largest_fleet_terminal_runs(seeds: list[int]) -> list[RunSpecification]:
+    return [
+        specification for specification in build_fine_grid_specifications(seeds)
+        if specification.terminal_phases and specification.number_of_drones == SLANT_FLOOR_FLEET
+    ]
+
+
 def build_slant_floor_specifications(seeds: list[int]) -> list[RunSpecification]:
     """The largest-fleet runs with terminal phases, with the slant distance to a cell centre floored."""
     return [
         replace(specification, minimum_slant_distance_m=SLANT_FLOOR_M)
-        for specification in build_fine_grid_specifications(seeds)
-        if specification.terminal_phases and specification.number_of_drones == SLANT_FLOOR_FLEET
+        for specification in select_largest_fleet_terminal_runs(seeds)
+    ]
+
+
+def build_noise_aware_specifications(seeds: list[int]) -> list[RunSpecification]:
+    """The largest-fleet runs with terminal phases, routed around the noise of the baseline map at every alpha."""
+    return [
+        replace(specification, navigation=navigation)
+        for navigation in NOISE_AWARE_NAVIGATIONS
+        for specification in select_largest_fleet_terminal_runs(seeds)
     ]
 
 
