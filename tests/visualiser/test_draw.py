@@ -103,3 +103,13 @@ def test_a_saved_figure_is_written_in_every_format_and_closed(tmp_path):
     assert [path.name for path in paths] == ["deliveries.eps", "deliveries.png"]
     assert all(path.stat().st_size > 0 for path in paths)
     assert not plt.fignum_exists(figure.number)
+
+
+def test_map_ticks_can_follow_the_published_spacing():
+    """The published 500 m maps label every fifth row and every sixth column."""
+    image = np.zeros((12, 14))
+
+    figure = draw.plot_map_row([image], ["Map"], [(0.0, 1.0)], ["Level (dB)"], tick_steps=(5, 6))
+
+    assert figure.axes[0].get_yticks().tolist() == [0, 5, 10]
+    assert figure.axes[0].get_xticks().tolist() == [0, 6, 12]
