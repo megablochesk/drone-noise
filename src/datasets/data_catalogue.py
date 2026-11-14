@@ -22,6 +22,7 @@ from common.path_configs import (
 )
 
 PUBLISHED_NUMBER_OF_ORDERS = 100_000
+FINE_CELL_SIZE_M = 100
 MIXED_STOCKING_RANDOM_SHARES_PERCENT = tuple(range(100, 0, -10))
 DEFRA_NOISE_MAPS = (
     "Defra strategic noise mapping, 2017 noise maps (https://www.gov.uk/government/publications/strategic-noise-mapping-2019): "
@@ -131,6 +132,18 @@ PUBLISHED_FILES = (
 )
 
 DERIVED_FILES = (
+    DataFile(
+        "cell population 100 m", PATH_CONFIGS.cell_population_path(FINE_CELL_SIZE_M), DataOrigin.DERIVED,
+        "residents of every 100 m cell, MSOA populations split by overlapping area",
+        "census_analysis.cell_datasets.load_cell_population(100)",
+        generator="datasets.fine_grid_files:write_fine_cell_population_file", requires=("study boundary", "msoa population"),
+    ),
+    DataFile(
+        "baseline noise round 4, 100 m", PATH_CONFIGS.round4_base_noise_path(FINE_CELL_SIZE_M), DataOrigin.DERIVED,
+        "Round 4 road noise averaged over every 100 m cell, 40 dB where the map reports nothing",
+        "datasets.round4_baseline.write_round4_baseline_file(ROUND_4_ROAD, 100)",
+        generator="datasets.fine_grid_files:write_fine_round4_baseline_file", requires=("round 4 road noise raster",),
+    ),
     DataFile(
         "baseline noise round 4", ROUND4_BASE_NOISE_PATH, DataOrigin.DERIVED,
         "Round 4 road noise averaged over every 500 m cell, 40 dB where the map reports nothing",
