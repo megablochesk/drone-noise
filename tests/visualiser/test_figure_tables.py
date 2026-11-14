@@ -31,8 +31,8 @@ def test_metric_is_tabulated_by_fleet_for_one_routing_and_terminal_mode():
     assert table["closest"].tolist() == [10, 50] and table["furthest"].tolist() == [6, 30]
 
 
-def test_rows_stored_before_the_navigation_field_count_as_straight():
-    """The pilot runs were stored before runs recorded their routing; they were all straight-line."""
+def test_rows_without_a_routing_count_as_straight():
+    """A run table without routing values holds straight-line runs."""
     runs = build_runs().astype({"navigation": object})
     runs.loc[runs["navigation"] == "STRAIGHT", "navigation"] = np.nan
 

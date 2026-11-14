@@ -26,3 +26,13 @@ def test_routings_are_named_and_coloured_as_in_the_submitted_paper():
 
 def test_revision_figures_use_the_same_stocking_colours():
     assert plot_style.STOCKING_COLOURS == style.STOCKING_COLOURS
+
+
+def test_dashed_routes_interleave_so_that_coinciding_routes_both_show():
+    """Two routes can be the same cells (alpha 0.25 and 0.50 often are): each fills the gaps of the other."""
+    first_offset, (first_dash, first_gap) = style.ROUTE_STYLES["NOISE_A025"]["linestyle"]
+    second_offset, (second_dash, second_gap) = style.ROUTE_STYLES["NOISE_A050"]["linestyle"]
+
+    assert (first_dash, first_gap) == (second_dash, second_gap) and first_dash == first_gap
+    assert second_offset - first_offset == first_dash
+    assert style.ROUTE_STYLES["NOISE_A025"]["linewidth"] == style.ROUTE_STYLES["NOISE_A050"]["linewidth"]
