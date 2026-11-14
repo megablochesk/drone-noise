@@ -81,8 +81,8 @@ def test_same_specification_gives_the_same_result(store, row):
 
 
 def test_orders_left_are_counted_against_the_whole_pool(store):
-    """With one drone per warehouse only the first 400 orders of a warehouse can ever be dispatched, and the
-    executor builds no more than that; the leftover count must still refer to all 6,000 pool orders."""
+    """Every pool order is queued but only dispatched orders are built; the leftover count must still refer
+    to all 6,000 pool orders."""
     specification = RunSpecification(
         stocking=OrderDatasetType.CLOSEST, number_of_drones=14, terminal_phases=False, seed=2, pool_size=6_000
     )

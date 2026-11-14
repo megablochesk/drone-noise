@@ -1,6 +1,6 @@
 """Diagnostic: what the noise sum loses when positions beyond a maximum slant distance are left out.
 
-The model sums every position for every cell. A cut-off would let a spatial index skip most pairs; this
+The model sums every distinct position, weighted by its count, for every cell. A cut-off would let a spatial index skip most pairs; this
 measures the error it would cause on one run, against the exact sum. The default stays without a cut-off.
 
 Usage (from src/): python -m experiments.revision.cutoff_diagnostic

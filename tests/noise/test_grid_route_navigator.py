@@ -1,4 +1,4 @@
-"""Routes on the array grid must be the routes of the published router with the published mixed weight."""
+"""Array-grid routes equal the published router's between cells; any start can be a depot; no route within a cell."""
 import random
 
 import numpy as np

@@ -1,7 +1,7 @@
 """The generators of the derived cell datasets reproduce the stored files, so a missing file can be regenerated.
 
 Cells are processed by a thread pool and come back in no fixed order, so tables are compared cell by cell.
-The population table takes several minutes to compute and is not recomputed here.
+The population table is recomputed against the stored file in test_cell_population.py.
 """
 import pandas as pd
 import pytest

@@ -1,4 +1,4 @@
-"""Writers of the derived 100 m files of the revision design, for the data catalogue."""
+"""Writers of the 100 m population and Round 4 baseline files of the revision design, for the catalogue."""
 from census_analysis.cell_datasets import load_cell_population
 from common.enum import BaselineNoiseMap
 from datasets.round4_baseline import write_round4_baseline_file

@@ -1,6 +1,7 @@
-"""Every data file the model reads: what it is, where it comes from, and what can write it when it is missing.
+"""The data files of the published model and the main files of the fine-grid design: what each is, where it comes from, and what can write it when it is missing.
 
-None of these files is under version control. Paths are relative to src/, like all data paths of the model.
+Not listed: the 100 m age and ethnicity tables and the Round 4 energy-mean baselines, which are written on
+first use. None of these files is under version control. Paths are relative to src/, like all data paths of the model.
 """
 from dataclasses import dataclass
 from enum import Enum
@@ -80,7 +81,7 @@ EXTERNAL_FILES = (
     ),
     DataFile(
         "navigation baseline noise", NAVIGATION_BASE_NOISE_PATH, DataOrigin.EXTERNAL,
-        "baseline noise on the 100 m navigation grid; noise-based navigation only", DEFRA_NOISE_MAPS,
+        "baseline noise on the 100 m navigation grid; noise-based navigation on the published map only", DEFRA_NOISE_MAPS,
     ),
     DataFile(
         "round 4 road noise raster", PATH_CONFIGS.round4_road_noise_raster_path, DataOrigin.EXTERNAL,
@@ -173,7 +174,7 @@ DERIVED_FILES = (
 CACHE_FILES = (
     DataFile(
         "navigation graph", f"{NAVIGATION_GRAPH_PATH}.pkl", DataOrigin.CACHE,
-        "routing graph of the noise-based navigation; its route caches next to it are built the same way",
+        "routing graph of noise-based navigation on the published map; its route caches are built the same way",
         "noise.noise_graph_builder.load_or_build_graph, on first use", requires=("navigation baseline noise",),
     ),
 )

@@ -114,7 +114,7 @@ def extract_drone_levels(simulator: Simulator, cell_size_m: int) -> np.ndarray:
 def summarise_warehouses(
         statistics: RunStatistics, demand: PlannedDemand, depots: dict[str, Coordinate]
 ) -> dict[str, dict]:
-    """Per depot with orders or drones; orders left refer to the whole pool, not only to the built orders."""
+    """Per depot with orders or drones; orders left are pool orders minus orders assigned to drones."""
     return {
         depot_name: {
             "drones": statistics.drones_by_warehouse.get(location, 0),

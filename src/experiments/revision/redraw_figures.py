@@ -1,4 +1,4 @@
-"""Redraw every revision figure from the stored tables and artefacts, without recomputing anything.
+"""Redraw the phase 6-12 figures from the stored tables and artefacts, without recomputing anything.
 
 Usage (from src/): python -m experiments.revision.redraw_figures
 """

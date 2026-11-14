@@ -1,6 +1,6 @@
-"""Routes between warehouses and customers on the array navigation grid.
+"""Routes on the array navigation grid; a route's start becomes a depot if it is not one already.
 
-The shortest-path tree of a warehouse is built on first use (a fraction of a second), so nothing is cached on
+The shortest-path tree of a depot is built on first use (a fraction of a second), so nothing is cached on
 disk and a tree can never belong to another noise map or cost.
 """
 import numpy as np

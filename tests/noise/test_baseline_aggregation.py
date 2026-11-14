@@ -1,4 +1,4 @@
-"""Averaging a fine noise raster over the 500 m cells. Expected values are hand calculations.
+"""Averaging a fine noise raster over grid cells of any size. Expected values are hand calculations.
 
 Convention: all edges ascend, and levels[i, j] is the pixel between northing edges i, i + 1 and easting
 edges j, j + 1.

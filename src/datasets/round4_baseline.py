@@ -1,4 +1,4 @@
-"""Builds the 500 m baseline noise file from the Defra Round 4 road noise raster.
+"""Builds Round 4 baseline noise files (500 m by default) from the Defra road noise raster.
 
 The file is a table with one record per cell of the bounding grid (row, col, noise_level), for any cell size
 and for the arithmetic or the energy mean of the pixels.
