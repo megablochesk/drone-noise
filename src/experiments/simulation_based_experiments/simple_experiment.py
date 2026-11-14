@@ -1,34 +1,12 @@
 from experiments.config_generator import build_configs_for_single
 from experiments.experiment_executor import run_complex_experiment
-from visualiser.plot_noise_level_comparison import plot_noise_level_comparison
-from visualiser.single_sim_group_impact import plot_single_sim_age_impact_counts, \
-    plot_single_sim_ethnicity_impact_counts, plot_single_sim_age_impact_percentages, \
-    plot_single_sim_ethnicity_impact_percentages
-from visualiser.statistics import plot_noise_difference_barchart
+from census_analysis.cell_datasets import load_cell_age, load_cell_ethnicity
+from visualiser.paper_experiment_figures import draw_single_run_figures
 
 
-METRICS = ['noise_level', 'average_noise', 'noise_difference']
-TITLES = ['Base City Noise', 'Drone Noise', 'City Noise Increase']
-CBAR_LABELS = ['Noise level (dB)', 'Noise level (dB)', 'Noise increase (dB)']
-
-def plot_all_statistics(experiment_results):
-    noise_impact_df = experiment_results.iloc[0]['noise_impact_df']
-
-    plot_noise_difference_barchart(noise_impact_df)
-    plot_noise_level_comparison(
-        noise_impact_df,
-        metrics=METRICS,
-        titles=TITLES,
-        cbar_labels=CBAR_LABELS,
-        vmin=[40, 25, 0],
-        vmax=[80, 55, 9]
-    )
-
-    plot_single_sim_age_impact_counts(noise_impact_df, threshold=55)
-    plot_single_sim_age_impact_percentages(noise_impact_df, threshold=55)
-
-    plot_single_sim_ethnicity_impact_counts(noise_impact_df, threshold=55)
-    plot_single_sim_ethnicity_impact_percentages(noise_impact_df, threshold=55)
+def plot_all_statistics(experiment_results, figure_directory):
+    cell_table = experiment_results.iloc[0]['noise_impact_df']
+    draw_single_run_figures(cell_table, figure_directory, load_cell_age(), load_cell_ethnicity())
 
 
 def run_standard_experiment(load_saved_results=False):

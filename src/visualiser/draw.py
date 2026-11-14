@@ -62,15 +62,14 @@ def plot_navigation_panels(tables: dict[str, pd.DataFrame], value_label: str):
         axis.set_title(style.STOCKING_TITLES[stocking])
         axis.set_xlabel(style.FLEET_LABEL)
         axis.set_xticks(next(iter(tables.values())).index)
-        axis.tick_params(axis="x", labelsize=9)
         axis.tick_params(axis="y", labelleft=True)
         axis.yaxis.set_major_locator(ticker.MaxNLocator(nbins=8))
         axis.yaxis.set_major_formatter(ticker.FuncFormatter(format_compact_value))
         style_value_axis(axis)
     axes[0].set_ylabel(value_label)
     handles, labels = axes[0].get_legend_handles_labels()
-    figure.legend(handles, labels, loc="upper center", ncol=len(labels), frameon=False, fontsize=11)
-    figure.tight_layout(rect=(0.0, 0.0, 1.0, 0.93))
+    figure.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 0.995), ncol=len(labels), frameon=False)
+    figure.tight_layout(rect=(0.0, 0.0, 1.0, 0.88))
     return figure
 
 
@@ -87,12 +86,24 @@ def draw_map(axis, image: np.ndarray, colour_range: tuple[float, float], colour_
     axis.figure.colorbar(drawn, ax=axis, fraction=0.04, pad=0.03, label=colour_bar_label)
 
 
-def plot_map_row(images: list[np.ndarray], titles: list[str], colour_ranges: list[tuple[float, float]], labels: list[str]):
-    """Maps side by side, each with its title, colour range and colour bar."""
+def label_cells(axis, image: np.ndarray, tick_steps: tuple[int, int]):
+    """A tick at every `tick_steps[0]`-th row and `tick_steps[1]`-th column, column labels upright to the axis."""
+    axis.set_yticks(np.arange(0, image.shape[0], tick_steps[0]))
+    axis.set_xticks(np.arange(0, image.shape[1], tick_steps[1]))
+    axis.tick_params(axis="x", labelrotation=90)
+
+
+def plot_map_row(
+        images: list[np.ndarray], titles: list[str], colour_ranges: list[tuple[float, float]], labels: list[str],
+        tick_steps: tuple[int, int] | None = None,
+):
+    """Maps side by side, each with its title, colour range and colour bar; ticks are automatic unless given."""
     figure, axes = plt.subplots(1, len(images), figsize=(MAP_PANEL_SIZE[0] * len(images), MAP_PANEL_SIZE[1]))
     for axis, image, title, colour_range, label in zip(np.atleast_1d(axes), images, titles, colour_ranges, labels):
         draw_map(axis, image, colour_range, label)
         axis.set_title(title)
+        if tick_steps is not None:
+            label_cells(axis, image, tick_steps)
     figure.tight_layout()
     return figure
 

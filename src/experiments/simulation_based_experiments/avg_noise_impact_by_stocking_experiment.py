@@ -1,7 +1,7 @@
 from common.path_configs import ORDER_BASE_PATH_CLOSEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_FURTHEST
 from experiments.config_generator import generate_configs_for_datasets
 from experiments.experiment_executor import run_complex_experiment
-from visualiser.plot_noise_level_comparison import plot_noise_level_comparison
+from visualiser.paper_experiment_figures import draw_stocking_noise_maps
 
 NUMBER_OF_DRONES = 1250
 NUMBER_OF_ORDERS = 100_000
@@ -12,30 +12,11 @@ ORDER_DATASETS = {
     'furthest': ORDER_BASE_PATH_FURTHEST,
 }
 
-METRICS = ['average_noise', 'average_noise', 'average_noise']
-TITLES = ['Best Stocking', 'Random Stocking', 'Worst Stocking']
-CBAR_LABELS = ['Noise level (dB)', 'Noise level (dB)', 'Noise level (dB)']
-
-
 def generate_configs():
     return generate_configs_for_datasets(
         ORDER_DATASETS,
         NUMBER_OF_ORDERS,
         NUMBER_OF_DRONES
-    )
-
-
-def plot_noise_comparison_for_different_stocking(results_df):
-    dataframes = [row['noise_impact_df'] for _, row in results_df.iterrows()]
-
-    plot_noise_level_comparison(
-        dataframes,
-        metrics=METRICS,
-        titles=TITLES,
-        cbar_labels=CBAR_LABELS,
-        file_name='noise_maps',
-        vmin=33,
-        vmax=53
     )
 
 
@@ -46,5 +27,5 @@ def run_avg_noise_for_different_stocking_experiment(load_saved_experiment=False)
         load_saved_results=load_saved_experiment,
         result_file_name='avg_noise_for_different_stocking',
         configs_with_names=configs_with_names,
-        visualisation_function=plot_noise_comparison_for_different_stocking,
+        visualisation_function=draw_stocking_noise_maps,
     )

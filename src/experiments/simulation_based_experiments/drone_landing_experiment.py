@@ -2,9 +2,9 @@ import pandas as pd
 
 from common.path_configs import ORDER_BASE_PATH_FURTHEST, ORDER_BASE_PATH_RANDOM, ORDER_BASE_PATH_CLOSEST
 from experiments.config_generator import build_configs_for_datasets_and_drones
+from census_analysis.cell_datasets import load_cell_population
 from experiments.experiment_executor import run_complex_experiment
-from visualiser.cell_statistics_plotter import analyze_and_plot_noise_increase, analyze_and_plot_population_impact
-from visualiser.general_statistics_plotter import plot_avg_noise_linegraph, plot_delivered_orders_linegraph
+from visualiser.paper_experiment_figures import draw_fleet_experiment_figures
 
 NUMBER_OF_DRONES_CASES = [1250, 1000, 750, 500, 250, 100]
 NUMBER_OF_ORDERS = 100_000
@@ -25,23 +25,15 @@ def generate_configs():
     )
 
 
-def plot_all_statistics(experiment_results):
-    plot_avg_noise_linegraph(experiment_results, filename="del_noise_landing")
-    plot_delivered_orders_linegraph(experiment_results, filename="del_orders_landing")
-
+def plot_all_statistics(experiment_results, figure_directory):
     pd.set_option('display.max_columns', None)
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
-
     print(experiment_results[['dataset_name', 'run_name', 'num_drones',
                               'avg_noise_diff',
                               'delivered_orders_number']])
 
-    for dB_level in range(55, 60, 5):
-        analyze_and_plot_noise_increase(experiment_results, dB_level, filename="del_cel_imp_landing")
-        analyze_and_plot_population_impact(experiment_results, dB_level, filename="del_pop_imp_landing")
-        #analyze_and_plot_age_impact(experiment_results, dB_level)
-        #analyze_and_plot_ethnicity_impact(experiment_results, dB_level)
+    draw_fleet_experiment_figures(experiment_results, figure_directory, load_cell_population(), name_suffix="_landing")
 
 
 def run_drone_landing_experiment(load_saved_results=False):

@@ -22,7 +22,7 @@ from common.simulation_configs import SimulationConfig
 from noise.navigator import clear_navigator_cache
 from simulation.planned_route_cache import PlannedRouteCache, PlannedRouteCacheStats
 from simulation.simulator import Simulator
-from visualiser.plot_utils import finalise_visualisation
+from visualiser import style
 
 
 @dataclass(frozen=True)
@@ -423,10 +423,8 @@ def _visualise_results(results, visualisation_function=None, result_file_name: s
 
     print("Running visualisation on experiment results...")
     results = _ensure_results_schema(results)
-    visualisation_function(results)
-
-    output_directory = _build_experiment_figure_output_directory(result_file_name)
-    finalise_visualisation(output_directory=output_directory)
+    style.apply_paper_style()
+    visualisation_function(results, _build_experiment_figure_output_directory(result_file_name))
 
 
 def _build_experiment_figure_output_directory(result_file_name: str | None) -> str:
