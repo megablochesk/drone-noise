@@ -2,7 +2,7 @@ from dataclasses import replace
 
 import pytest
 
-from common.enum import BaselineNoiseMap, NoiseCalculation, OrderDatasetType
+from common.enum import BaselineNoiseMap, NavigationType, NoiseCalculation, OrderDatasetType
 from common.model_configs import model_config
 from experiments.revision.run_specification import (
     DemandModel,
@@ -12,6 +12,7 @@ from experiments.revision.run_specification import (
     build_model_config,
     build_run_key,
     build_simulation_config,
+    specification_to_record,
 )
 
 BASE_SPECIFICATION = RunSpecification(stocking=OrderDatasetType.CLOSEST, number_of_drones=1250, terminal_phases=False)
@@ -36,6 +37,7 @@ ALTERNATIVE_FIELD_VALUES = {
     "time_step_s": 10,
     "noise_cell_m": 100,
     "land_once_at_customer": True,
+    "navigation": NavigationType.NOISE_A025,
 }
 
 
@@ -78,7 +80,7 @@ def test_overridden_parameters_reach_the_model_configuration():
 
 
 def test_simulation_configuration_follows_the_specification():
-    """Field-by-field mapping; routing is always straight-line in the revision runs."""
+    """Field-by-field mapping; routing is straight-line unless the specification says otherwise."""
     specification = replace(BASE_SPECIFICATION, number_of_drones=500, terminal_phases=True)
     config = build_simulation_config(specification, order_dataset_path="orders.csv", orders_to_process=123)
     assert config.number_of_drones == 500
@@ -87,3 +89,25 @@ def test_simulation_configuration_follows_the_specification():
     assert config.noise_calculation is NoiseCalculation.ENERGY_SUM
     assert (config.order_dataset_path, config.orders_to_process) == ("orders.csv", 123)
     assert config.print_model_stats is False
+
+
+def test_noise_aware_navigation_reaches_the_simulation_configuration():
+    specification = replace(BASE_SPECIFICATION, navigation=NavigationType.NOISE_A050)
+    config = build_simulation_config(specification, order_dataset_path="orders.csv", orders_to_process=123)
+    assert config.navigator_type is NavigationType.NOISE_A050
+
+
+def test_record_names_the_navigation():
+    """The values of the navigation types are bare numbers, so tables carry the name."""
+    assert specification_to_record(BASE_SPECIFICATION)["navigation"] == "STRAIGHT"
+    assert specification_to_record(replace(BASE_SPECIFICATION, navigation=NavigationType.NOISE_A025))["navigation"] == "NOISE_A025"
+    assert specification_to_record(BASE_SPECIFICATION)["stocking"] == "closest"
+
+
+def test_keys_of_stored_runs_stay_valid_when_a_field_is_added():
+    """Key of a stored fine-grid pilot run (results/fine_grid/runs.csv): worst stocking, 500 drones, terminal, seed 1."""
+    stored_run = RunSpecification(
+        stocking=OrderDatasetType.FURTHEST, number_of_drones=500, terminal_phases=True, seed=1, pool_size=650_000,
+        baseline_noise_map=BaselineNoiseMap.ROUND_4_ROAD, time_step_s=10, noise_cell_m=100,
+    )
+    assert build_run_key(stored_run) == "1cf207546da36ea6"
