@@ -51,11 +51,11 @@ def run_published_configuration(stocking: str, terminal_phases: bool, number_of_
 def newly_exposed_population(results: pd.DataFrame) -> float:
     from common.file_utils import load_dataframe_from_pickle
     from common.path_configs import CELL_POPULATION_PATH
-    from visualiser.cell_statistics_calculator import calculate_population_impacted_by_noise
+    from visualiser.legacy_results import convert_legacy_results
 
     population = load_dataframe_from_pickle(CELL_POPULATION_PATH)
-    impacted = calculate_population_impacted_by_noise(results, population, threshold=EXPOSURE_THRESHOLD_DB)
-    return impacted["impacted_population"].iloc[0]
+    runs = convert_legacy_results(results, terminal_phases=True, population=population, threshold_db=EXPOSURE_THRESHOLD_DB)
+    return runs["newly_exposed_population"].iloc[0]
 
 
 def describe(published: PublishedResult) -> str:
