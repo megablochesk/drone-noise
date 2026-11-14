@@ -22,7 +22,7 @@ def build_navigators(alpha: float, seed: int):
         weight_id=None, graph=graph,
     )
     grid = read_navigation_grid_from_graph(graph, CELL_SIZE_M)
-    return GridRouteNavigator(grid, calculate_mixed_edge_costs(grid, alpha), WAREHOUSE_LOCATIONS), published
+    return GridRouteNavigator(grid, calculate_mixed_edge_costs(grid, alpha), WAREHOUSE_LOCATIONS), published, graph
 
 
 def random_customers(seed: int, number_of_customers: int) -> list[Coordinate]:
@@ -36,9 +36,9 @@ def random_customers(seed: int, number_of_customers: int) -> list[Coordinate]:
     ]
 
 
-@pytest.mark.parametrize("alpha", [0.25, 0.5, 0.75, 1.0])
+@pytest.mark.parametrize("alpha", [0.25, 0.5, 0.75])
 def test_routes_to_and_from_every_warehouse_equal_the_published_router(alpha):
-    navigator, published = build_navigators(alpha, seed=5)
+    navigator, published, _ = build_navigators(alpha, seed=5)
 
     for warehouse in WAREHOUSE_LOCATIONS:
         for customer in random_customers(seed=11, number_of_customers=25):
@@ -48,9 +48,37 @@ def test_routes_to_and_from_every_warehouse_equal_the_published_router(alpha):
                 assert np.array_equal(eastings, published_eastings) and np.array_equal(northings, published_northings)
 
 
+def sum_route_cost(graph, weight, eastings: np.ndarray, northings: np.ndarray) -> float:
+    """Cost of a route given as cell centres; fails if two consecutive centres are not joined by an edge."""
+    node_by_centre = {(attributes["easting"], attributes["northing"]): node for node, attributes in graph.nodes(data=True)}
+    nodes = [node_by_centre[centre] for centre in zip(eastings.tolist(), northings.tolist())]
+    return sum(weight(start, end, graph.edges[start, end]) for start, end in zip(nodes[:-1], nodes[1:]))
+
+
+def test_with_edges_of_zero_cost_routes_are_still_as_cheap_as_the_published_ones():
+    """alpha = 1: an edge between two cells of the lowest level costs nothing, so many routes are equally cheap.
+
+    The published rule for choosing among them can loop, and the published router then searches the graph again
+    for that route. The routes need not be the same cells, but they must cost the same and join the same ends.
+    """
+    navigator, published, graph = build_navigators(alpha=1.0, seed=5)
+    weight = make_mixed_distance_noise_weight(graph, 1.0, higher_noise_is_better=False)
+
+    for warehouse in WAREHOUSE_LOCATIONS:
+        for customer in random_customers(seed=11, number_of_customers=25):
+            for start, end in [(warehouse, customer), (customer, warehouse)]:
+                eastings, northings = navigator.get_optimal_route_coordinates(start, end)
+                published_eastings, published_northings = published.get_optimal_route_coordinates(start, end)
+                assert (eastings[0], northings[0]) == (published_eastings[0], published_northings[0])
+                assert (eastings[-1], northings[-1]) == (published_eastings[-1], published_northings[-1])
+                assert sum_route_cost(graph, weight, eastings, northings) == pytest.approx(
+                    sum_route_cost(graph, weight, published_eastings, published_northings), abs=1e-9
+                )
+
+
 def test_a_route_between_two_customers_is_refused():
     """Trees exist for warehouses only; the simulation never asks for another kind of route."""
-    navigator, _ = build_navigators(alpha=0.25, seed=5)
+    navigator, _, _ = build_navigators(alpha=0.25, seed=5)
     first, second = random_customers(seed=11, number_of_customers=2)
 
     with pytest.raises(ValueError):

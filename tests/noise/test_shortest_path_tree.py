@@ -36,3 +36,19 @@ def test_zero_weight_edges_are_edges():
     parents, distances = calculate_shortest_path_tree(NUMBER_OF_NODES, EDGE_STARTS, EDGE_ENDS, weights, source=0)
     np.testing.assert_array_equal(distances, [0.0, 0.0, 1.0, 6.0, np.inf])
     np.testing.assert_array_equal(parents, [0, 0, 1, 2, NO_PARENT])
+
+
+def test_search_tree_never_loops_over_edges_of_zero_cost():
+    """Nodes 0-1-2 in a line with costs 1 and 0, plus a zero-cost edge 2-3 and 1-3: nodes 1, 2, 3 are all at
+    distance 1, so the lowest-index rule makes 2 and 3 parents of each other; the search tree still leads to 0."""
+    from noise.navigator.shortest_path_tree import calculate_search_tree
+
+    starts, ends, costs = np.array([0, 1, 2, 1]), np.array([1, 2, 3, 3]), np.array([1.0, 0.0, 0.0, 0.0])
+    parents = calculate_search_tree(4, starts, ends, costs, source=0)
+
+    for node in [1, 2, 3]:
+        steps, current = 0, node
+        while current != 0:
+            current, steps = parents[current], steps + 1
+            assert steps <= 3
+    assert parents[0] == 0 and parents[1] == 0
