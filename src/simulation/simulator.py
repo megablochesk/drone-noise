@@ -7,7 +7,6 @@ from simulation.delivery_dispatcher import DeliveryDispatcher
 from simulation.fleet import Fleet
 from simulation.flight_activity_log import FlightActivityLog
 from simulation.noise_monitor import NoiseMonitor
-from simulation.planned_route_cache import PlannedRouteCache
 from simulation.plotter import Plotter
 from simulation.timer import Timer
 
@@ -15,7 +14,6 @@ from simulation.timer import Timer
 class Simulator:
     def __init__(
         self,
-        planned_route_cache: PlannedRouteCache | None = None,
         warehouse_locations=None,
         orders=None,
         pending_orders_by_warehouse=None,
@@ -33,7 +31,6 @@ class Simulator:
             self.configs.number_of_drones,
             self.configs.order_dataset_path,
             selected_warehouse_locations,
-            planned_route_cache=planned_route_cache,
         )
         self.drones_by_warehouse = dict(Counter(drone.return_location for drone in self.fleet.free_drones))
         self.activity_log = FlightActivityLog()

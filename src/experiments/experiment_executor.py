@@ -20,7 +20,6 @@ from common.path_configs import get_experiment_results_full_file_path
 from common.runtime_configs import use_simulation_config
 from common.simulation_configs import SimulationConfig
 from noise.navigator import clear_navigator_cache
-from simulation.planned_route_cache import PlannedRouteCache, PlannedRouteCacheStats
 from simulation.simulator import Simulator
 from visualiser import style
 
@@ -154,7 +153,6 @@ def _run_dataset_group(
     dataset_group_key: DatasetExperimentGroupKey,
     runs: list[tuple[str, SimulationConfig]],
 ):
-    planned_route_cache = _create_planned_route_cache(navigation_type_name)
     ordered_runs = _sort_runs_by_descending_drone_count(runs)
     memory_monitor = ProcessMemoryMonitor()
 
@@ -168,7 +166,6 @@ def _run_dataset_group(
         f"\n--- Running dataset group: navigation_type={navigation_type_name}, "
         f"dataset={dataset_group_key.dataset_name}, drone_landing={dataset_group_key.drone_landing_enabled}, "
         f"runs={len(ordered_runs)}, "
-        f"planned_route_cache={'enabled' if planned_route_cache is not None else 'disabled'}, "
         f"active_warehouses={len(active_warehouse_locations)} ---"
     )
 
@@ -180,20 +177,17 @@ def _run_dataset_group(
                 _run_atomic_experiment(
                     run_name=run_name,
                     config=config,
-                    planned_route_cache=planned_route_cache,
                     warehouse_locations=active_warehouse_locations,
                 )
             )
     finally:
         memory_usage_summary = memory_monitor.stop()
-        cache_stats = _get_planned_route_cache_stats(planned_route_cache)
         _log_dataset_group_summary(
             navigation_type_name=navigation_type_name,
             dataset_group_key=dataset_group_key,
-            cache_stats=cache_stats,
             memory_usage_summary=memory_usage_summary,
         )
-        _clear_planned_route_cache(planned_route_cache)
+        gc.collect()
         _log_memory_after_cache_cleanup(
             navigation_type_name=navigation_type_name,
             dataset_group_key=dataset_group_key,
@@ -220,12 +214,6 @@ def _load_active_warehouse_locations(dataset_path: str, number_of_orders: int) -
     return warehouse_locations
 
 
-def _create_planned_route_cache(navigation_type_name: str) -> PlannedRouteCache | None:
-    if navigation_type_name == NavigationType.STRAIGHT.name:
-        return None
-    return PlannedRouteCache()
-
-
 def _sort_runs_by_descending_drone_count(runs):
     return sorted(
         runs,
@@ -236,16 +224,12 @@ def _sort_runs_by_descending_drone_count(runs):
 def _run_atomic_experiment(
     run_name: str,
     config: SimulationConfig,
-    planned_route_cache: PlannedRouteCache | None = None,
     warehouse_locations=None,
 ):
     start_time = time.time()
 
     with use_simulation_config(config):
-        simulator_after_run = _run_simulation(
-            planned_route_cache=planned_route_cache,
-            warehouse_locations=warehouse_locations,
-        )
+        simulator_after_run = _run_simulation(warehouse_locations=warehouse_locations)
 
         elapsed_time = time.time() - start_time
         return _extract_experiment_results(
@@ -256,11 +240,8 @@ def _run_atomic_experiment(
         )
 
 
-def _run_simulation(planned_route_cache: PlannedRouteCache | None = None, warehouse_locations=None):
-    simulator = Simulator(
-        planned_route_cache=planned_route_cache,
-        warehouse_locations=warehouse_locations,
-    )
+def _run_simulation(warehouse_locations=None):
+    simulator = Simulator(warehouse_locations=warehouse_locations)
     simulator.run()
     return simulator
 
@@ -285,17 +266,9 @@ def _extract_experiment_results(simulator_after_run, run_name, elapsed_time, con
     }
 
 
-def _get_planned_route_cache_stats(planned_route_cache: PlannedRouteCache | None) -> PlannedRouteCacheStats | None:
-    if planned_route_cache is None:
-        return None
-
-    return planned_route_cache.get_stats()
-
-
 def _log_dataset_group_summary(
     navigation_type_name: str,
     dataset_group_key: DatasetExperimentGroupKey,
-    cache_stats: PlannedRouteCacheStats | None,
     memory_usage_summary: MemoryUsageSummary | None,
 ):
     print(
@@ -303,18 +276,6 @@ def _log_dataset_group_summary(
         f"dataset={dataset_group_key.dataset_name}, "
         f"drone_landing={dataset_group_key.drone_landing_enabled}"
     )
-
-    if cache_stats is None:
-        print("  Planned route cache: disabled")
-    else:
-        print(
-            "  Planned route cache: "
-            f"entries={cache_stats.entry_count}, "
-            f"hits={cache_stats.hit_count}, "
-            f"misses={cache_stats.miss_count}, "
-            f"requests={cache_stats.request_count}, "
-            f"hit_rate={cache_stats.hit_rate:.2%}"
-        )
 
     if memory_usage_summary is None:
         print("  Memory usage: unavailable (psutil not installed)")
@@ -327,14 +288,6 @@ def _log_dataset_group_summary(
         f"peak_rss={_format_bytes(memory_usage_summary.peak_rss_bytes)}, "
         f"peak_growth={_format_bytes(memory_usage_summary.peak_rss_bytes - memory_usage_summary.start_rss_bytes)}"
     )
-
-
-def _clear_planned_route_cache(planned_route_cache: PlannedRouteCache | None):
-    if planned_route_cache is None:
-        return
-
-    planned_route_cache.clear()
-    gc.collect()
 
 
 def _log_memory_after_cache_cleanup(
