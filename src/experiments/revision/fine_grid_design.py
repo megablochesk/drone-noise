@@ -10,6 +10,7 @@ FINE_TIME_STEP_S = 10
 # The cell average that is closer to the pixel-level reference at 100 m (REPORT.md, "Fine grid").
 FINE_BASELINE_NOISE_MAP = BaselineNoiseMap.ROUND_4_ROAD
 PHASE_NAME = "fine_grid"
+PAPER_FLEETS = (1250, 1000, 750, 500, 250, 100)
 SLANT_FLOOR_FLEET = 1250
 SLANT_FLOOR_M = 10.0
 NOISE_AWARE_NAVIGATIONS = (
@@ -17,9 +18,9 @@ NOISE_AWARE_NAVIGATIONS = (
 )
 
 
-def build_fine_grid_specifications(seeds: list[int]) -> list[RunSpecification]:
+def build_fine_grid_specifications(seeds: list[int], fleets: tuple[int, ...] = PILOT_FLEETS) -> list[RunSpecification]:
     """Fleet x stocking x terminal mode for every seed, largest fleet first."""
-    factorial = build_factorial_specifications(seeds, list(PILOT_FLEETS), list(ALL_STOCKINGS), list(TERMINAL_MODES))
+    factorial = build_factorial_specifications(seeds, list(fleets), list(ALL_STOCKINGS), list(TERMINAL_MODES))
     return [
         replace(
             specification, noise_cell_m=FINE_CELL_SIZE_M, time_step_s=FINE_TIME_STEP_S,
@@ -58,6 +59,16 @@ def build_noise_aware_specifications(seeds: list[int]) -> list[RunSpecification]
         replace(specification, navigation=navigation)
         for navigation in NOISE_AWARE_NAVIGATIONS
         for specification in select_largest_fleet_terminal_runs(seeds)
+    ]
+
+
+def build_paper_figure_specifications(seeds: list[int]) -> list[RunSpecification]:
+    """The paper's fleets with straight routing (both terminal modes) and noise-aware routing (terminal phases)."""
+    straight = build_fine_grid_specifications(seeds, PAPER_FLEETS)
+    return straight + [
+        replace(specification, navigation=navigation)
+        for navigation in NOISE_AWARE_NAVIGATIONS
+        for specification in straight if specification.terminal_phases
     ]
 
 
