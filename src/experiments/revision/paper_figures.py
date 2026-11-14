@@ -43,6 +43,8 @@ FIGURE_FORMAT = "eps"
 PREVIEW_FORMAT = "png"
 PREVIEW_DPI = 110
 MAP_DPI = 300
+# The look of the submitted figures: serif text at 15 pt.
+PAPER_STYLE = {"font.family": "serif", "font.size": 15, "axes.titlesize": 15, "legend.fontsize": 13}
 
 STRAIGHT = "STRAIGHT"
 NOISE_AWARE_NAVIGATIONS = ("NOISE_A025", "NOISE_A050", "NOISE_A075", "NOISE_A100")
@@ -134,9 +136,9 @@ def select_run_key(runs: pd.DataFrame, stocking: str, navigation: str, terminal_
 
 
 def save_figure(figure, directory: Path, name: str, preview_directory: Path | None):
-    figure.savefig(directory / f"{name}.{FIGURE_FORMAT}", format=FIGURE_FORMAT, dpi=MAP_DPI)
+    figure.savefig(directory / f"{name}.{FIGURE_FORMAT}", format=FIGURE_FORMAT, dpi=MAP_DPI, bbox_inches="tight")
     if preview_directory is not None:
-        figure.savefig(preview_directory / f"{name}.{PREVIEW_FORMAT}", dpi=PREVIEW_DPI)
+        figure.savefig(preview_directory / f"{name}.{PREVIEW_FORMAT}", dpi=PREVIEW_DPI, bbox_inches="tight")
     plt.close(figure)
 
 
@@ -229,13 +231,16 @@ def plot_single_map(image: np.ndarray, colour_range: tuple[float, float], colour
     return figure
 
 
-def plot_drone_maps(store: ResultStore, grid: NoiseGrid, runs: pd.DataFrame, navigation: str):
-    """Figures 10, 15, 16: drone-only level per stocking for the largest fleet, one colour range for all three."""
-    images = [
+def load_drone_maps(store: ResultStore, grid: NoiseGrid, runs: pd.DataFrame, navigation: str) -> list[np.ndarray]:
+    """Drone-only level of the largest fleet as an image, one per stocking."""
+    return [
         to_grid_image(grid, load_drone_levels(store, select_run_key(runs, stocking, navigation)))
         for stocking in STOCKING_MAP_ORDER
     ]
-    colour_range = find_shared_colour_range(images, lower_percentile=1.0, upper_percentile=99.9)
+
+
+def plot_drone_maps(images: list[np.ndarray], colour_range: tuple[float, float]):
+    """Figures 10, 15, 16: drone-only level per stocking, on the colour range shared by the three figures."""
     return plot_map_row(
         images, [STOCKING_TITLES[stocking] for stocking in STOCKING_MAP_ORDER], [colour_range] * len(images),
         [NOISE_LEVEL_LABEL] * len(images),
@@ -355,9 +360,15 @@ def draw_fleet_figures(runs: pd.DataFrame, save):
 def draw_map_figures(store: ResultStore, grid: NoiseGrid, runs: pd.DataFrame, baseline_levels_db: np.ndarray, save):
     example_levels_db = load_drone_levels(store, select_run_key(runs, EXAMPLE_STOCKING, STRAIGHT))
     save(plot_noise_comparison(grid, baseline_levels_db, example_levels_db), "fig03_noise_maps")
-    save(plot_drone_maps(store, grid, runs, STRAIGHT), "fig10_drone_noise_straight")
-    save(plot_drone_maps(store, grid, runs, "NOISE_A050"), "fig15_drone_noise_alpha_050")
-    save(plot_drone_maps(store, grid, runs, "NOISE_A100"), "fig16_drone_noise_alpha_100")
+    figure_names = {
+        STRAIGHT: "fig10_drone_noise_straight", "NOISE_A050": "fig15_drone_noise_alpha_050",
+        "NOISE_A100": "fig16_drone_noise_alpha_100",
+    }
+    images = {navigation: load_drone_maps(store, grid, runs, navigation) for navigation in figure_names}
+    all_images = [image for navigation_images in images.values() for image in navigation_images]
+    colour_range = find_shared_colour_range(all_images, lower_percentile=1.0, upper_percentile=99.9)
+    for navigation, figure_name in figure_names.items():
+        save(plot_drone_maps(images[navigation], colour_range), figure_name)
 
 
 def draw_population_figures(grid: NoiseGrid, population: np.ndarray, ethnicity_counts: dict, ethnicity_names: dict, save):
@@ -395,6 +406,7 @@ def parse_arguments() -> argparse.Namespace:
 
 def main():
     arguments = parse_arguments()
+    plt.rcParams.update(PAPER_STYLE)
     ensure_clean_working_tree(REPOSITORY_ROOT)
     git_hash = read_git_hash(REPOSITORY_ROOT)
     tables_directory, store = phase_directory(PHASE_NAME), default_result_store()
