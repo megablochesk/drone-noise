@@ -70,6 +70,32 @@ sbatch --array=0-1799%400 --export=ALL,SEEDS="$(seq -s ' ' 1 100)" cluster/fine_
 Each seed needs its order pool, about 10 s per pool:
 `python -m experiments.revision.generate_order_pools --seeds 1 2 3 --pool-size 650000`.
 
+### Results kept for figures
+
+Every run is stored once in the result store (`results/artifacts/`, not under version control) and nothing
+else is needed to redraw or change a figure:
+
+- `runs/<key>.json`: the run's specification, commit, metrics and the fingerprint of its grid;
+- `runs/<key>_drone_levels.npz`: the drone-only level of every cell (about 1.2 MB at 100 m), from which any
+  exposure metric, threshold or map can be recomputed against any baseline;
+- `runs/<key>_trips.parquet`: the distance of every delivered trip;
+- `grids/<fingerprint>.npz`: each grid a map was computed on (cell rows, columns and centres), so a map stays
+  readable if the study boundary or the grid changes;
+- `order_pools/`: the destination pool of each seed (regenerable from the seed).
+
+A run is addressed by a key computed from its specification, so the store can be copied between machines and
+merged by copying files; a run that is stored is never computed again. The design behind the paper's figures
+is 108 runs per seed, about 145 MB per seed (about 15 GB for 100 seeds).
+
+From the store to the figures, for any set of seeds that is complete in the store:
+
+```bash
+python -m experiments.revision.run_fine_grid_pilot --seeds 1 2 3 --design paper-figures \
+    --table-name paper_figure_runs.csv --collect-only     # the run table, without running anything
+python -m experiments.revision.paper_figures               # EPS figures, each the mean over the seeds
+python -m experiments.revision.build_artifact_manifest     # size, checksum, commit and command of every file
+```
+
 ## Tests
 
 From the repository root:
