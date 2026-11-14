@@ -7,28 +7,40 @@ import numpy as np
 import pandas as pd
 
 from common.enum import BaselineNoiseMap
-from common.path_configs import BASE_NOISE_PATH, ROUND4_BASE_NOISE_PATH
+from common.model_configs import model_config
+from common.path_configs import BASE_NOISE_PATH, PATH_CONFIGS
 from noise.noise_math_utils import add_two_decibel_levels, calculate_leq
 
 
-BASE_NOISE_PATHS = {
-    BaselineNoiseMap.PUBLISHED: BASE_NOISE_PATH,
-    BaselineNoiseMap.ROUND_4_ROAD: ROUND4_BASE_NOISE_PATH,
+PUBLISHED_CELL_SIZE_M = model_config.grid.noise_cell_m
+PARQUET_SUFFIX = ".parquet"
+PARQUET_ENGINE = "fastparquet"
+BASE_NOISE_PATH_BUILDERS = {
+    BaselineNoiseMap.PUBLISHED: PATH_CONFIGS.base_noise_path,
+    BaselineNoiseMap.ROUND_4_ROAD: PATH_CONFIGS.round4_base_noise_path,
+    BaselineNoiseMap.ROUND_4_ROAD_ENERGY: PATH_CONFIGS.round4_energy_base_noise_path,
 }
 # 'package.module:function' that writes the file of a map derived from other data; imported only when needed.
-BASE_NOISE_GENERATORS = {BaselineNoiseMap.ROUND_4_ROAD: "datasets.round4_baseline:write_round4_baseline_file"}
+ROUND4_BASELINE_GENERATOR = "datasets.round4_baseline:write_round4_baseline_file"
+BASE_NOISE_GENERATORS = {
+    BaselineNoiseMap.ROUND_4_ROAD: ROUND4_BASELINE_GENERATOR,
+    BaselineNoiseMap.ROUND_4_ROAD_ENERGY: ROUND4_BASELINE_GENERATOR,
+}
 
 
-def find_base_noise_path(baseline_noise_map: BaselineNoiseMap) -> str:
-    return BASE_NOISE_PATHS[baseline_noise_map]
+def find_base_noise_path(baseline_noise_map: BaselineNoiseMap, cell_size_m: int = PUBLISHED_CELL_SIZE_M) -> str:
+    return BASE_NOISE_PATH_BUILDERS[baseline_noise_map](cell_size_m)
 
 
-def generate_base_noise_file(baseline_noise_map: BaselineNoiseMap):
+def generate_base_noise_file(baseline_noise_map: BaselineNoiseMap, cell_size_m: int):
     module_name, function_name = BASE_NOISE_GENERATORS[baseline_noise_map].split(":")
-    getattr(importlib.import_module(module_name), function_name)()
+    getattr(importlib.import_module(module_name), function_name)(baseline_noise_map, cell_size_m)
 
 
 def read_base_noise_data(file_path: str = BASE_NOISE_PATH) -> pd.DataFrame:
+    if file_path.endswith(PARQUET_SUFFIX):
+        return pd.read_parquet(file_path, engine=PARQUET_ENGINE)
+
     with open(file_path, 'r') as f:
         data = json.load(f)
 
@@ -47,16 +59,18 @@ def read_base_noise_data(file_path: str = BASE_NOISE_PATH) -> pd.DataFrame:
 
 
 @lru_cache(maxsize=None)
-def load_base_noise_file_once(baseline_noise_map: BaselineNoiseMap) -> pd.DataFrame:
-    file_path = find_base_noise_path(baseline_noise_map)
+def load_base_noise_file_once(baseline_noise_map: BaselineNoiseMap, cell_size_m: int) -> pd.DataFrame:
+    file_path = find_base_noise_path(baseline_noise_map, cell_size_m)
     if not os.path.exists(file_path) and baseline_noise_map in BASE_NOISE_GENERATORS:
-        generate_base_noise_file(baseline_noise_map)
+        generate_base_noise_file(baseline_noise_map, cell_size_m)
 
     return read_base_noise_data(file_path)
 
 
-def load_base_noise_data(baseline_noise_map: BaselineNoiseMap = BaselineNoiseMap.PUBLISHED) -> pd.DataFrame:
-    return load_base_noise_file_once(baseline_noise_map)
+def load_base_noise_data(
+        baseline_noise_map: BaselineNoiseMap = BaselineNoiseMap.PUBLISHED, cell_size_m: int = PUBLISHED_CELL_SIZE_M
+) -> pd.DataFrame:
+    return load_base_noise_file_once(baseline_noise_map, cell_size_m)
 
 
 def generate_drone_noise_df(drone_noise_data) -> pd.DataFrame:

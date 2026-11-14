@@ -46,7 +46,10 @@ class PathsConfiguration:
         return f"{self.base_noise_dir}/base_noise_london_map_{cell_size_meters}.geojson"
 
     def round4_base_noise_path(self, cell_size_meters: int) -> str:
-        return f"{self.base_noise_dir}/base_noise_london_map_{cell_size_meters}_round4_road_laeq16h.geojson"
+        return f"{self.base_noise_dir}/base_noise_london_map_{cell_size_meters}_round4_road_laeq16h.parquet"
+
+    def round4_energy_base_noise_path(self, cell_size_meters: int) -> str:
+        return f"{self.base_noise_dir}/base_noise_london_map_{cell_size_meters}_round4_road_laeq16h_energy.parquet"
 
     def navigation_graph_path(self, navigation_cell_size_meters: int) -> str:
         return f"{self.noise_graph_navigation_dir}/navigation_graph_{navigation_cell_size_meters}"

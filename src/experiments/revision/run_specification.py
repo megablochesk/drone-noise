@@ -49,6 +49,7 @@ class RunSpecification:
     landing_delay_s: int = model_config.drone.landing_delay_s
     minimum_slant_distance_m: float = model_config.drone.minimum_slant_distance_m
     time_step_s: int = model_config.time.step_s
+    noise_cell_m: int = model_config.grid.noise_cell_m
 
 
 def to_plain_value(value):
@@ -86,7 +87,10 @@ def build_model_config(specification: RunSpecification) -> ModelConfig:
         landing_delay_s=specification.landing_delay_s,
         minimum_slant_distance_m=specification.minimum_slant_distance_m,
     )
-    return replace(model_config, drone=drone, time=replace(model_config.time, step_s=specification.time_step_s))
+    return replace(
+        model_config, drone=drone, time=replace(model_config.time, step_s=specification.time_step_s),
+        grid=replace(model_config.grid, noise_cell_m=specification.noise_cell_m),
+    )
 
 
 def build_simulation_config(
