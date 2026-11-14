@@ -64,3 +64,25 @@ def test_requirements_name_catalogued_files():
 def test_every_file_says_what_it_is_and_where_it_comes_from():
     for data_file in DATA_CATALOGUE:
         assert data_file.description and data_file.obtained_from, data_file.name
+
+
+def find_data_file(name: str):
+    return next(data_file for data_file in DATA_CATALOGUE if data_file.name == name)
+
+
+@pytest.mark.parametrize("name", ["baseline noise", "navigation baseline noise"])
+def test_baseline_noise_names_the_defra_source_of_the_paper(name):
+    obtained_from = find_data_file(name).obtained_from
+    assert "Defra" in obtained_from
+    assert "https://www.gov.uk/government/publications/strategic-noise-mapping-2019" in obtained_from
+
+
+@pytest.mark.parametrize("name", ["msoa population", "census age", "census ethnicity"])
+def test_census_files_name_the_ons_census(name):
+    assert "Office for National Statistics" in find_data_file(name).obtained_from
+    assert "Census 2021" in find_data_file(name).obtained_from
+
+
+def test_no_file_is_left_without_any_statement_of_origin():
+    for data_file in DATA_CATALOGUE:
+        assert "source not recorded in the repository" != data_file.obtained_from, data_file.name
