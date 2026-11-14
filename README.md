@@ -29,6 +29,14 @@ python -m datasets.prepare_data --verify    # also compare external and publishe
 ```
 
 The derived cell tables are also computed on first use if they are missing (population: several minutes).
+
+Two baseline noise maps can be used (`BaselineNoiseMap`): the published one (default) and Defra Round 4 road
+noise, LAeq,16h. The Round 4 raster is the one external file that can be fetched by a script:
+
+```bash
+python -m datasets.download_round4_road_noise   # 42 tiles from the Defra WCS, merged into one GeoTIFF
+python -m datasets.round4_baseline              # 500 m baseline from the raster (also built on first use)
+```
 After replacing an input on purpose, run `python -m datasets.prepare_data --write-manifest`.
 
 The seeded order pools of the revision experiments are not part of the catalogue; they are written on demand
