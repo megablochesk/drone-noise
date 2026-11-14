@@ -14,9 +14,9 @@ from common.simulation_configs import SimulationConfig
 from orders.order import Order
 from simulation.delivery_dispatcher import DeliveryDispatcher
 from simulation.fleet import Fleet
-from tests.legacy_reference import load_legacy_module
+from tests.legacy_reference import load_legacy_fleet
 
-LEGACY_FLEET_MODULE = load_legacy_module("simulation/fleet.py")
+LEGACY_FLEET_MODULE = load_legacy_fleet()
 
 WAREHOUSES = [
     Coordinate(northing=180_000.0, easting=530_000.0),

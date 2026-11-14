@@ -40,6 +40,8 @@ def substituted_modules(substitutes: dict[str, ModuleType]):
 def load_legacy_module(relative_source_path: str, legacy_dependencies: dict[str, ModuleType] | None = None) -> ModuleType:
     """Executes the baseline source; `legacy_dependencies` maps import names to other legacy modules."""
     module = ModuleType("legacy_" + Path(relative_source_path).stem)
+    # Dataclasses look their module up by name while they are being defined.
+    sys.modules[module.__name__] = module
     compiled_source = compile(read_legacy_source(relative_source_path), f"legacy:{relative_source_path}", "exec")
     with substituted_modules(legacy_dependencies or {}):
         exec(compiled_source, module.__dict__)
@@ -52,4 +54,17 @@ def load_legacy_order_generator() -> ModuleType:
     legacy_msoa_data = load_legacy_module("census_analysis/msoa_data.py")
     return load_legacy_module(
         "orders/order_generator.py", legacy_dependencies={"census_analysis.msoa_data": legacy_msoa_data}
+    )
+
+
+@lru_cache(maxsize=1)
+def load_legacy_fleet() -> ModuleType:
+    """The published fleet together with the published planner and route cache it was written against."""
+    legacy_route_cache = load_legacy_module("simulation/planned_route_cache.py")
+    legacy_planner = load_legacy_module(
+        "simulation/planner.py", legacy_dependencies={"simulation.planned_route_cache": legacy_route_cache}
+    )
+    return load_legacy_module(
+        "simulation/fleet.py",
+        legacy_dependencies={"simulation.planned_route_cache": legacy_route_cache, "simulation.planner": legacy_planner},
     )
