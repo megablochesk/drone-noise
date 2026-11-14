@@ -2,6 +2,10 @@
 
 Usage (from src/): python -m experiments.revision.redraw_figures
 """
+import matplotlib
+
+matplotlib.use("Agg")  # these scripts only write files, also on machines without a display
+
 from pathlib import Path
 
 import numpy as np

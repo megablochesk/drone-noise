@@ -2,6 +2,10 @@
 
 Usage (from src/): python -m experiments.revision.summarise_reduced_design_phase --phase phase9
 """
+import matplotlib
+
+matplotlib.use("Agg")  # these scripts only write files, also on machines without a display
+
 import argparse
 from dataclasses import replace
 

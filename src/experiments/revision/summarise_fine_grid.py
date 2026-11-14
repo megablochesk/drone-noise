@@ -3,6 +3,10 @@ pixel-level reference for both cell averages of the baseline, and maps.
 
 Usage (from src/): python -m experiments.revision.summarise_fine_grid
 """
+import matplotlib
+
+matplotlib.use("Agg")  # these scripts only write files, also on machines without a display
+
 from pathlib import Path
 
 import numpy as np

@@ -2,6 +2,10 @@
 
 Usage (from src/): python -m experiments.revision.run_phase7_postprocessing
 """
+import matplotlib
+
+matplotlib.use("Agg")  # these scripts only write files, also on machines without a display
+
 import numpy as np
 import pandas as pd
 

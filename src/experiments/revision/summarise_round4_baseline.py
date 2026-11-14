@@ -3,6 +3,10 @@ rule move the exposure metrics of the stored reduced-design runs.
 
 Usage (from src/): python -m experiments.revision.summarise_round4_baseline
 """
+import matplotlib
+
+matplotlib.use("Agg")  # these scripts only write files, also on machines without a display
+
 import numpy as np
 import pandas as pd
 

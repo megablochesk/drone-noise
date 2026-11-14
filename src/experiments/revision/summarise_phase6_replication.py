@@ -2,6 +2,10 @@
 
 Usage (from src/): python -m experiments.revision.summarise_phase6_replication
 """
+import matplotlib
+
+matplotlib.use("Agg")  # these scripts only write files, also on machines without a display
+
 from pathlib import Path
 
 import pandas as pd
