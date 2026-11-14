@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from census_analysis.msoa_data import MSOA_DATA
+from census_analysis.msoa_data import load_msoa_data
 from metrics.cell_table import load_cell_table
 from noise.noise_grid import load_noise_grid
 
@@ -23,7 +23,7 @@ def test_gridded_population_sums_to_the_input_population_total():
     382 m strip in the east of the bounding box uncovered, so the gridded total may fall short of the MSOA
     total by the few people living there, never exceed it.
     """
-    input_total = sum(MSOA_DATA.msoa_populations.values())
+    input_total = sum(load_msoa_data().msoa_populations.values())
     gridded_total = load_cell_table().population.sum()
     assert gridded_total <= input_total
     assert (input_total - gridded_total) / input_total < UNCOVERED_POPULATION_SHARE_LIMIT
