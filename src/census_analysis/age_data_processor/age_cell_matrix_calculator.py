@@ -8,7 +8,7 @@ import pandas as pd
 from census_analysis.cell_matrix_calculator_utils import calculate_cell_matrix_property, calculate_cell_property
 from census_analysis.dataset_loader import load_age_dataset_df
 from census_analysis.msoa_cache import CachedMSOA, prepare_msoa_caches
-from census_analysis.msoa_data import MSOA_DATA
+from census_analysis.msoa_data import load_msoa_data
 from noise.grid_generator import get_valid_cells
 
 AGE_CODE_ATTRIBUTE = "age_code_to_name"
@@ -29,7 +29,7 @@ AGE_BAND_DEFS: Dict[int, Tuple[int, int, str]] = {
 
 def calculate_cell_matrix_age() -> pd.DataFrame:
     age_pivot, band_code_to_name = _build_age_pivot()
-    prepared = prepare_msoa_caches(age_pivot, MSOA_DATA.msoa_index)
+    prepared = prepare_msoa_caches(age_pivot, load_msoa_data().msoa_index)
 
     cells = get_valid_cells()
     process_cell = partial(_annotate_cell_with_age, prepared=prepared)

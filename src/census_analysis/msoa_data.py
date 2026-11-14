@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from shapely.geometry import shape
 
 from common.file_utils import load_json
@@ -43,4 +45,6 @@ class MSOAData:
         return distribution
 
 
-MSOA_DATA = MSOAData()
+@lru_cache(maxsize=1)
+def load_msoa_data() -> MSOAData:
+    return MSOAData()

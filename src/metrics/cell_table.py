@@ -4,9 +4,8 @@ from functools import lru_cache
 import numpy as np
 import pandas as pd
 
-from common.file_utils import load_dataframe_from_pickle
-from common.path_configs import CELL_POPULATION_PATH
-from noise.noise_data_processor import BASE_NOISE_DATA
+from census_analysis.cell_datasets import load_cell_population
+from noise.noise_data_processor import load_base_noise_data
 from noise.noise_grid import NoiseGrid, load_noise_grid
 
 
@@ -33,6 +32,6 @@ def load_cell_table() -> CellTable:
     return CellTable(
         rows=grid.rows,
         columns=grid.columns,
-        baseline_levels_db=align_to_grid(grid, BASE_NOISE_DATA, "noise_level"),
-        population=align_to_grid(grid, load_dataframe_from_pickle(CELL_POPULATION_PATH), "population"),
+        baseline_levels_db=align_to_grid(grid, load_base_noise_data(), "noise_level"),
+        population=align_to_grid(grid, load_cell_population(), "population"),
     )

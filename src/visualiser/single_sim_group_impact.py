@@ -9,11 +9,7 @@ import pandas as pd
 from matplotlib import ticker as mtick
 
 from census_analysis.age_data_processor.age_cell_matrix_calculator import AGE_BAND_DEFS
-from common.file_utils import load_dataframe_from_pickle
-from common.path_configs import CELL_AGE_PATH, CELL_ETHNICITY_PATH
-
-CELL_AGE = load_dataframe_from_pickle(CELL_AGE_PATH)
-CELL_ETHNICITY = load_dataframe_from_pickle(CELL_ETHNICITY_PATH)
+from census_analysis.cell_datasets import load_cell_age, load_cell_ethnicity
 
 
 def _slug(text: str) -> str:
@@ -200,7 +196,7 @@ def _age_names(value_cols: list[int]) -> dict[int, str]:
 
 
 def _ethnicity_names(value_cols: list[int]) -> dict[int, str]:
-    raw = CELL_ETHNICITY.attrs.get("ethnicity_code_to_name", {int(c): str(c) for c in value_cols})
+    raw = load_cell_ethnicity().attrs.get("ethnicity_code_to_name", {int(c): str(c) for c in value_cols})
     result = {}
     for code, name in raw.items():
         if int(code) not in value_cols:
@@ -365,7 +361,7 @@ def plot_single_sim_age_impact(
 ) -> tuple[pd.DataFrame, list[int], list[str]]:
     return plot_single_sim_group_impact(
         noise_impact_df=noise_impact_df,
-        cell_values_df=CELL_AGE,
+        cell_values_df=load_cell_age(),
         label="Age",
         name_map_func=_age_names,
         threshold=threshold,
@@ -398,7 +394,7 @@ def plot_single_sim_ethnicity_impact(
 ) -> tuple[pd.DataFrame, list[int], list[str]]:
     return plot_single_sim_group_impact(
         noise_impact_df=noise_impact_df,
-        cell_values_df=CELL_ETHNICITY,
+        cell_values_df=load_cell_ethnicity(),
         label="Ethnicity",
         name_map_func=_ethnicity_names,
         threshold=threshold,

@@ -2,8 +2,7 @@ import re
 
 import pandas as pd
 
-from common.file_utils import load_dataframe_from_pickle
-from common.path_configs import CELL_POPULATION_PATH, CELL_AGE_PATH, CELL_ETHNICITY_PATH
+from census_analysis.cell_datasets import load_cell_age, load_cell_ethnicity, load_cell_population
 from visualiser.barchart import plot_barchart_stats, plot_combined_bars
 from visualiser.cell_statistics_calculator import (
     calculate_cells_exceeding_threshold,
@@ -15,10 +14,6 @@ from visualiser.cell_statistics_calculator import (
 from visualiser.linegraph import plot_linegraph_stats
 from visualiser.plot_utils import plot_standalone_heatmap
 from visualiser.statistics import plot_dataset_stat_difference
-
-CELL_POPULATION = load_dataframe_from_pickle(CELL_POPULATION_PATH)
-CELL_AGE = load_dataframe_from_pickle(CELL_AGE_PATH)
-CELL_ETHNICITY = load_dataframe_from_pickle(CELL_ETHNICITY_PATH)
 
 
 def _slug(s) -> str:
@@ -40,7 +35,7 @@ def plot_noise_exceedance_combined(main_df: pd.DataFrame, threshold: int = 55, d
 
 
 def plot_population_impact_combined(main_df: pd.DataFrame, threshold: int = 55):
-    summary_df = calculate_population_impacted_by_noise(main_df, CELL_POPULATION, threshold)
+    summary_df = calculate_population_impacted_by_noise(main_df, load_cell_population(), threshold)
 
     return plot_combined_bars(
         summary_df,
@@ -52,7 +47,7 @@ def plot_population_impact_combined(main_df: pd.DataFrame, threshold: int = 55):
 
 
 def analyze_and_plot_age_impact_each_band(main_df: pd.DataFrame, threshold: int = 55, use_band_names: bool = True):
-    df = calculate_age_impacted_by_noise(main_df, CELL_AGE, threshold=threshold, use_band_names=use_band_names)
+    df = calculate_age_impacted_by_noise(main_df, load_cell_age(), threshold=threshold, use_band_names=use_band_names)
     base = {"dataset", "dataset_name", "num_drones", "navigation_type"}
     for col in [c for c in df.columns if c not in base]:
         plot_barchart_stats(
@@ -66,7 +61,7 @@ def analyze_and_plot_age_impact_each_band(main_df: pd.DataFrame, threshold: int 
 
 
 def analyze_and_plot_ethnicity_impact_each_group(main_df: pd.DataFrame, threshold: int = 55, use_names: bool = False):
-    df = calculate_ethnicity_impacted_by_noise(main_df, CELL_ETHNICITY, threshold=threshold, use_names=use_names)
+    df = calculate_ethnicity_impacted_by_noise(main_df, load_cell_ethnicity(), threshold=threshold, use_names=use_names)
     base = {"dataset", "dataset_name", "num_drones", "navigation_type"}
     for col in [c for c in df.columns if c not in base]:
         plot_barchart_stats(
@@ -80,7 +75,7 @@ def analyze_and_plot_ethnicity_impact_each_group(main_df: pd.DataFrame, threshol
 
 
 def plot_age_impact_each_band_combined(main_df: pd.DataFrame, threshold: int = 55, plot_stat_difference: bool = True, use_band_names: bool = True):
-    df = calculate_age_impacted_by_noise(main_df, CELL_AGE, threshold=threshold, use_band_names=use_band_names)
+    df = calculate_age_impacted_by_noise(main_df, load_cell_age(), threshold=threshold, use_band_names=use_band_names)
     base = {"dataset", "dataset_name", "num_drones", "navigation_type"}
     for col in [c for c in df.columns if c not in base]:
         if plot_stat_difference:
@@ -102,7 +97,7 @@ def plot_age_impact_each_band_combined(main_df: pd.DataFrame, threshold: int = 5
 
 
 def plot_ethnicity_impact_each_group_combined(main_df: pd.DataFrame, threshold: int = 55, plot_stat_difference: bool = True, use_names: bool = False):
-    df = calculate_ethnicity_impacted_by_noise(main_df, CELL_ETHNICITY, threshold=threshold, use_names=use_names)
+    df = calculate_ethnicity_impacted_by_noise(main_df, load_cell_ethnicity(), threshold=threshold, use_names=use_names)
     base = {"dataset", "dataset_name", "num_drones", "navigation_type"}
     for col in [c for c in df.columns if c not in base]:
         if plot_stat_difference:
@@ -135,7 +130,7 @@ def analyze_and_plot_noise_increase(main_df: pd.DataFrame, threshold: int = 55, 
 
 
 def analyze_and_plot_population_impact(main_df: pd.DataFrame, threshold: int = 55, filename="del_pop_imp"):
-    summary_df = calculate_population_impacted_by_noise(main_df, CELL_POPULATION, threshold)
+    summary_df = calculate_population_impacted_by_noise(main_df, load_cell_population(), threshold)
 
     print(summary_df)
 
@@ -149,7 +144,7 @@ def analyze_and_plot_population_impact(main_df: pd.DataFrame, threshold: int = 5
 
 
 def analyze_and_plot_age_impact(main_df: pd.DataFrame, threshold: int = 55, use_band_names: bool = False):
-    summary_df = calculate_age_impacted_by_noise(main_df, CELL_AGE, threshold=threshold, use_band_names=use_band_names)
+    summary_df = calculate_age_impacted_by_noise(main_df, load_cell_age(), threshold=threshold, use_band_names=use_band_names)
     base_cols = {"dataset", "dataset_name", "num_drones", "navigation_type"}
     value_cols = [c for c in summary_df.columns if c not in base_cols]
     for col in value_cols:
@@ -164,7 +159,7 @@ def analyze_and_plot_age_impact(main_df: pd.DataFrame, threshold: int = 55, use_
 
 
 def analyze_and_plot_ethnicity_impact(main_df: pd.DataFrame, threshold: int = 55, use_names: bool = False):
-    summary_df = calculate_ethnicity_impacted_by_noise(main_df, CELL_ETHNICITY, threshold=threshold, use_names=use_names)
+    summary_df = calculate_ethnicity_impacted_by_noise(main_df, load_cell_ethnicity(), threshold=threshold, use_names=use_names)
     base_cols = {"dataset", "dataset_name", "num_drones", "navigation_type"}
     value_cols = [c for c in summary_df.columns if c not in base_cols]
     for col in value_cols:
@@ -179,7 +174,7 @@ def analyze_and_plot_ethnicity_impact(main_df: pd.DataFrame, threshold: int = 55
 
 
 def plot_cells_impacted_by_noise(main_df: pd.DataFrame, threshold: int = 55):
-    df = get_cells_impacted_by_noise_with_population(main_df, CELL_POPULATION, threshold)
+    df = get_cells_impacted_by_noise_with_population(main_df, load_cell_population(), threshold)
     metric = "impacted_population"
     for (dataset_name, num_drones), group_df in df.groupby(["dataset_name", "num_drones"]):
         plot_standalone_heatmap(

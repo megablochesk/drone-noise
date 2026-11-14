@@ -1,4 +1,5 @@
 import json
+from functools import lru_cache
 
 import numpy as np
 import pandas as pd
@@ -24,7 +25,11 @@ def read_base_noise_data(file_path: str = BASE_NOISE_PATH) -> pd.DataFrame:
 
     return pd.DataFrame(records)
 
-BASE_NOISE_DATA = read_base_noise_data()
+
+@lru_cache(maxsize=1)
+def load_base_noise_data() -> pd.DataFrame:
+    return read_base_noise_data()
+
 
 def generate_drone_noise_df(drone_noise_data) -> pd.DataFrame:
     records = [
@@ -62,4 +67,4 @@ def combine_noise_levels(drone_noise_df: pd.DataFrame, base_noise_df: pd.DataFra
 def combine_base_and_drone_noise(drone_noise_data) -> pd.DataFrame:
     drone_noise_df = generate_drone_noise_df(drone_noise_data)
 
-    return combine_noise_levels(drone_noise_df, BASE_NOISE_DATA)
+    return combine_noise_levels(drone_noise_df, load_base_noise_data())

@@ -1,5 +1,5 @@
 from census_analysis.cell_matrix_calculator_utils import calculate_cell_matrix_property
-from census_analysis.msoa_data import MSOA_DATA
+from census_analysis.msoa_data import load_msoa_data
 from noise.grid_generator import get_valid_cells
 
 
@@ -16,9 +16,9 @@ def calculate_cell_matrix_population():
 def _calculate_population_in_area(area):
 	total_population = 0
 
-	for msoa_code, polygon in MSOA_DATA.msoa_index.items():
+	for msoa_code, polygon in load_msoa_data().msoa_index.items():
 		intersection = area.intersection(polygon)
 		if not intersection.is_empty:
-			total_population += MSOA_DATA.msoa_populations[msoa_code] * (intersection.area / polygon.area)
+			total_population += load_msoa_data().msoa_populations[msoa_code] * (intersection.area / polygon.area)
 
 	return total_population

@@ -1,6 +1,6 @@
 import random
 
-from census_analysis.msoa_data import MSOA_DATA
+from census_analysis.msoa_data import load_msoa_data
 from common.enum import OrderDatasetType
 from common.file_utils import save_df_to_csv
 from common.model_configs import model_config
@@ -27,7 +27,7 @@ def generate_random_point_in_msoa(msoa_code, polygon, max_attempts=10000):
 
 
 def generate_point_for_msoa(msoa_code):
-    polygon = MSOA_DATA.msoa_index.get(msoa_code)
+    polygon = load_msoa_data().msoa_index.get(msoa_code)
     if not polygon:
         raise ValueError(f"No polygon found for MSOA code: {msoa_code}")
 
@@ -37,7 +37,7 @@ def generate_point_for_msoa(msoa_code):
 
 def generate_random_population_based_point():
     random_value = random.random()
-    for msoa_code, msoa_pop_distribution in MSOA_DATA.population_distribution:
+    for msoa_code, msoa_pop_distribution in load_msoa_data().population_distribution:
         if random_value <= msoa_pop_distribution:
             x, y = generate_point_for_msoa(msoa_code)
             return msoa_code, x, y

@@ -7,7 +7,7 @@ import pandas as pd
 from census_analysis.cell_matrix_calculator_utils import calculate_cell_matrix_property, calculate_cell_property
 from census_analysis.dataset_loader import load_ethnicity_dataset_df
 from census_analysis.msoa_cache import CachedMSOA, prepare_msoa_caches
-from census_analysis.msoa_data import MSOA_DATA
+from census_analysis.msoa_data import load_msoa_data
 from noise.grid_generator import get_valid_cells
 
 ETHNICITY_CODE_ATTRIBUTE = "ethnicity_code_to_name"
@@ -20,7 +20,7 @@ VALUE_COL = "Observation"
 
 def calculate_cell_matrix_ethnicity() -> pd.DataFrame:
     ethnicity_pivot, code_to_name = _build_ethnicity_pivot()
-    prepared = prepare_msoa_caches(ethnicity_pivot, MSOA_DATA.msoa_index)
+    prepared = prepare_msoa_caches(ethnicity_pivot, load_msoa_data().msoa_index)
 
     cells = get_valid_cells()
     process_cell = partial(_annotate_cell_with_ethnicity, prepared=prepared)
