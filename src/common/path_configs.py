@@ -45,6 +45,9 @@ class PathsConfiguration:
     def base_noise_path(self, cell_size_meters: int) -> str:
         return f"{self.base_noise_dir}/base_noise_london_map_{cell_size_meters}.geojson"
 
+    def round4_base_noise_path(self, cell_size_meters: int) -> str:
+        return f"{self.base_noise_dir}/base_noise_london_map_{cell_size_meters}_round4_road_laeq16h.geojson"
+
     def navigation_graph_path(self, navigation_cell_size_meters: int) -> str:
         return f"{self.noise_graph_navigation_dir}/navigation_graph_{navigation_cell_size_meters}"
 
@@ -72,6 +75,7 @@ ORDER_BASE_PATH_CLOSEST = PATH_CONFIGS.single_type_order_dataset("closest", 100_
 ORDER_BASE_PATH_MIXED_50_50 = PATH_CONFIGS.mixed_order_dataset(50, 50, 100_000)
 
 BASE_NOISE_PATH = PATH_CONFIGS.base_noise_path(model_config.grid.noise_cell_m)
+ROUND4_BASE_NOISE_PATH = PATH_CONFIGS.round4_base_noise_path(model_config.grid.noise_cell_m)
 NAVIGATION_BASE_NOISE_PATH = PATH_CONFIGS.base_noise_path(model_config.grid.nav_cell_m)
 NAVIGATION_GRAPH_PATH = PATH_CONFIGS.navigation_graph_path(model_config.grid.nav_cell_m)
 CELL_POPULATION_PATH = PATH_CONFIGS.cell_population_path(model_config.grid.noise_cell_m)
