@@ -23,10 +23,11 @@ def test_distances_and_lowest_index_parents_of_the_hand_built_graph():
 
 
 def test_edges_are_undirected():
-    """From node 3 everything is reached backwards: 3 -> 2 (5), then 0 (7) and 1 (6)."""
+    """From node 3 everything is reached backwards: 3 -> 2 (5), then 1 (6) and 0 (7). Node 0 is reached equally
+    well from node 2 (5 + 2) and from node 1 (6 + 1), so its parent is the lower index, node 1."""
     parents, distances = calculate_shortest_path_tree(NUMBER_OF_NODES, EDGE_STARTS, EDGE_ENDS, EDGE_WEIGHTS, source=3)
     np.testing.assert_array_equal(distances, [7.0, 6.0, 5.0, 0.0, np.inf])
-    np.testing.assert_array_equal(parents, [2, 2, 3, 3, NO_PARENT])
+    np.testing.assert_array_equal(parents, [1, 2, 3, 3, NO_PARENT])
 
 
 def test_zero_weight_edges_are_edges():
