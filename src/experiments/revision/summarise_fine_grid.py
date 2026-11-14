@@ -41,6 +41,7 @@ from noise.noise_grid import load_noise_grid, to_grid_image
 
 RUN_TABLE_NAME = "runs.csv"
 SINGLE_LANDING_TABLE_NAME = "single_landing_runs.csv"
+SLANT_FLOOR_TABLE_NAME = "slant_floor_runs.csv"
 CONFIGURATION_KEYS = ["number_of_drones", "stocking", "terminal_phases"]
 METRICS = [HEADLINE_NOISE_METRIC, *RELATIVE_METRICS]
 CELL_AVERAGES = {
@@ -158,6 +159,9 @@ def main():
     }
     if (directory / SINGLE_LANDING_TABLE_NAME).exists():
         tables.update(summarise_single_landing(fine_runs, pd.read_csv(directory / SINGLE_LANDING_TABLE_NAME)))
+    if (directory / SLANT_FLOOR_TABLE_NAME).exists():
+        slant_floor_runs = pd.read_csv(directory / SLANT_FLOOR_TABLE_NAME)
+        tables["slant_floor_comparison.csv"] = compare_fine_with_coarse(slant_floor_runs, fine_runs)
     for file_name, table in tables.items():
         write_phase_table(table.assign(git_hash=git_hash), directory, file_name)
     plot_fine_maps(store, fine_runs, directory / "fine_grid_maps.png")

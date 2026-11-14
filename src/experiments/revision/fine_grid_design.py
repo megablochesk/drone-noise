@@ -10,6 +10,8 @@ FINE_TIME_STEP_S = 10
 # The cell average that is closer to the pixel-level reference at 100 m (REPORT.md, "Fine grid").
 FINE_BASELINE_NOISE_MAP = BaselineNoiseMap.ROUND_4_ROAD
 PHASE_NAME = "fine_grid"
+SLANT_FLOOR_FLEET = 1250
+SLANT_FLOOR_M = 10.0
 
 
 def build_fine_grid_specifications(seeds: list[int]) -> list[RunSpecification]:
@@ -29,6 +31,15 @@ def build_single_landing_specifications(seeds: list[int]) -> list[RunSpecificati
     return [
         replace(specification, land_once_at_customer=True)
         for specification in build_fine_grid_specifications(seeds) if specification.terminal_phases
+    ]
+
+
+def build_slant_floor_specifications(seeds: list[int]) -> list[RunSpecification]:
+    """The largest-fleet runs with terminal phases, with the slant distance to a cell centre floored."""
+    return [
+        replace(specification, minimum_slant_distance_m=SLANT_FLOOR_M)
+        for specification in build_fine_grid_specifications(seeds)
+        if specification.terminal_phases and specification.number_of_drones == SLANT_FLOOR_FLEET
     ]
 
 
