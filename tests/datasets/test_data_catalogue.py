@@ -110,3 +110,23 @@ def test_fine_grid_files_are_derived_and_can_be_generated():
     assert population.requires == ("study boundary", "msoa population")
     assert baseline.requires == ("round 4 road noise raster",)
     assert callable(resolve_generator(population.generator)) and callable(resolve_generator(baseline.generator))
+
+
+@pytest.mark.parametrize("name, requirement", [
+    ("cell age 100 m", "census age"), ("cell ethnicity 100 m", "census ethnicity"),
+])
+def test_fine_group_tables_are_derived_and_can_be_generated(name, requirement):
+    """The 100 m age and ethnicity tables behind the demographic figures of the revision design."""
+    group_table = find_data_file(name)
+    assert group_table.origin is DataOrigin.DERIVED
+    assert group_table.requires == ("study boundary", "msoa population", requirement)
+    assert callable(resolve_generator(group_table.generator))
+
+
+@pytest.mark.parametrize("name", ["baseline noise round 4 energy mean", "baseline noise round 4 energy mean, 100 m"])
+def test_energy_mean_baselines_are_derived_and_can_be_generated(name):
+    """The alternative cell average of the Round 4 raster, compared with the default in the fine-grid summary."""
+    baseline = find_data_file(name)
+    assert baseline.origin is DataOrigin.DERIVED
+    assert baseline.requires == ("round 4 road noise raster",)
+    assert callable(resolve_generator(baseline.generator))
