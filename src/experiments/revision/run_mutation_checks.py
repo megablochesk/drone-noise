@@ -2,10 +2,12 @@
 
 Usage (from src/): python -m experiments.revision.run_mutation_checks
 """
+import os
 import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Mapping
 
 import pandas as pd
 
@@ -14,6 +16,7 @@ from experiments.revision.run_guard import ensure_clean_working_tree, read_git_h
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 RESULTS_DIRECTORY = REPOSITORY_ROOT / "results"
+COMPILED_DIRECTORY_NAME = "__pycache__"
 
 
 @dataclass(frozen=True)
@@ -154,9 +157,20 @@ def apply_mutation(source_text: str, original: str, mutated: str) -> str:
     return source_text.replace(original, mutated)
 
 
+def build_test_environment(environment: Mapping[str, str]) -> dict[str, str]:
+    """A compiled mutant must not be cached: with coarse file timestamps it can outlive the restored source."""
+    return {**environment, "PYTHONDONTWRITEBYTECODE": "1"}
+
+
+def remove_compiled_files(source_file: Path):
+    for compiled_file in (source_file.parent / COMPILED_DIRECTORY_NAME).glob(f"{source_file.stem}.*.pyc"):
+        compiled_file.unlink()
+
+
 def run_tests(test_paths: tuple[str, ...]) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [sys.executable, "-m", "pytest", "-q", *test_paths], cwd=REPOSITORY_ROOT, capture_output=True, text=True
+        [sys.executable, "-m", "pytest", "-q", *test_paths], cwd=REPOSITORY_ROOT, capture_output=True, text=True,
+        env=build_test_environment(os.environ),
     )
 
 
@@ -172,6 +186,7 @@ def check_mutation(mutation: Mutation) -> dict:
         completed = run_tests(mutation.test_paths)
     finally:
         source_file.write_text(original_text)
+        remove_compiled_files(source_file)
 
     return {
         "function": mutation.function_name, "file": mutation.source_path, "mutation": mutation.description,
