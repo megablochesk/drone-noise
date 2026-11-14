@@ -51,10 +51,14 @@ class RunSpecification:
     time_step_s: int = model_config.time.step_s
     noise_cell_m: int = model_config.grid.noise_cell_m
     land_once_at_customer: bool = False
+    navigation: NavigationType = NavigationType.STRAIGHT
 
 
 def to_plain_value(value):
-    return value.value if isinstance(value, Enum) else value
+    """Enums by their text value; an enum whose values are bare numbers by its name."""
+    if not isinstance(value, Enum):
+        return value
+    return value.value if isinstance(value.value, str) else value.name
 
 
 def specification_to_record(specification: RunSpecification) -> dict:
@@ -103,7 +107,7 @@ def build_simulation_config(
         number_of_drones=specification.number_of_drones,
         drone_landing=specification.terminal_phases,
         land_once_at_customer=specification.land_once_at_customer,
-        navigator_type=NavigationType.STRAIGHT,
+        navigator_type=specification.navigation,
         noise_calculation=specification.noise_calculation,
         baseline_noise_map=specification.baseline_noise_map,
         order_dataset_path=order_dataset_path,
