@@ -25,6 +25,11 @@ class NavigationType(Enum):
     NOISE_A100 = 7
 
 
+class BaselineNoiseMap(Enum):
+    PUBLISHED = "published"                # the banded map of the published results (Defra, 2017 maps)
+    ROUND_4_ROAD = "round4_road_laeq16h"   # Defra Round 4 road noise, LAeq,16h, all roads
+
+
 class LevelAveraging(Enum):
     ARITHMETIC = "arithmetic"  # mean of the decibel values, as the published baseline was aggregated
     ENERGY = "energy"          # level of the mean sound energy

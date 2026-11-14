@@ -5,7 +5,7 @@ import json
 from dataclasses import MISSING, dataclass, fields, replace
 from enum import Enum
 
-from common.enum import NavigationType, NoiseCalculation, OrderDatasetType
+from common.enum import BaselineNoiseMap, NavigationType, NoiseCalculation, OrderDatasetType
 from common.model_configs import ModelConfig, model_config
 from common.simulation_configs import SimulationConfig
 
@@ -41,6 +41,7 @@ class RunSpecification:
     depot_layout: str = "actual"
     fleet_allocation: FleetAllocation = FleetAllocation.EQUAL
     noise_calculation: NoiseCalculation = NoiseCalculation.ENERGY_SUM
+    baseline_noise_map: BaselineNoiseMap = BaselineNoiseMap.PUBLISHED
 
     speed_mps: int = model_config.drone.speed_mps
     flight_altitude_m: float = model_config.drone.flight_altitude_m
@@ -98,6 +99,7 @@ def build_simulation_config(
         drone_landing=specification.terminal_phases,
         navigator_type=NavigationType.STRAIGHT,
         noise_calculation=specification.noise_calculation,
+        baseline_noise_map=specification.baseline_noise_map,
         order_dataset_path=order_dataset_path,
         model=build_model_config(specification),
     )

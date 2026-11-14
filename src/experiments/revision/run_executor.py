@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 
 from common.coordinate import Coordinate
+from common.enum import BaselineNoiseMap
 from common.path_configs import get_single_type_order_dataset_pattern
 from common.runtime_configs import use_simulation_config
 from depots.depot_layouts import resolve_depot_layout
@@ -130,8 +131,8 @@ def summarise_warehouses(
     }
 
 
-def summarise_exposure(drone_levels_db: np.ndarray) -> dict:
-    cell_table = load_cell_table()
+def summarise_exposure(drone_levels_db: np.ndarray, baseline_noise_map: BaselineNoiseMap) -> dict:
+    cell_table = load_cell_table(baseline_noise_map)
     return {
         "mean_noise_increase_db": calculate_mean_noise_increase_db(drone_levels_db, cell_table.baseline_levels_db),
         "newly_exposed_population_55db": calculate_newly_exposed_population(
@@ -166,7 +167,7 @@ def build_result_row(
         "git_hash": git_hash,
         "wall_time_s": wall_time_s,
         **summarise_operations(statistics, per_warehouse),
-        **summarise_exposure(drone_levels_db),
+        **summarise_exposure(drone_levels_db, specification.baseline_noise_map),
         "per_warehouse": per_warehouse,
     }
 

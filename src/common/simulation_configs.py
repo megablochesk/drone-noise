@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
-from common.enum import NavigationType, NoiseCalculation
+from common.enum import BaselineNoiseMap, NavigationType, NoiseCalculation
 from common.model_configs import ModelConfig, model_config
 from common.path_configs import ORDER_BASE_PATH_RANDOM
 
@@ -20,6 +20,7 @@ class SimulationConfig:
 
     navigator_type: NavigationType = NavigationType.STRAIGHT
     noise_calculation: NoiseCalculation = NoiseCalculation.PER_STEP_LEVELS
+    baseline_noise_map: BaselineNoiseMap = BaselineNoiseMap.PUBLISHED
 
     order_dataset_path: str = ORDER_BASE_PATH_RANDOM
 
