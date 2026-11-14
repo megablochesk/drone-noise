@@ -16,6 +16,7 @@ from common.path_configs import (
     ORDER_BASE_PATH_FURTHEST,
     ORDER_BASE_PATH_RANDOM,
     PATH_CONFIGS,
+    ROUND4_BASE_NOISE_PATH,
     get_experiment_results_full_file_path,
     get_mixed_order_dataset_pattern,
 )
@@ -30,6 +31,11 @@ ONS_CENSUS = "Office for National Statistics, Census 2021"
 ONS_POPULATION = (
     f"{ONS_CENSUS} population (the paper cites the output area population estimates, mid-2021) on MSOA 2021 polygons "
     "downloaded from a public source; the exact polygon source and the conversion are not recorded"
+)
+DEFRA_ROUND4_ROAD_NOISE = (
+    "Defra Road Noise - All Metrics - England Round 4, LAeq,16h, all roads, 10 m pixels "
+    "(https://environment.data.gov.uk/spatialdata/road-noise-all-metrics-england-round-4/wcs); "
+    "downloaded by python -m datasets.download_round4_road_noise"
 )
 PUBLIC_DOWNLOAD = "downloaded from a public source on the internet; the exact source is not recorded"
 SINGLE_STOCKING_GENERATOR = "orders.order_generator.generate_datasets(100_000), unseeded: a rerun gives other orders"
@@ -76,6 +82,11 @@ EXTERNAL_FILES = (
         "baseline noise on the 100 m navigation grid; noise-based navigation only", DEFRA_NOISE_MAPS,
     ),
     DataFile(
+        "round 4 road noise raster", PATH_CONFIGS.round4_road_noise_raster_path, DataOrigin.EXTERNAL,
+        "road noise level LAeq,16h of every 10 m pixel of the study box; 0 below 40 dB, -96 where not modelled",
+        DEFRA_ROUND4_ROAD_NOISE,
+    ),
+    DataFile(
         "census age", PATH_CONFIGS.age_dataset_path, DataOrigin.EXTERNAL,
         "residents by single year of age and MSOA", f"{ONS_CENSUS}, table of age by MSOA",
     ),
@@ -120,6 +131,12 @@ PUBLISHED_FILES = (
 )
 
 DERIVED_FILES = (
+    DataFile(
+        "baseline noise round 4", ROUND4_BASE_NOISE_PATH, DataOrigin.DERIVED,
+        "Round 4 road noise averaged over every 500 m cell, 40 dB where the map reports nothing",
+        "datasets.round4_baseline.write_round4_baseline_file",
+        generator="datasets.round4_baseline:write_round4_baseline_file", requires=("round 4 road noise raster",),
+    ),
     DataFile(
         "cell population", CELL_POPULATION_PATH, DataOrigin.DERIVED,
         "residents of every 500 m cell, MSOA populations split by overlapping area",
