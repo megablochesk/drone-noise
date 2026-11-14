@@ -1,15 +1,12 @@
 """Building the 500 m baseline from the Round 4 raster, on a hand-built raster and against the published file."""
-import json
-
 import numpy as np
 import pytest
 from osgeo import gdal
 
 from common.enum import LevelAveraging
-from common.path_configs import BASE_NOISE_PATH
 from datasets.round4_baseline import (
     aggregate_raster_to_grid,
-    build_baseline_feature_collection,
+    build_baseline_table,
     build_cell_edges,
     read_raster_levels,
     write_baseline_file,
@@ -63,34 +60,23 @@ def test_raster_is_averaged_over_the_grid_with_the_floor_filled_in(raster_path):
     np.testing.assert_allclose(cell_levels, [[46.0, 58.0], [50.0, 70.0]], rtol=1e-12)
 
 
-def test_feature_collection_has_the_cells_and_polygons_of_the_published_baseline():
-    """Same file layout as the published 500 m baseline, so every reader of that file can read this one."""
-    cell_levels = np.arange(PUBLISHED_GRID_ROWS * PUBLISHED_GRID_COLUMNS, dtype=np.float64).reshape(
-        PUBLISHED_GRID_ROWS, PUBLISHED_GRID_COLUMNS
-    )
-    collection = build_baseline_feature_collection(cell_levels)
-    with open(BASE_NOISE_PATH) as published_file:
-        published = json.load(published_file)
-
-    assert {key: value for key, value in collection.items() if key != "features"} == \
-           {key: value for key, value in published.items() if key != "features"}
-    assert [(f["properties"]["row"], f["properties"]["col"]) for f in collection["features"]] == \
-           [(f["properties"]["row"], f["properties"]["col"]) for f in published["features"]]
-    for feature_index in (0, 117, 10_439):
-        built, reference = collection["features"][feature_index], published["features"][feature_index]
-        np.testing.assert_allclose(built["geometry"]["coordinates"], reference["geometry"]["coordinates"], atol=1e-9)
-        assert built["geometry"]["type"] == reference["geometry"]["type"]
-    assert collection["features"][117]["properties"]["noise_level"] == 117.0
+def test_baseline_table_lists_every_cell_of_the_bounding_grid_row_by_row():
+    """2 rows x 3 columns of levels become six (row, col, noise_level) records, south row first."""
+    table = build_baseline_table(np.array([[41.0, 42.0, 43.0], [51.0, 52.0, 53.0]]))
+    assert table.to_dict("list") == {
+        "row": [0, 0, 0, 1, 1, 1], "col": [0, 1, 2, 0, 1, 2], "noise_level": [41.0, 42.0, 43.0, 51.0, 52.0, 53.0],
+    }
 
 
-def test_written_baseline_is_read_like_the_published_one(tmp_path):
+def test_written_baseline_is_read_by_the_baseline_reader(tmp_path):
     cell_levels = np.full((PUBLISHED_GRID_ROWS, PUBLISHED_GRID_COLUMNS), 47.25)
     cell_levels[3, 5] = 63.5
-    baseline_path = tmp_path / "baseline.geojson"
+    baseline_path = tmp_path / "baseline.parquet"
 
     write_baseline_file(cell_levels, baseline_path)
     baseline = read_base_noise_data(str(baseline_path))
 
+    assert list(baseline.columns) == ["row", "col", "noise_level"]
     assert len(baseline) == PUBLISHED_GRID_ROWS * PUBLISHED_GRID_COLUMNS
     assert baseline.loc[(baseline["row"] == 3) & (baseline["col"] == 5), "noise_level"].item() == 63.5
     assert baseline["noise_level"].value_counts()[47.25] == PUBLISHED_GRID_ROWS * PUBLISHED_GRID_COLUMNS - 1

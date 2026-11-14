@@ -34,6 +34,7 @@ ALTERNATIVE_FIELD_VALUES = {
     "landing_delay_s": 120,
     "minimum_slant_distance_m": 25.0,
     "time_step_s": 10,
+    "noise_cell_m": 100,
 }
 
 
