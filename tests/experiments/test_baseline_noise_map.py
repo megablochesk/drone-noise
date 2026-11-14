@@ -46,7 +46,7 @@ def store(tmp_path_factory) -> ResultStore:
 
 
 def test_published_map_is_the_default_and_keeps_the_keys_of_stored_runs():
-    """af17b589ffe4e1c8 is the key under which this run was stored before the baseline could be chosen."""
+    """af17b589ffe4e1c8 is the key of this run in the result store; a run on the published map has no map in its key."""
     assert STORED_RUN.baseline_noise_map is BaselineNoiseMap.PUBLISHED
     assert build_run_key(STORED_RUN) == STORED_RUN_KEY
     assert build_run_key(replace(STORED_RUN, baseline_noise_map=BaselineNoiseMap.ROUND_4_ROAD)) != STORED_RUN_KEY

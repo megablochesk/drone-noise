@@ -8,7 +8,7 @@ METRES_PER_KILOMETRE = 1000.0
 
 
 def read_navigation(runs: pd.DataFrame) -> pd.Series:
-    """Runs stored before the routing was recorded were all straight-line."""
+    """The routing of every run; a run without a recorded routing is a straight-line run."""
     if "navigation" not in runs:
         return pd.Series(STRAIGHT, index=runs.index)
     return runs["navigation"].fillna(STRAIGHT)

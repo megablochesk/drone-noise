@@ -71,7 +71,7 @@ def build_manifest(artifacts_directory: Path, command_by_run_key: dict[str, str]
 
 
 def map_run_keys_to_commands(results_directory: Path) -> dict[str, str]:
-    """A run stored by an earlier table keeps that table's command; later tables only add new runs."""
+    """A run listed in several tables gets the command of the first table that lists it."""
     commands = dict(RUN_TABLE_COMMANDS)
     commands.update({
         path.relative_to(results_directory).as_posix(): ADAPTIVE_COMMAND

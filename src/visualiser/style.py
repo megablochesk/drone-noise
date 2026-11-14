@@ -19,10 +19,14 @@ STOCKING_MARKERS = {"furthest": "o", "closest": "s", "random": "^"}
 NAVIGATION_COLOURS = {navigation: plt.get_cmap("tab10")(position) for position, navigation in enumerate(NAVIGATION_ORDER)}
 NAVIGATION_LINE_STYLES = {STRAIGHT: "-", "NOISE_A025": "--", "NOISE_A050": ":", "NOISE_A075": "-.", "NOISE_A100": "-"}
 NAVIGATION_MARKERS = {STRAIGHT: "o", "NOISE_A025": "s", "NOISE_A050": "^", "NOISE_A075": "D", "NOISE_A100": "x"}
+# Dashes of equal length and gap, the second set shifted by one dash: where two routes are the same cells
+# (alpha 0.25 and 0.50 often are) the line alternates between their colours instead of hiding one.
+ROUTE_DASH_LENGTH = 4
+ROUTE_DASHES = (ROUTE_DASH_LENGTH, ROUTE_DASH_LENGTH)
 ROUTE_STYLES = {
     STRAIGHT: dict(color="#FFFFFF", linewidth=2.2, linestyle="-", zorder=5),
-    "NOISE_A025": dict(color="#FF00FF", linewidth=2.4, linestyle="--", zorder=2),
-    "NOISE_A050": dict(color="#00E5FF", linewidth=2.4, linestyle="--", zorder=4),
+    "NOISE_A025": dict(color="#FF00FF", linewidth=2.4, linestyle=(0, ROUTE_DASHES), zorder=2),
+    "NOISE_A050": dict(color="#00E5FF", linewidth=2.4, linestyle=(ROUTE_DASH_LENGTH, ROUTE_DASHES), zorder=4),
     "NOISE_A075": dict(color="#FF7F0E", linewidth=2.6, linestyle="--", zorder=3),
     "NOISE_A100": dict(color="#FF0000", linewidth=2.6, linestyle="-", zorder=1),
 }
