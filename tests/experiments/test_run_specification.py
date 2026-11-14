@@ -111,3 +111,44 @@ def test_keys_of_stored_runs_stay_valid_when_a_field_is_added():
         baseline_noise_map=BaselineNoiseMap.ROUND_4_ROAD, time_step_s=10, noise_cell_m=100,
     )
     assert build_run_key(stored_run) == "1cf207546da36ea6"
+
+
+def test_defaults_are_the_published_values_written_out():
+    """The defaults are literals: a key names a run by its difference from the published model, whatever the
+    model configuration of the day says. Today both agree."""
+    defaults = {name: field.default for name, field in RunSpecification.__dataclass_fields__.items()}
+
+    assert (defaults["speed_mps"], defaults["flight_altitude_m"], defaults["noise_at_source_db"]) == (27, 100.0, 90.0)
+    assert (defaults["landing_delay_s"], defaults["minimum_slant_distance_m"]) == (60, 0.0)
+    assert (defaults["time_step_s"], defaults["noise_cell_m"]) == (30, 500)
+    assert build_model_config(BASE_SPECIFICATION) == model_config
+
+
+def test_a_run_keeps_its_values_when_the_model_configuration_changes(monkeypatch):
+    """A changed default of the model (here a 10 s step and 100 m cells) reaches neither the key of a
+    published-design run nor the model it runs with."""
+    from experiments.revision import run_specification
+
+    changed_model = replace(
+        model_config, time=replace(model_config.time, step_s=10), grid=replace(model_config.grid, noise_cell_m=100)
+    )
+    key_before = build_run_key(BASE_SPECIFICATION)
+    monkeypatch.setattr(run_specification, "model_config", changed_model)
+
+    model = build_model_config(BASE_SPECIFICATION)
+
+    assert build_run_key(BASE_SPECIFICATION) == key_before
+    assert (model.time.step_s, model.grid.noise_cell_m) == (30, 500)
+
+
+def test_a_number_written_as_integer_or_decimal_gives_one_key():
+    """10 and 10.0 are the same slant floor and the same time step."""
+    floored = replace(BASE_SPECIFICATION, minimum_slant_distance_m=10.0)
+
+    assert build_run_key(replace(BASE_SPECIFICATION, minimum_slant_distance_m=10)) == build_run_key(floored)
+    assert build_run_key(replace(BASE_SPECIFICATION, time_step_s=10.0)) == build_run_key(replace(BASE_SPECIFICATION, time_step_s=10))
+
+
+def test_a_fractional_value_for_a_whole_number_field_is_refused():
+    with pytest.raises(ValueError, match="time_step_s"):
+        build_run_key(replace(BASE_SPECIFICATION, time_step_s=10.5))
