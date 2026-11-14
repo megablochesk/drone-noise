@@ -10,6 +10,16 @@ from common.model_configs import ModelConfig, model_config
 from common.simulation_configs import SimulationConfig
 
 RUN_KEY_LENGTH = 16
+# The published model, written out: a key names a run by its difference from these values, so it must not
+# move with the defaults of the model configuration.
+PUBLISHED_SPEED_MPS = 27
+PUBLISHED_FLIGHT_ALTITUDE_M = 100.0
+PUBLISHED_NOISE_AT_SOURCE_DB = 90.0
+PUBLISHED_LANDING_DELAY_S = 60
+PUBLISHED_MINIMUM_SLANT_DISTANCE_M = 0.0
+PUBLISHED_TIME_STEP_S = 30
+PUBLISHED_NOISE_CELL_M = 500
+NUMBER_TYPES = {"int": int, "float": float}
 
 
 class OrderSource(Enum):
@@ -43,13 +53,13 @@ class RunSpecification:
     noise_calculation: NoiseCalculation = NoiseCalculation.ENERGY_SUM
     baseline_noise_map: BaselineNoiseMap = BaselineNoiseMap.PUBLISHED
 
-    speed_mps: int = model_config.drone.speed_mps
-    flight_altitude_m: float = model_config.drone.flight_altitude_m
-    noise_at_source_db: float = model_config.drone.noise_at_source_db
-    landing_delay_s: int = model_config.drone.landing_delay_s
-    minimum_slant_distance_m: float = model_config.drone.minimum_slant_distance_m
-    time_step_s: int = model_config.time.step_s
-    noise_cell_m: int = model_config.grid.noise_cell_m
+    speed_mps: int = PUBLISHED_SPEED_MPS
+    flight_altitude_m: float = PUBLISHED_FLIGHT_ALTITUDE_M
+    noise_at_source_db: float = PUBLISHED_NOISE_AT_SOURCE_DB
+    landing_delay_s: int = PUBLISHED_LANDING_DELAY_S
+    minimum_slant_distance_m: float = PUBLISHED_MINIMUM_SLANT_DISTANCE_M
+    time_step_s: int = PUBLISHED_TIME_STEP_S
+    noise_cell_m: int = PUBLISHED_NOISE_CELL_M
     land_once_at_customer: bool = False
     navigation: NavigationType = NavigationType.STRAIGHT
 
@@ -61,8 +71,21 @@ def to_plain_value(value):
     return value.value if isinstance(value.value, str) else value.name
 
 
+def read_as_declared_number(field_name: str, declared_type: str, value):
+    """10 and 10.0 are one value: a number is read in the type its field declares; other values pass through."""
+    number_type = NUMBER_TYPES.get(declared_type)
+    if number_type is None or isinstance(value, bool):
+        return value
+    if number_type is int and int(value) != value:
+        raise ValueError(f"{field_name} takes whole numbers, got {value}")
+    return number_type(value)
+
+
 def specification_to_record(specification: RunSpecification) -> dict:
-    return {field.name: to_plain_value(getattr(specification, field.name)) for field in fields(specification)}
+    return {
+        field.name: to_plain_value(read_as_declared_number(field.name, field.type, getattr(specification, field.name)))
+        for field in fields(specification)
+    }
 
 
 def select_identifying_values(specification: RunSpecification) -> dict:
