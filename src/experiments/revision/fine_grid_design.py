@@ -24,6 +24,14 @@ def build_fine_grid_specifications(seeds: list[int]) -> list[RunSpecification]:
     ]
 
 
+def build_single_landing_specifications(seeds: list[int]) -> list[RunSpecification]:
+    """The runs of the design that have terminal phases, with one landing per delivery instead of two."""
+    return [
+        replace(specification, land_once_at_customer=True)
+        for specification in build_fine_grid_specifications(seeds) if specification.terminal_phases
+    ]
+
+
 def select_task_specification(specifications: list[RunSpecification], task_index: int) -> RunSpecification:
     """The specification of one task of a job array; tasks are numbered from zero in design order."""
     if not 0 <= task_index < len(specifications):
