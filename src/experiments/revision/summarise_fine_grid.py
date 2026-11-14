@@ -18,7 +18,12 @@ from common.path_configs import PATH_CONFIGS
 from datasets.round4_baseline import BASELINE_FLOOR_DB, read_raster_levels
 from experiments.revision.batch_runner import REPOSITORY_ROOT, default_result_store
 from experiments.revision.fine_grid_design import FINE_BASELINE_NOISE_MAP, FINE_CELL_SIZE_M, PHASE_NAME
-from experiments.revision.phase8_tables import HEADLINE_NOISE_METRIC, RELATIVE_METRICS, add_changes_from_reference
+from experiments.revision.phase8_tables import (
+    HEADLINE_NOISE_METRIC,
+    RELATIVE_METRICS,
+    add_changes_from_reference,
+    summarise_round_trip_times,
+)
 from experiments.revision.phase_outputs import phase_directory, write_phase_table
 from experiments.revision.result_store import ResultStore, load_drone_levels, load_row
 from experiments.revision.revision_design import ALL_STOCKINGS, PILOT_FLEETS, TERMINAL_MODES, build_factorial_specifications
@@ -35,6 +40,7 @@ from noise.noise_data_processor import PUBLISHED_CELL_SIZE_M
 from noise.noise_grid import load_noise_grid, to_grid_image
 
 RUN_TABLE_NAME = "runs.csv"
+SINGLE_LANDING_TABLE_NAME = "single_landing_runs.csv"
 CONFIGURATION_KEYS = ["number_of_drones", "stocking", "terminal_phases"]
 METRICS = [HEADLINE_NOISE_METRIC, *RELATIVE_METRICS]
 CELL_AVERAGES = {
@@ -129,6 +135,16 @@ def plot_fine_maps(store: ResultStore, fine_runs: pd.DataFrame, figure_path):
     plt.close(figure)
 
 
+def summarise_single_landing(fine_runs: pd.DataFrame, single_landing_runs: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    """One landing per delivery against the published two: metrics by seed pair, and seconds per round trip."""
+    cruise_only_runs = fine_runs[~fine_runs["terminal_phases"]]
+    return {
+        "single_landing_comparison.csv": compare_fine_with_coarse(single_landing_runs, fine_runs),
+        "round_trip_times_two_landings.csv": summarise_round_trip_times(fine_runs),
+        "round_trip_times_one_landing.csv": summarise_round_trip_times(pd.concat([cruise_only_runs, single_landing_runs])),
+    }
+
+
 def main():
     ensure_clean_working_tree(REPOSITORY_ROOT)
     git_hash = read_git_hash(REPOSITORY_ROOT)
@@ -140,6 +156,8 @@ def main():
         "comparison_with_coarse_grid.csv": compare_fine_with_coarse(fine_runs, coarse_runs),
         "cell_averages_against_pixels.csv": compare_cell_averages_with_pixels(store, fine_runs),
     }
+    if (directory / SINGLE_LANDING_TABLE_NAME).exists():
+        tables.update(summarise_single_landing(fine_runs, pd.read_csv(directory / SINGLE_LANDING_TABLE_NAME)))
     for file_name, table in tables.items():
         write_phase_table(table.assign(git_hash=git_hash), directory, file_name)
     plot_fine_maps(store, fine_runs, directory / "fine_grid_maps.png")
