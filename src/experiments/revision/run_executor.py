@@ -13,7 +13,7 @@ from common.enum import BaselineNoiseMap
 from common.path_configs import get_single_type_order_dataset_pattern
 from common.runtime_configs import use_simulation_config
 from depots.depot_layouts import resolve_depot_layout
-from experiments.revision.result_store import ResultStore, save_result
+from experiments.revision.result_store import GRID_FINGERPRINT_COLUMN, ResultStore, save_grid, save_result
 from experiments.revision.run_specification import (
     FleetAllocation,
     OrderSource,
@@ -183,5 +183,6 @@ def execute_run(specification: RunSpecification, store: ResultStore, git_hash: s
 
     wall_time_s = time.perf_counter() - started_at_s
     row = build_result_row(specification, git_hash, wall_time_s, statistics, drone_levels_db, per_warehouse)
+    row[GRID_FINGERPRINT_COLUMN] = save_grid(store, load_noise_grid(specification.noise_cell_m))
     save_result(store, row["run_key"], row, drone_levels_db, statistics.trip_distances_m)
     return row

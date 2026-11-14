@@ -25,7 +25,7 @@ from common.model_configs import model_config
 from experiments.revision.batch_runner import REPOSITORY_ROOT, default_result_store
 from experiments.revision.fine_grid_design import FINE_BASELINE_NOISE_MAP, FINE_CELL_SIZE_M, PHASE_NAME
 from experiments.revision.phase_outputs import phase_directory, write_phase_table
-from experiments.revision.result_store import ResultStore, load_drone_levels
+from experiments.revision.result_store import ResultStore, ensure_runs_are_on_grid, load_drone_levels
 from experiments.revision.run_executor import HEADLINE_EXPOSURE_THRESHOLD_DB
 from experiments.revision.run_guard import ensure_clean_working_tree, read_git_hash
 from metrics.cell_table import align_to_grid, load_cell_table
@@ -236,6 +236,7 @@ def main():
         arguments.preview_directory.mkdir(parents=True, exist_ok=True)
     runs = pd.read_csv(tables_directory / RUN_TABLE_NAME)
     grid = load_noise_grid(FINE_CELL_SIZE_M)
+    ensure_runs_are_on_grid(runs, grid)
     cell_table = load_cell_table(FINE_BASELINE_NOISE_MAP, FINE_CELL_SIZE_M)
     ethnicity_table = load_cell_ethnicity(FINE_CELL_SIZE_M)
     ethnicity_names = shorten_ethnicity_names(ethnicity_table.attrs["ethnicity_code_to_name"])
