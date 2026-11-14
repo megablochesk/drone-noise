@@ -114,3 +114,13 @@ def test_executor_builds_an_order_object_only_for_dispatched_orders(store, row, 
     large_pool_row = execute_run(specification, store, GIT_HASH)
 
     assert len(built_order_ids) == large_pool_row["assigned_orders"] < 6_000
+
+
+def test_row_names_the_grid_of_its_map_and_the_store_holds_that_grid(store, row):
+    from experiments.revision.result_store import calculate_grid_fingerprint, load_stored_grid
+    from noise.noise_grid import load_noise_grid
+
+    grid = load_noise_grid(row["noise_cell_m"])
+
+    assert row["grid_fingerprint"] == calculate_grid_fingerprint(grid)
+    assert len(load_stored_grid(store, row["grid_fingerprint"]).rows) == len(load_drone_levels(store, row["run_key"]))
