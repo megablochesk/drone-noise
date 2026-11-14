@@ -5,7 +5,10 @@
 #
 # Submit for seeds 1-100 (18 tasks per seed, 1,800 tasks, at most 400 at a time):
 #   sbatch --array=0-1799%400 --export=ALL,SEEDS="$(seq -s ' ' 1 100)" cluster/fine_grid_array.sbatch
-# Measured on a laptop core: under 10 minutes and about 1 GB per task.
+# Measured on a laptop core: about 10 minutes for the largest fleet and about 1 GB per task.
+# The destination pool of every seed must exist first (python -m experiments.revision.generate_order_pools);
+# the tasks only read pools. Logs go to slurm-*.out in the repository root, which .gitignore lists: the
+# tasks refuse to run from a working tree with other untracked or changed files.
 #SBATCH --job-name=drone-noise-fine-grid
 #SBATCH --partition=cpu
 #SBATCH --ntasks=1

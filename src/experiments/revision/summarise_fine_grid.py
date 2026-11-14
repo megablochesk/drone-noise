@@ -57,6 +57,9 @@ MAP_INCREASE_RANGE_DB = (0.0, 6.0)
 def compare_fine_with_coarse(fine_runs: pd.DataFrame, coarse_runs: pd.DataFrame) -> pd.DataFrame:
     """Per configuration: mean over the seeds present in both tables, and the mean seed-paired change."""
     pairing = [*CONFIGURATION_KEYS, "seed"]
+    for runs in (fine_runs, coarse_runs):
+        if runs.duplicated(pairing).any():
+            raise ValueError("A table holds more than one run per configuration and seed; split it by variant first")
     changes = add_changes_from_reference(fine_runs, coarse_runs[[*pairing, *METRICS]], pairing)
     value_columns = [column for column in changes.columns if column.startswith(tuple(METRICS))]
     grouped = changes.groupby(CONFIGURATION_KEYS, sort=False)

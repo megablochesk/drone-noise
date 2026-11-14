@@ -59,3 +59,6 @@ analysis/
 
 # Revision experiments: large or regenerable artefacts (listed in results/MANIFEST.csv)
 results/artifacts/
+
+# Slurm job logs of cluster/fine_grid_array.sbatch
+slurm-*.out
