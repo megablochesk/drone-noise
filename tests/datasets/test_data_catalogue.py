@@ -34,6 +34,8 @@ PATHS_OF_OTHER_ANALYSES = [
     get_experiment_results_full_file_path("drone_landing_on"),
     PATH_CONFIGS.round4_road_noise_raster_path,
     ROUND4_BASE_NOISE_PATH,
+    PATH_CONFIGS.round4_base_noise_path(100),
+    PATH_CONFIGS.cell_population_path(100),
 ]
 
 
@@ -99,3 +101,12 @@ def test_round_four_baseline_is_derived_from_the_downloaded_raster():
     assert baseline.origin is DataOrigin.DERIVED
     assert baseline.requires == ("round 4 road noise raster",)
     assert baseline.generator == "datasets.round4_baseline:write_round4_baseline_file"
+
+
+def test_fine_grid_files_are_derived_and_can_be_generated():
+    """The 100 m files of the revision design: population from the MSOA data, baseline from the Round 4 raster."""
+    population, baseline = find_data_file("cell population 100 m"), find_data_file("baseline noise round 4, 100 m")
+    assert population.origin is baseline.origin is DataOrigin.DERIVED
+    assert population.requires == ("study boundary", "msoa population")
+    assert baseline.requires == ("round 4 road noise raster",)
+    assert callable(resolve_generator(population.generator)) and callable(resolve_generator(baseline.generator))
