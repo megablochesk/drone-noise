@@ -28,11 +28,12 @@ def test_default_grid_is_the_five_hundred_metre_grid_and_is_built_once():
 
 
 def test_fine_grid_centroid_is_the_middle_of_its_hundred_metre_cell():
-    """Hand calculation for row 0, column 272: 155,850.78 + 50 = 155,900.78 N, 503,568.18 + 272.5 * 100 = 530,818.18 E."""
+    """Hand calculation for the cell of central London in row 245, column 264:
+    155,850.78 + 245.5 * 100 = 180,400.78 N and 503,568.18 + 264.5 * 100 = 530,018.18 E."""
     grid = load_noise_grid(FINE_CELL_SIZE_M)
-    cell = np.flatnonzero((grid.rows == 0) & (grid.columns == 272))[0]
-    assert grid.centroid_northings[cell] == pytest.approx(155_900.78, abs=1e-6)
-    assert grid.centroid_eastings[cell] == pytest.approx(530_818.18, abs=1e-6)
+    cell = np.flatnonzero((grid.rows == 245) & (grid.columns == 264))[0]
+    assert grid.centroid_northings[cell] == pytest.approx(180_400.78, abs=1e-6)
+    assert grid.centroid_eastings[cell] == pytest.approx(530_018.18, abs=1e-6)
 
 
 def test_fine_grid_covers_greater_london_and_little_else():
