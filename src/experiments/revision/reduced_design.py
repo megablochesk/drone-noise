@@ -3,7 +3,7 @@ from dataclasses import replace
 
 import pandas as pd
 
-from common.enum import OrderDatasetType
+from common.enum import BaselineNoiseMap, OrderDatasetType
 from depots.depot_layouts import POPULATION_KMEANS_LAYOUT, RANDOM_DRAW_LAYOUTS, RING_LAYOUT, SINGLE_HUB_LAYOUT
 from experiments.revision.revision_design import (
     ALL_STOCKINGS,
@@ -29,6 +29,7 @@ PHASE_CHANGES = {
     "phase10": ONE_AT_A_TIME_CHANGES,
     "phase11": {"proportional_allocation": {"fleet_allocation": FleetAllocation.PROPORTIONAL_TO_ORDERS}},
     "phase12": {"uniform_demand_by_area": {"demand_model": DemandModel.AREA}},
+    "round4_baseline": {BaselineNoiseMap.ROUND_4_ROAD.value: {"baseline_noise_map": BaselineNoiseMap.ROUND_4_ROAD}},
 }
 
 

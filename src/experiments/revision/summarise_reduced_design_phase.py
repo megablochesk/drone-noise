@@ -54,6 +54,7 @@ PHASE_TITLES = {
     "phase10": "One-at-a-time parameters",
     "phase11": "Fleet allocation",
     "phase12": "Demand model",
+    "round4_baseline": "Baseline noise map",
 }
 
 

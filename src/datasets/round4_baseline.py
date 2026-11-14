@@ -90,11 +90,11 @@ def write_baseline_file(cell_levels_db: np.ndarray, baseline_path: Path):
     Path(baseline_path).write_text(json.dumps(build_baseline_feature_collection(cell_levels_db)))
 
 
-def calculate_round4_cell_levels(averaging: LevelAveraging) -> np.ndarray:
+def calculate_round4_cell_levels(averaging: LevelAveraging, floor_db: float = BASELINE_FLOOR_DB) -> np.ndarray:
     number_of_rows, number_of_columns = compute_grid_dimensions()
     return aggregate_raster_to_grid(
         read_raster_levels(Path(PATH_CONFIGS.round4_road_noise_raster_path)), BOUNDARIES.left, BOUNDARIES.bottom,
-        number_of_rows, number_of_columns, CELL_SIZE, BASELINE_FLOOR_DB, averaging,
+        number_of_rows, number_of_columns, CELL_SIZE, floor_db, averaging,
     )
 
 

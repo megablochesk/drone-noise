@@ -38,7 +38,7 @@ from experiments.revision.summarise_phase6_replication import load_replication_r
 from metrics.cell_table import load_cell_table
 from metrics.exposure_metrics import find_newly_exposed_cells
 from noise.energy_diagnostics import calculate_low_altitude_energy_shares, calculate_nearby_energy_shares
-from noise.noise_grid import NoiseGrid, load_noise_grid
+from noise.noise_grid import load_noise_grid, to_grid_image
 
 PHASE_NAME = "phase8"
 LARGEST_FLEET = 1250
@@ -82,12 +82,6 @@ ENERGY_SHARE_TITLES = {
     "samples_below_10m_altitude": "Energy from drone positions below 10 m altitude",
     "samples_within_50m_slant_distance": "Energy from drone positions within 50 m of the cell centroid",
 }
-
-
-def to_grid_image(grid: NoiseGrid, values: np.ndarray) -> np.ndarray:
-    image = np.full((grid.rows.max() + 1, grid.columns.max() + 1), np.nan)
-    image[grid.rows, grid.columns] = values
-    return image
 
 
 def plot_energy_share_maps(shares: dict[str, np.ndarray], figure_path: Path):

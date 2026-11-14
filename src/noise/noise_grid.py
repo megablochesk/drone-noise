@@ -24,3 +24,10 @@ def load_noise_grid() -> NoiseGrid:
         centroid_northings=np.array([cell.centroid.northing for cell in cells], dtype=np.float64),
         centroid_eastings=np.array([cell.centroid.easting for cell in cells], dtype=np.float64),
     )
+
+
+def to_grid_image(grid: NoiseGrid, values: np.ndarray) -> np.ndarray:
+    """Cell values as a (row, column) image of the bounding grid; cells outside the study area are NaN."""
+    image = np.full((grid.rows.max() + 1, grid.columns.max() + 1), np.nan)
+    image[grid.rows, grid.columns] = values
+    return image
