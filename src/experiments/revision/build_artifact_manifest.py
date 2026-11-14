@@ -28,11 +28,11 @@ RUN_TABLE_COMMANDS = {
     "round4_baseline/runs.csv": "python -m experiments.revision.run_reduced_design_phase --phases round4_baseline --workers 3",
     "fine_grid/runs.csv": "python -m experiments.revision.run_fine_grid_pilot --seeds 1 2 3 --workers 3",
     "fine_grid/single_landing_runs.csv":
-        "python -m experiments.revision.run_fine_grid_pilot --seeds 1 2 3 --single-landing --table-name single_landing_runs.csv",
+        "python -m experiments.revision.run_fine_grid_pilot --seeds 1 2 3 --design single-landing --table-name single_landing_runs.csv",
     "fine_grid/slant_floor_runs.csv":
-        "python -m experiments.revision.run_fine_grid_pilot --seeds 1 --slant-floor --table-name slant_floor_runs.csv",
+        "python -m experiments.revision.run_fine_grid_pilot --seeds 1 --design slant-floor --table-name slant_floor_runs.csv",
     "fine_grid/paper_figure_runs.csv":
-        "python -m experiments.revision.run_fine_grid_pilot --seeds 1 --paper-figures --table-name paper_figure_runs.csv",
+        "python -m experiments.revision.run_fine_grid_pilot --seeds 1 --design paper-figures --table-name paper_figure_runs.csv",
 }
 ADAPTIVE_TABLE_PATTERN = "phase6/replication_runs_fleet*_seeds*.csv"
 ADAPTIVE_COMMAND = "python -m experiments.revision.run_phase6_adaptive_block (fleet and seeds as in the table name)"

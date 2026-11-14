@@ -72,6 +72,22 @@ def build_paper_figure_specifications(seeds: list[int]) -> list[RunSpecification
     ]
 
 
+DESIGN_BUILDERS = {
+    "pilot": build_fine_grid_specifications,
+    "single-landing": build_single_landing_specifications,
+    "slant-floor": build_slant_floor_specifications,
+    "noise-aware": build_noise_aware_specifications,
+    "paper-figures": build_paper_figure_specifications,
+}
+
+
+def build_design_specifications(design_name: str, seeds: list[int]) -> list[RunSpecification]:
+    """The specifications of a named design: the same names select it on one machine and in a job array."""
+    if design_name not in DESIGN_BUILDERS:
+        raise ValueError(f"Unknown design {design_name}; the designs are {', '.join(DESIGN_BUILDERS)}")
+    return DESIGN_BUILDERS[design_name](seeds)
+
+
 def select_task_specification(specifications: list[RunSpecification], task_index: int) -> RunSpecification:
     """The specification of one task of a job array; tasks are numbered from zero in design order."""
     if not 0 <= task_index < len(specifications):

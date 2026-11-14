@@ -48,8 +48,8 @@ Run parameters live in `RunSpecification` (`src/experiments/revision/run_specifi
 reproduces the published model. The revision design changes three of them: `baseline_noise_map` (Round 4 road
 noise), `noise_cell_m` (100) and `time_step_s` (10). `land_once_at_customer` removes the second climb and
 descent that the published model flies at the customer; `navigation` selects noise-aware routing on the run's
-baseline map (default straight-line). `run_fine_grid_pilot` has a flag for each variant (`--single-landing`,
-`--slant-floor`, `--noise-aware`, `--paper-figures`); `python -m experiments.revision.paper_figures` redraws the
+baseline map (default straight-line). `run_fine_grid_pilot` and `run_fine_grid_task` take `--design` (`pilot`,
+`single-landing`, `slant-floor`, `noise-aware`, `paper-figures`); `python -m experiments.revision.paper_figures` redraws the
 paper's figures as EPS.
 
 On one machine, from `src/` (refuses uncommitted code, runs the fast suite first, skips stored runs):

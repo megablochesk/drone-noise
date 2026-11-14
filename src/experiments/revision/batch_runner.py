@@ -78,3 +78,12 @@ def run_guarded_batch(specifications: list[RunSpecification], number_of_workers:
     if failures:
         raise RuntimeError("Some runs failed:\n" + "\n".join(failures))
     return collect_rows(store, [build_run_key(specification) for specification in specifications])
+
+
+def collect_stored_runs(specifications: list[RunSpecification], store: ResultStore) -> pd.DataFrame:
+    """The rows of a design from the store, in design order; every run must be stored."""
+    run_keys = [build_run_key(specification) for specification in specifications]
+    missing = [run_key for run_key in run_keys if not has_result(store, run_key)]
+    if missing:
+        raise FileNotFoundError(f"{len(missing)} of {len(run_keys)} runs of the design are not in the store")
+    return collect_rows(store, run_keys)
