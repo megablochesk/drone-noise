@@ -1,110 +1,30 @@
+"""Maps of residents per cell: the whole population, or one map per census group."""
 from pathlib import Path
-from typing import Dict, Iterable, Optional, Tuple
 
-import matplotlib
+import numpy as np
+import pandas as pd
 
-from common.path_configs import PATH_CONFIGS
+from visualiser import draw
+from visualiser.figure_tables import build_grid_image
+from visualiser.save import save_figure
 
-matplotlib.use(PATH_CONFIGS.matplotlib_backend)
-
-import matplotlib.pyplot as plt
-
-from visualiser.plot_utils import plot_multiple_heatmaps
+POPULATION_LABEL = "Population per grid cell"
 
 
-class CensusHeatmapPlotter:
-    def __init__(
-        self,
-        dataframe,
-        *,
-        data_category: str,
-        vmin: Optional[float],
-        vmax: Optional[float],
-        output_dir: Optional[str] = None,
-        figsize: Tuple[float, float] = (6, 6),
-        index: str = "row",
-        columns: str = "col",
-        xlabel: str = "",
-        ylabel: str = "",
-        cbar_label: str = "",
-    ) -> None:
-        self.df = dataframe
-        self.data_category = data_category
-        self.vmin = vmin
-        self.vmax = vmax
-        self.output_dir = Path(output_dir) if output_dir else None
-        self.figsize = figsize
-        self.index = index
-        self.columns = columns
-        self.xlabel = xlabel
-        self.ylabel = ylabel
-        self.cbar_label = cbar_label
-
-        self._code_to_name: Dict[int, str] = self.df.attrs.get(
-            f"{self.data_category}_code_to_name", {}
-        )
-
-    def plot_code(self, data_code: int, with_heatmap_name: bool = False) -> Tuple[plt.Figure, plt.Axes]:
-        fig, ax = plt.subplots(1, 1, figsize=self.figsize, constrained_layout=True)
-        fig.filename = self._make_filename(data_code)
-
-        plot_multiple_heatmaps(
-            self.df,
-            [ax],
-            index=self.index,
-            columns=self.columns,
-            values=[data_code],
-            titles=[self._title_for_code(data_code) if with_heatmap_name else ""],
-            vmin=[self.vmin],
-            vmax=[self.vmax],
-            xlabel=self.xlabel,
-            ylabel=self.ylabel,
-            cbar_labels=self.cbar_label,
-        )
-
-        self._apply_y_tick_style(ax)
-        return fig, ax
-
-    def plot_all(self, *, codes: Optional[Iterable[int]] = None) -> None:
-        if codes is None:
-            codes = sorted(self._code_to_name)
-        for code in codes:
-            self.plot_code(int(code))
-
-    def _title_for_code(self, data_code: int) -> str:
-        return self._code_to_name.get(data_code, str(data_code))
-
-    def _make_filename(self, data_code: int) -> str:
-        vmin_s = "min" if self.vmin is None else str(self.vmin)
-        vmax_s = "max" if self.vmax is None else str(self.vmax)
-        name = f"{self.data_category}_{data_code}_{vmin_s}_{vmax_s}"
-
-        if self.output_dir is None:
-            return name
-        return str(self.output_dir / name)
-
-    @staticmethod
-    def _apply_y_tick_style(ax: plt.Axes) -> None:
-        ax.tick_params(axis="y", labelrotation=0)
-        for lbl in ax.get_yticklabels():
-            lbl.set_va("center")
-            lbl.set_ha("right")
+def read_image(cell_table: pd.DataFrame, column) -> np.ndarray:
+    return build_grid_image(cell_table["row"].to_numpy(), cell_table["col"].to_numpy(), cell_table[column].to_numpy())
 
 
-def plot_heatmaps_for_census_data(
-    df,
-    *,
-    data_category: str,
-    vmin: Optional[float],
-    vmax: Optional[float],
-    folder: Optional[str] = None,
-    cbar_label: str = "",
-) -> None:
-    CensusHeatmapPlotter(
-        df,
-        data_category=data_category,
-        vmin=vmin,
-        vmax=vmax,
-        output_dir=folder,
-        cbar_label=cbar_label,
-    ).plot_all()
+def draw_population_map(population: pd.DataFrame, figure_directory: Path):
+    image = read_image(population, "population")
+    save_figure(draw.plot_single_map(image, (0.0, float(np.nanmax(image))), POPULATION_LABEL), figure_directory, "population")
+
+
+def draw_group_population_maps(
+        group_table: pd.DataFrame, data_category: str, colour_range: tuple[float, float], figure_directory: Path,
+        colour_bar_label: str,
+):
+    """One map per group code of the table, named `<category>_<code>_<lowest>_<highest>`."""
+    for group_code in sorted(group_table.attrs[f"{data_category}_code_to_name"]):
+        figure = draw.plot_single_map(read_image(group_table, group_code), colour_range, colour_bar_label)
+        save_figure(figure, figure_directory, f"{data_category}_{group_code}_{colour_range[0]}_{colour_range[1]}")

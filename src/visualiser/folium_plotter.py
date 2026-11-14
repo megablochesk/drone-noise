@@ -77,5 +77,5 @@ class FoliumPlotter:
     def save_flight_map(self):
         folium.LayerControl().add_to(self.map)
 
-        self.map.save(PATH_CONFIGS.map_file_map)
+        self.map.save(PATH_CONFIGS.map_file_path)
         print(f"Map saved!")

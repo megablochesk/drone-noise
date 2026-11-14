@@ -15,7 +15,7 @@ from scipy.spatial import cKDTree
 from common.coordinate import Coordinate, calculate_distance
 from noise.navigator.cost_function_generator import make_mixed_distance_noise_weight
 from noise.noise_graph_builder import load_or_build_graph
-from visualiser.plot_utils import add_font_style
+from visualiser.style import apply_paper_style
 
 matplotlib.use("Agg")
 
@@ -256,7 +256,7 @@ def plot_routes_on_noise_grid(
     dpi: int = 500,
     also_save_png: bool = True,
 ):
-    add_font_style()
+    apply_paper_style()
 
     grid, r0, c0 = _graph_to_noise_grid(graph)
 
