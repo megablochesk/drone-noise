@@ -11,8 +11,10 @@ import numpy as np
 
 from common.file_utils import load_data_from_pickle, path_exists
 from noise.navigator.cost_function_generator import WeightSpec, safe_weight
+from noise.navigator.shortest_path_tree import calculate_shortest_path_tree
 
 Node = Hashable
+DEFAULT_EDGE_WEIGHT = 1
 
 
 def _tagged_cache_path(base_path: Optional[str], tag: Optional[str]) -> Optional[str]:
@@ -31,26 +33,6 @@ def _save_pickle_atomic(obj, path: str):
     with open(tmp, "wb") as f:
         pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
     os.replace(tmp, str(p))
-
-
-def _dijkstra_predecessor_and_distance(graph: nx.Graph, source: Node, weight: WeightSpec):
-    fn = getattr(nx, "single_source_dijkstra_predecessor_and_distance", None)
-    if fn is not None:
-        return fn(graph, source, weight=weight)
-
-    fn = getattr(nx, "dijkstra_predecessor_and_distance", None)
-    if fn is not None:
-        return fn(graph, source, weight=weight)
-
-    from networkx.algorithms.shortest_paths import weighted as w
-
-    if hasattr(w, "single_source_dijkstra_predecessor_and_distance"):
-        return w.single_source_dijkstra_predecessor_and_distance(graph, source, weight=weight)
-
-    if hasattr(w, "dijkstra_predecessor_and_distance"):
-        return w.dijkstra_predecessor_and_distance(graph, source, weight=weight)
-
-    raise AttributeError("No compatible NetworkX Dijkstra predecessor function found.")
 
 
 @dataclass(frozen=True)
@@ -100,6 +82,7 @@ class WarehouseDijkstraRouter:
         self._node_to_idx: Dict[Node, int] = {n: i for i, n in enumerate(self._nodes)}
 
         self._cache_spt: Dict[Node, _SPT] = {}
+        self._edge_arrays: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None
 
         self._loaded_source: Node | None = None
         self._loaded_spt: _SPT | None = None
@@ -235,42 +218,27 @@ class WarehouseDijkstraRouter:
         if source not in self._node_to_idx:
             raise KeyError(f"Unknown source node: {source}")
 
-        pred, dist = _dijkstra_predecessor_and_distance(self._graph, source, self._weight)
+        edge_starts, edge_ends, edge_weights = self._get_edge_arrays()
+        parents, distances = calculate_shortest_path_tree(
+            len(self._nodes), edge_starts, edge_ends, edge_weights, self._node_to_idx[source]
+        )
+        return _SPT(pred_idx=parents.astype(np.int32), dist=distances.astype(np.float32))
 
-        n = len(self._nodes)
-        pred_idx = np.full(n, -1, dtype=np.int32)
-        dist_arr = np.full(n, np.inf, dtype=np.float32)
+    def _get_edge_arrays(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Every edge once, as node indices and its weight; built on first use and kept for all sources."""
+        if self._edge_arrays is None:
+            edges = list(self._graph.edges(data=True))
+            edge_starts = np.array([self._node_to_idx[start] for start, _, _ in edges], dtype=np.int64)
+            edge_ends = np.array([self._node_to_idx[end] for _, end, _ in edges], dtype=np.int64)
+            edge_weights = np.array([self._edge_weight(start, end, data) for start, end, data in edges], dtype=np.float64)
+            self._edge_arrays = (edge_starts, edge_ends, edge_weights)
+        return self._edge_arrays
 
-        src_i = self._node_to_idx[source]
-        pred_idx[src_i] = int(src_i)
-        dist_arr[src_i] = 0.0
-
-        for node, d in dist.items():
-            i = self._node_to_idx.get(node)
-            if i is None:
-                continue
-
-            dist_arr[i] = float(d)
-
-            if node == source:
-                continue
-
-            preds = pred.get(node)
-            if not preds:
-                continue
-
-            parent = self._pick_parent(preds)
-            pi = self._node_to_idx.get(parent)
-            if pi is None:
-                continue
-
-            pred_idx[i] = int(pi)
-
-        return _SPT(pred_idx=pred_idx, dist=dist_arr)
-
-    def _pick_parent(self, preds: List[Node]) -> Node:
-        # deterministic choice to keep cache stable across runs
-        return min(preds, key=lambda x: self._node_to_idx.get(x, 1_000_000_000))
+    def _edge_weight(self, start: Node, end: Node, edge_data: dict) -> float:
+        """As NetworkX reads a weight: a function of the edge, or an edge attribute that defaults to 1."""
+        if callable(self._weight):
+            return self._weight(start, end, edge_data)
+        return edge_data.get(self._weight, DEFAULT_EDGE_WEIGHT)
 
     def _reconstruct_path(self, source: Node, target: Node, spt: _SPT) -> Optional[List[Node]]:
         tgt_i = self._node_to_idx.get(target)
