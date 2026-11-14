@@ -1,6 +1,7 @@
 """Loads modules exactly as they were at the published baseline commit, for characterisation tests."""
 import subprocess
 import sys
+from functools import lru_cache
 from pathlib import Path
 from contextlib import contextmanager
 from types import ModuleType
@@ -43,3 +44,12 @@ def load_legacy_module(relative_source_path: str, legacy_dependencies: dict[str,
     with substituted_modules(legacy_dependencies or {}):
         exec(compiled_source, module.__dict__)
     return module
+
+
+@lru_cache(maxsize=1)
+def load_legacy_order_generator() -> ModuleType:
+    """The published order generator together with the published MSOA module it reads its zones from."""
+    legacy_msoa_data = load_legacy_module("census_analysis/msoa_data.py")
+    return load_legacy_module(
+        "orders/order_generator.py", legacy_dependencies={"census_analysis.msoa_data": legacy_msoa_data}
+    )

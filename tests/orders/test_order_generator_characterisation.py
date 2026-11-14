@@ -1,9 +1,9 @@
 import random
 
 from orders import order_generator
-from tests.legacy_reference import load_legacy_module
+from tests.legacy_reference import load_legacy_order_generator
 
-LEGACY_ORDER_GENERATOR = load_legacy_module("orders/order_generator.py")
+LEGACY_ORDER_GENERATOR = load_legacy_order_generator()
 
 
 def test_population_based_points_match_the_published_generator():

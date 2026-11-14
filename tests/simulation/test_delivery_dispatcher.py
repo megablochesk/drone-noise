@@ -7,11 +7,11 @@ import pytest
 from common.coordinate import Coordinate
 from drones.drone import Drone
 from simulation.delivery_dispatcher import DeliveryDispatcher
-from tests.legacy_reference import load_legacy_module
+from tests.legacy_reference import load_legacy_module, load_legacy_order_generator
 
 LEGACY_DISPATCHER_MODULE = load_legacy_module(
     "simulation/delivery_dispatcher.py",
-    legacy_dependencies={"orders.order_generator": load_legacy_module("orders/order_generator.py")},
+    legacy_dependencies={"orders.order_generator": load_legacy_order_generator()},
 )
 
 WAREHOUSE_A = Coordinate(northing=100.0, easting=100.0)
