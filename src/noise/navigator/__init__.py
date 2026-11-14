@@ -66,8 +66,8 @@ def _get_grid_navigator(mode: NavigationType, baseline_noise_map: BaselineNoiseM
 
     grid = load_navigation_grid(baseline_noise_map)
     edge_costs = calculate_mixed_edge_costs(grid, _mixed_alpha_for_mode(mode))
-    warehouse_locations = list(model_config.warehouses.bng_coordinates.values())
-    return _cache_put(key, GridRouteNavigator(grid, edge_costs, warehouse_locations))
+    actual_depots = list(model_config.warehouses.bng_coordinates.values())
+    return _cache_put(key, GridRouteNavigator(grid, edge_costs, actual_depots))
 
 
 def get_navigator(
