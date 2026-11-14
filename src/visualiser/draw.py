@@ -79,7 +79,7 @@ def draw_map(axis, image: np.ndarray, colour_range: tuple[float, float], colour_
     colour_map.set_bad(style.OUTSIDE_STUDY_AREA_COLOUR)
     drawn = axis.imshow(
         np.ma.masked_invalid(image), origin="lower", cmap=colour_map, vmin=colour_range[0], vmax=colour_range[1],
-        interpolation="nearest",
+        interpolation="none",
     )
     for spine in axis.spines.values():
         spine.set_visible(False)
@@ -159,7 +159,7 @@ def plot_route_example(image: np.ndarray, routes: dict[str, tuple[np.ndarray, np
     """Routes over a noise map. Each route is (columns, rows) in image coordinates; the straight route's two
     points mark the start and the end."""
     figure, axis = plt.subplots(figsize=(ROUTE_FIGURE_HEIGHT * image.shape[1] / image.shape[0], ROUTE_FIGURE_HEIGHT))
-    drawn = axis.imshow(image, origin="lower", cmap=style.COLOUR_MAP, interpolation="nearest")
+    drawn = axis.imshow(image, origin="lower", cmap=style.COLOUR_MAP, interpolation="none")
     axis.axis("off")
     for navigation, (columns, rows) in routes.items():
         route_style = style.ROUTE_STYLES[navigation]
