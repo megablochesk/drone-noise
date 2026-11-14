@@ -10,6 +10,7 @@ from common.path_configs import (
     ORDER_BASE_PATH_FURTHEST,
     ORDER_BASE_PATH_RANDOM,
     PATH_CONFIGS,
+    ROUND4_BASE_NOISE_PATH,
     get_experiment_results_full_file_path,
 )
 from datasets.data_catalogue import DATA_CATALOGUE, DataOrigin
@@ -31,6 +32,8 @@ PATHS_OF_OTHER_ANALYSES = [
     PATH_CONFIGS.ethnicity_dataset_path,
     get_experiment_results_full_file_path("drone_number_change"),
     get_experiment_results_full_file_path("drone_landing_on"),
+    PATH_CONFIGS.round4_road_noise_raster_path,
+    ROUND4_BASE_NOISE_PATH,
 ]
 
 
@@ -86,3 +89,13 @@ def test_census_files_name_the_ons_census(name):
 def test_no_file_is_left_without_any_statement_of_origin():
     for data_file in DATA_CATALOGUE:
         assert "source not recorded in the repository" != data_file.obtained_from, data_file.name
+
+
+def test_round_four_baseline_is_derived_from_the_downloaded_raster():
+    raster, baseline = find_data_file("round 4 road noise raster"), find_data_file("baseline noise round 4")
+    assert raster.origin is DataOrigin.EXTERNAL
+    assert "datasets.download_round4_road_noise" in raster.obtained_from
+    assert "https://environment.data.gov.uk/spatialdata/road-noise-all-metrics-england-round-4/wcs" in raster.obtained_from
+    assert baseline.origin is DataOrigin.DERIVED
+    assert baseline.requires == ("round 4 road noise raster",)
+    assert baseline.generator == "datasets.round4_baseline:write_round4_baseline_file"
