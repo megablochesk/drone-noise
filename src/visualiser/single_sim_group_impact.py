@@ -10,6 +10,7 @@ from matplotlib import ticker as mtick
 
 from census_analysis.age_data_processor.age_cell_matrix_calculator import AGE_BAND_DEFS
 from census_analysis.cell_datasets import load_cell_age, load_cell_ethnicity
+from census_analysis.ethnic_group_codes import abbreviate_ethnic_groups, describe_ethnic_group
 
 
 def _slug(text: str) -> str:
@@ -206,63 +207,12 @@ def _ethnicity_names(value_cols: list[int]) -> dict[int, str]:
     return result
 
 
-_ETHNICITY_HIGH_LEVEL_GROUP: dict[str, str] = {
-    "Indian": "Asian",
-    "Pakistani": "Asian",
-    "Bangladeshi": "Asian",
-    "Chinese": "Asian",
-    "Other Asian": "Asian",
-    "African": "Black",
-    "Caribbean": "Black",
-    "Other Black": "Black",
-    "White and Black Caribbean": "Mixed",
-    "White and Black African": "Mixed",
-    "White and Asian": "Mixed",
-    "Other Mixed or Multiple ethnic groups": "Mixed",
-    "English, Welsh, Scottish, Northern Irish or British": "White",
-    "Irish": "White",
-    "Gypsy or Irish Traveller": "White",
-    "Roma": "White",
-    "Other White": "White",
-    "Arab": "Other",
-    "Any other ethnic group": "Other",
-}
-
-_ETHNICITY_ABBREVIATIONS: dict[str, str] = {
-    "Indian": "A:IND",
-    "Pakistani": "A:PAK",
-    "Bangladeshi": "A:BAN",
-    "Chinese": "A:CHN",
-    "Other Asian": "A:OASN",
-    "African": "B:AFR",
-    "Caribbean": "B:CRB",
-    "Other Black": "B:OBLK",
-    "White and Black Caribbean": "M:WBCR",
-    "White and Black African": "M:WBAF",
-    "White and Asian": "M:WASN",
-    "Other Mixed or Multiple ethnic groups": "M:OMIX",
-    "English, Welsh, Scottish, Northern Irish or British": "W:BRIT",
-    "Irish": "W:IRI",
-    "Gypsy or Irish Traveller": "W:GIT",
-    "Roma": "W:ROM",
-    "Other White": "W:OWHT",
-    "Arab": "O:ARB",
-    "Any other ethnic group": "O:OTH",
-}
-
-
 def _ethnicity_full_label(name: str) -> str:
-    group = _ETHNICITY_HIGH_LEVEL_GROUP.get(name)
-    if group is None:
-        return name
-    return f"{group}: {name}"
+    return describe_ethnic_group(name)
 
 
 def _ethnicity_display_codes(names: list[str]) -> list[str]:
-    def _abbreviate(full_label: str) -> str:
-        short_name = full_label.split(": ", 1)[-1] if ": " in full_label else full_label
-        return _ETHNICITY_ABBREVIATIONS.get(short_name, full_label)
-    return [_abbreviate(name) for name in names]
+    return abbreviate_ethnic_groups([name.split(": ", 1)[-1] for name in names])
 
 
 def plot_single_sim_group_impact(

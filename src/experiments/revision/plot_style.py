@@ -3,9 +3,11 @@ import math
 
 from matplotlib.ticker import FuncFormatter, PercentFormatter
 
+from visualiser import style
+
 STOCKING_ORDER = ("closest", "random", "furthest")
 STOCKING_LABELS = {"closest": "best", "random": "random", "furthest": "worst"}
-STOCKING_COLOURS = {"closest": "tab:blue", "random": "tab:orange", "furthest": "tab:green"}
+STOCKING_COLOURS = style.STOCKING_COLOURS
 FLIGHT_PROFILE_LINE_STYLES = {False: "-", True: "--"}
 FLIGHT_PROFILE_LABELS = {False: "cruise only", True: "terminal phases"}
 METRIC_LABELS = {
