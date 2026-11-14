@@ -2,37 +2,16 @@
 
 Usage (from src/): python -m experiments.revision.run_phase7_postprocessing
 """
-import matplotlib
-
-matplotlib.use("Agg")
-
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
 
-from common.model_configs import model_config
 from experiments.revision.batch_runner import REPOSITORY_ROOT, default_result_store
 from experiments.revision.phase_outputs import phase_directory, write_phase_table
-from experiments.revision.plot_style import (
-    FLIGHT_PROFILE_LINE_STYLES,
-    METRIC_LABELS,
-    MILLIONS_FORMATTER,
-    STOCKING_COLOURS,
-    STOCKING_LABELS,
-    STOCKING_ORDER,
-    THOUSANDS_FORMATTER,
-    add_figure_legend,
-    describe_series,
-)
 from experiments.revision.result_store import ResultStore, load_drone_levels, load_trip_distances
+from experiments.revision.revision_figures import PUBLISHED_SOURCE_LEVEL_DB, plot_metrics_against_deliveries, plot_source_level_sweep, plot_trip_distance_distributions
 from experiments.revision.run_executor import DELIVERY_RANGE_M
 from experiments.revision.run_guard import ensure_clean_working_tree, read_git_hash
-from experiments.revision.summarise_phase6_replication import (
-    CONFIGURATION_COLUMNS,
-    STOCKING_LABELS,
-    STOCKING_ORDER,
-    load_replication_runs,
-)
+from experiments.revision.summarise_phase6_replication import CONFIGURATION_COLUMNS, load_replication_runs
 from metrics.cell_table import CellTable, load_cell_table
 from metrics.map_postprocessing import (
     rebase_baseline_default,
@@ -41,17 +20,11 @@ from metrics.map_postprocessing import (
 )
 
 PHASE_NAME = "phase7"
-PUBLISHED_SOURCE_LEVEL_DB = model_config.drone.noise_at_source_db
 SOURCE_LEVEL_SWEEP_DB = tuple(range(80, 106))
 ANNOYANCE_PENALTY_DB = 5.6
 BASELINE_DEFAULTS_DB = (35.0, 40.0, 45.0, 50.0)
 TRIP_DISTANCE_QUANTILES = (0.05, 0.25, 0.5, 0.75, 0.95)
 RUN_IDENTITY_COLUMNS = ["run_key", "seed", *CONFIGURATION_COLUMNS, "delivered_orders"]
-TRIP_HISTOGRAM_BIN_WIDTH_M = 1_000.0
-DELIVERY_PLOT_METRICS = ("mean_noise_increase_db", "newly_exposed_population_55db")
-SOURCE_SWEEP_METRICS = ("mean_noise_increase_db", "newly_exposed_population_55db", "population_inside_drone_contour_51db")
-SEED_POINT_SIZE = 10
-SEED_POINT_ALPHA = 0.3
 
 
 def describe_run(run: pd.Series) -> dict:
@@ -113,97 +86,6 @@ def average_over_seeds(table: pd.DataFrame, extra_group_columns: list[str]) -> p
     means = grouped.mean().add_suffix("_mean")
     deviations = grouped.std(ddof=1).add_suffix("_sd")
     return pd.concat([grouped.size().rename("number_of_seeds"), means, deviations], axis=1).reset_index()
-
-
-def plot_source_level_sweep(sweep_means: pd.DataFrame, figure_path):
-    largest_fleet = sweep_means["number_of_drones"].max()
-    panel = sweep_means[(sweep_means["number_of_drones"] == largest_fleet) & ~sweep_means["is_annoyance_penalty_case"]]
-    figure, axes = plt.subplots(1, len(SOURCE_SWEEP_METRICS), figsize=(15, 5))
-    for axis, metric in zip(axes, SOURCE_SWEEP_METRICS):
-        for stocking in STOCKING_ORDER:
-            for terminal_phases, line_style in FLIGHT_PROFILE_LINE_STYLES.items():
-                line = panel[(panel["stocking"] == stocking) & (panel["terminal_phases"] == terminal_phases)]
-                axis.plot(
-                    line["noise_at_source_db"], line[f"{metric}_mean"], line_style,
-                    color=STOCKING_COLOURS[stocking], label=describe_series(stocking, terminal_phases),
-                )
-        axis.axvline(PUBLISHED_SOURCE_LEVEL_DB, color="grey", linewidth=0.8)
-        axis.annotate(
-            f"published {PUBLISHED_SOURCE_LEVEL_DB:g} dB", (PUBLISHED_SOURCE_LEVEL_DB, 0.97),
-            xycoords=("data", "axes fraction"), rotation=90, ha="right", va="top", fontsize=7, color="0.35",
-        )
-        axis.set_xlabel("source level at 1 m (dB)")
-        axis.set_ylabel(METRIC_LABELS[metric] + ("" if metric == "mean_noise_increase_db" else " (millions)"))
-        axis.grid(alpha=0.25)
-        if metric != "mean_noise_increase_db":
-            axis.yaxis.set_major_formatter(MILLIONS_FORMATTER)
-    add_figure_legend(figure, axes[0], title=f"Source-level sweep, {largest_fleet:,} drones, mean over seeds")
-    figure.savefig(figure_path, dpi=150)
-    plt.close(figure)
-
-
-def plot_series_against_deliveries(axis, series: pd.DataFrame, metric: str, stocking: str, terminal_phases: bool):
-    """One stocking and flight profile: seed runs as faint points, fleet-size means joined by a line."""
-    colour = STOCKING_COLOURS[stocking]
-    fleet_means = series.groupby("number_of_drones", sort=True)[["delivered_orders", metric]].mean()
-    axis.scatter(series["delivered_orders"], series[metric], s=SEED_POINT_SIZE, color=colour, alpha=SEED_POINT_ALPHA, linewidths=0)
-    axis.plot(
-        fleet_means["delivered_orders"], fleet_means[metric], FLIGHT_PROFILE_LINE_STYLES[terminal_phases],
-        color=colour, marker="o", markersize=4, label=describe_series(stocking, terminal_phases),
-    )
-    return fleet_means
-
-
-def label_fleet_sizes(axis, fleet_means: pd.DataFrame, metric: str):
-    for number_of_drones, mean in fleet_means.iterrows():
-        axis.annotate(
-            f"{number_of_drones:,} drones", (mean["delivered_orders"], mean[metric]),
-            textcoords="offset points", xytext=(0, -12), ha="center", fontsize=7, color="0.35",
-        )
-
-
-def plot_metrics_against_deliveries(exposure: pd.DataFrame, figure_path):
-    figure, axes = plt.subplots(1, len(DELIVERY_PLOT_METRICS), figsize=(12, 5.2))
-    for axis, metric in zip(axes, DELIVERY_PLOT_METRICS):
-        for stocking in STOCKING_ORDER:
-            for terminal_phases in FLIGHT_PROFILE_LINE_STYLES:
-                series = exposure[(exposure["stocking"] == stocking) & (exposure["terminal_phases"] == terminal_phases)]
-                fleet_means = plot_series_against_deliveries(axis, series, metric, stocking, terminal_phases)
-                if stocking == STOCKING_ORDER[0] and not terminal_phases:
-                    label_fleet_sizes(axis, fleet_means, metric)
-        axis.set_xlabel(METRIC_LABELS["delivered_orders"])
-        axis.set_ylabel(METRIC_LABELS[metric])
-        axis.xaxis.set_major_formatter(THOUSANDS_FORMATTER)
-        axis.grid(alpha=0.25)
-    axes[1].yaxis.set_major_formatter(THOUSANDS_FORMATTER)
-    add_figure_legend(
-        figure, axes[0], title="Lines join fleet-size means; faint points are single seeds",
-        number_of_columns=len(STOCKING_ORDER),
-    )
-    figure.savefig(figure_path, dpi=150)
-    plt.close(figure)
-
-
-def plot_trip_distance_distributions(runs: pd.DataFrame, store: ResultStore, figure_path):
-    largest_fleet = runs["number_of_drones"].max()
-    largest_fleet_runs = runs[(runs["number_of_drones"] == largest_fleet) & ~runs["terminal_phases"]]
-    figure, axis = plt.subplots(figsize=(8, 4.5))
-    for stocking in STOCKING_ORDER:
-        run_keys = largest_fleet_runs.loc[largest_fleet_runs["stocking"] == stocking, "run_key"]
-        distances_km = np.concatenate([load_trip_distances(store, run_key) for run_key in run_keys]) / 1_000.0
-        bins = np.arange(0.0, distances_km.max() + 1.0, TRIP_HISTOGRAM_BIN_WIDTH_M / 1_000.0)
-        axis.hist(
-            distances_km, bins=bins, density=True, histtype="step",
-            color=STOCKING_COLOURS[stocking], label=f"{STOCKING_LABELS[stocking]} stocking",
-        )
-    axis.axvline(DELIVERY_RANGE_M / 1_000.0, color="grey", linewidth=0.8, label=f"{DELIVERY_RANGE_M / 1_000.0:g} km delivery range")
-    axis.set_xlabel("one-way trip distance (km)")
-    axis.set_ylabel("share of trips per km")
-    axis.set_title(f"Trips flown, {largest_fleet:,} drones, cruise only, all seeds", fontsize=10)
-    axis.legend(frameon=False)
-    figure.tight_layout()
-    figure.savefig(figure_path, dpi=150)
-    plt.close(figure)
 
 
 def postprocess_runs(runs: pd.DataFrame, store: ResultStore) -> dict[str, pd.DataFrame]:

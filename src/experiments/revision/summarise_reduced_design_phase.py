@@ -2,29 +2,16 @@
 
 Usage (from src/): python -m experiments.revision.summarise_reduced_design_phase --phase phase9
 """
-import matplotlib
-
-matplotlib.use("Agg")
-
 import argparse
 from dataclasses import replace
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
 
 from common.enum import OrderDatasetType
 from depots.depot_layouts import load_population_centre
 from experiments.revision.batch_runner import REPOSITORY_ROOT, default_result_store
 from experiments.revision.phase_outputs import phase_directory, write_phase_table
-from experiments.revision.plot_style import (
-    SIGNED_PERCENT_FORMATTER,
-    STOCKING_COLOURS,
-    STOCKING_LABELS,
-    STOCKING_ORDER,
-    add_figure_legend,
-    describe_variant,
-)
 from experiments.revision.reduced_design import (
     BASELINE_VARIANT,
     ONE_AT_A_TIME_CHANGES,
@@ -33,6 +20,7 @@ from experiments.revision.reduced_design import (
     rank_stockings,
 )
 from experiments.revision.result_store import load_drone_levels
+from experiments.revision.revision_figures import plot_relative_changes
 from experiments.revision.run_guard import ensure_clean_working_tree, read_git_hash
 from experiments.revision.run_reduced_design_phase import RUN_TABLE_NAME
 from experiments.revision.run_specification import RunSpecification, build_model_config
@@ -43,19 +31,6 @@ from noise.noise_grid import load_noise_grid
 HEADLINE_METRICS = ["delivered_orders", "mean_trip_distance_m", "mean_noise_increase_db", "newly_exposed_population_55db"]
 RANKED_METRICS = ["delivered_orders", "mean_noise_increase_db", "newly_exposed_population_55db"]
 CENTRAL_AREA_RADIUS_M = 10_000.0
-PLOTTED_FLEET = 1250
-PLOTTED_CHANGES = {
-    "mean_noise_increase_db_change": "change of mean noise increase (dB)",
-    "delivered_orders_relative_change": "change of deliveries",
-    "newly_exposed_population_55db_relative_change": "change of newly exposed population at 55 dB",
-}
-PHASE_TITLES = {
-    "phase9": "Depot layouts",
-    "phase10": "One-at-a-time parameters",
-    "phase11": "Fleet allocation",
-    "phase12": "Demand model",
-    "round4_baseline": "Baseline noise map",
-}
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -95,32 +70,6 @@ def describe_altitude_ladders() -> pd.DataFrame:
             "cruise_altitude_m": model.drone.flight_altitude_m,
         })
     return pd.DataFrame(rows)
-
-
-def plot_change_panel(axis, panel: pd.DataFrame, column: str, axis_label: str):
-    table = panel.pivot(index="variant", columns="stocking", values=column)
-    stockings = [stocking for stocking in STOCKING_ORDER if stocking in table.columns]
-    table = table[stockings].rename(index=describe_variant, columns=lambda stocking: f"{STOCKING_LABELS[stocking]} stocking")
-    table.plot.bar(ax=axis, width=0.8, color=[STOCKING_COLOURS[stocking] for stocking in stockings], legend=False)
-    axis.axhline(0.0, color="black", linewidth=0.6)
-    axis.set_xlabel("")
-    axis.set_ylabel(axis_label)
-    axis.tick_params(axis="x", labelrotation=35, labelsize=8)
-    plt.setp(axis.get_xticklabels(), ha="right")
-    axis.grid(axis="y", alpha=0.25)
-    if column.endswith("_relative_change"):
-        axis.yaxis.set_major_formatter(SIGNED_PERCENT_FORMATTER)
-
-
-def plot_relative_changes(comparison: pd.DataFrame, figure_path, phase_name: str):
-    panel = comparison[(comparison["number_of_drones"] == PLOTTED_FLEET) & (comparison["variant"] != BASELINE_VARIANT)]
-    figure, axes = plt.subplots(1, len(PLOTTED_CHANGES), figsize=(16, 5.2))
-    for axis, (column, axis_label) in zip(axes, PLOTTED_CHANGES.items()):
-        plot_change_panel(axis, panel, column, axis_label)
-    title = f"{PHASE_TITLES[phase_name]}: change from the baseline of the same seeds, {PLOTTED_FLEET:,} drones, terminal phases"
-    add_figure_legend(figure, axes[0], title=title)
-    figure.savefig(figure_path, dpi=150)
-    plt.close(figure)
 
 
 def build_phase_tables(phase_name: str, runs: pd.DataFrame) -> dict[str, pd.DataFrame]:

@@ -3,13 +3,8 @@ rule move the exposure metrics of the stored reduced-design runs.
 
 Usage (from src/): python -m experiments.revision.summarise_round4_baseline
 """
-import matplotlib
-
-matplotlib.use("Agg")
-
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
 
 from common.enum import BaselineNoiseMap, LevelAveraging
 from datasets.round4_baseline import BASELINE_FLOOR_DB, calculate_round4_cell_levels
@@ -17,17 +12,16 @@ from experiments.revision.batch_runner import REPOSITORY_ROOT, default_result_st
 from experiments.revision.phase_outputs import phase_directory, write_phase_table
 from experiments.revision.reduced_design import ALL_STOCKINGS, build_baseline_specifications
 from experiments.revision.result_store import load_drone_levels
+from experiments.revision.revision_figures import plot_baseline_maps
 from experiments.revision.run_guard import ensure_clean_working_tree, read_git_hash
 from experiments.revision.run_specification import build_run_key, specification_to_record
 from metrics.cell_table import load_cell_table
 from metrics.map_postprocessing import HEADLINE_THRESHOLD_DB
 from metrics.exposure_metrics import calculate_mean_noise_increase_db, calculate_newly_exposed_population
-from noise.noise_grid import NoiseGrid, load_noise_grid, to_grid_image
+from noise.noise_grid import NoiseGrid, load_noise_grid
 
 PHASE_NAME = "round4_baseline"
 ALTERNATIVE_FLOORS_DB = (30.0, 35.0)
-MAP_LEVEL_RANGE_DB = (40.0, 75.0)
-MAP_DIFFERENCE_RANGE_DB = (-15.0, 15.0)
 
 
 def summarise_baseline_levels(levels_db: np.ndarray, population: np.ndarray, floor_db: float) -> dict:
@@ -96,25 +90,6 @@ def compare_stored_runs_under_baselines(baselines: dict[str, np.ndarray], popula
     runs = pd.concat(tables, ignore_index=True)
     grouped = runs.groupby(["number_of_drones", "stocking", "baseline"], sort=False)
     return grouped[["mean_noise_increase_db", "newly_exposed_population_55db"]].mean().reset_index()
-
-
-def plot_baseline_maps(grid: NoiseGrid, published_db: np.ndarray, round4_db: np.ndarray, figure_path):
-    figure, axes = plt.subplots(1, 3, figsize=(17, 4.8))
-    panels = [
-        ("Published baseline (banded, 2017 maps)", published_db, "viridis", MAP_LEVEL_RANGE_DB, "level (dB)"),
-        ("Round 4 road noise, LAeq,16h", round4_db, "viridis", MAP_LEVEL_RANGE_DB, "level (dB)"),
-        ("Round 4 minus published", round4_db - published_db, "RdBu_r", MAP_DIFFERENCE_RANGE_DB, "difference (dB)"),
-    ]
-    for axis, (title, values, colour_map, (lowest, highest), label) in zip(axes, panels):
-        image = axis.imshow(to_grid_image(grid, values), origin="lower", cmap=colour_map, vmin=lowest, vmax=highest)
-        axis.set_title(title, fontsize=10)
-        axis.set_xticks([])
-        axis.set_yticks([])
-        figure.colorbar(image, ax=axis, shrink=0.8, label=label)
-    figure.suptitle("Baseline noise of the 500 m cells of Greater London (40 dB floor in both maps)")
-    figure.tight_layout()
-    figure.savefig(figure_path, dpi=150)
-    plt.close(figure)
 
 
 def main():

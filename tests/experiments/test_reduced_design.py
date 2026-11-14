@@ -12,8 +12,8 @@ from experiments.revision.reduced_design import (
     compare_variants_with_baseline,
     rank_stockings,
 )
+from experiments.revision.revision_figures import PHASE_TITLES
 from experiments.revision.run_specification import DemandModel, FleetAllocation
-from experiments.revision.summarise_reduced_design_phase import PHASE_TITLES
 
 
 def count_runs(variants: dict) -> int:

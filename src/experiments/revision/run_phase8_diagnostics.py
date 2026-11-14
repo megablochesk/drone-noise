@@ -2,17 +2,12 @@
 
 Usage (from src/): python -m experiments.revision.run_phase8_diagnostics
 """
-import matplotlib
-
-matplotlib.use("Agg")
-
 import sys
 from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
 
 from common.enum import OrderDatasetType
 from common.model_configs import ModelConfig, model_config
@@ -26,6 +21,7 @@ from experiments.revision.phase8_tables import (
 )
 from experiments.revision.phase_outputs import phase_directory, write_artifact_provenance, write_phase_table
 from experiments.revision.revision_design import REDUCED_DESIGN_SEEDS, REVISION_POOL_SIZE
+from experiments.revision.revision_figures import plot_energy_share_maps
 from experiments.revision.run_executor import HEADLINE_EXPOSURE_THRESHOLD_DB, plan_demand, run_simulation
 from experiments.revision.run_guard import ensure_clean_working_tree, read_git_hash
 from experiments.revision.run_specification import RunSpecification
@@ -38,7 +34,7 @@ from experiments.revision.summarise_phase6_replication import load_replication_r
 from metrics.cell_table import load_cell_table
 from metrics.exposure_metrics import find_newly_exposed_cells
 from noise.energy_diagnostics import calculate_low_altitude_energy_shares, calculate_nearby_energy_shares
-from noise.noise_grid import load_noise_grid, to_grid_image
+from noise.noise_grid import load_noise_grid
 
 PHASE_NAME = "phase8"
 LARGEST_FLEET = 1250
@@ -77,26 +73,6 @@ def summarise_seed_energy_shares(seed: int, shares: dict[str, np.ndarray]) -> li
         {"seed": seed, "energy_source": source, **summarise_energy_shares(shares[source], cell_table.population, newly_exposed)}
         for source in ("samples_below_10m_altitude", "samples_within_50m_slant_distance")
     ]
-
-ENERGY_SHARE_TITLES = {
-    "samples_below_10m_altitude": "Energy from drone positions below 10 m altitude",
-    "samples_within_50m_slant_distance": "Energy from drone positions within 50 m of the cell centroid",
-}
-
-
-def plot_energy_share_maps(shares: dict[str, np.ndarray], figure_path: Path):
-    grid = load_noise_grid()
-    figure, axes = plt.subplots(1, len(ENERGY_SHARE_TITLES), figsize=(13, 5))
-    for axis, (source, title) in zip(axes, ENERGY_SHARE_TITLES.items()):
-        image = axis.imshow(to_grid_image(grid, shares[source]), origin="lower", vmin=0.0, vmax=1.0, cmap="viridis")
-        axis.set_title(title, fontsize=10)
-        axis.set_xticks([])
-        axis.set_yticks([])
-        figure.colorbar(image, ax=axis, shrink=0.8, label="share of the cell's drone noise energy")
-    figure.suptitle("Greater London, 500 m cells: random stocking, terminal phases, 1,250 drones, seed 1")
-    figure.tight_layout()
-    figure.savefig(figure_path, dpi=150)
-    plt.close(figure)
 
 
 def analyse_energy_shares(directory: Path, git_hash: str) -> pd.DataFrame:

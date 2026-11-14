@@ -3,15 +3,10 @@ pixel-level reference for both cell averages of the baseline, and maps.
 
 Usage (from src/): python -m experiments.revision.summarise_fine_grid
 """
-import matplotlib
-
-matplotlib.use("Agg")
-
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
 
 from common.enum import BaselineNoiseMap
 from common.path_configs import PATH_CONFIGS
@@ -27,17 +22,17 @@ from experiments.revision.phase8_tables import (
 from experiments.revision.phase_outputs import phase_directory, write_phase_table
 from experiments.revision.result_store import ResultStore, load_drone_levels, load_row
 from experiments.revision.revision_design import ALL_STOCKINGS, PILOT_FLEETS, TERMINAL_MODES, build_factorial_specifications
+from experiments.revision.revision_figures import plot_fine_maps
 from experiments.revision.run_guard import ensure_clean_working_tree, read_git_hash
 from experiments.revision.run_specification import build_run_key, specification_to_record
 from experiments.revision.summarise_round4_baseline import summarise_exposure_under_baselines
 from metrics.cell_table import load_cell_table
-from metrics.exposure_metrics import combine_levels_db
 from metrics.map_postprocessing import HEADLINE_THRESHOLD_DB
 from metrics.pixel_exposure import map_pixels_to_cells, summarise_pixel_level_exposure
 from noise.baseline_aggregation import fill_levels_below_floor
 from noise.grid_generator import BOUNDARIES
 from noise.noise_data_processor import PUBLISHED_CELL_SIZE_M
-from noise.noise_grid import load_noise_grid, to_grid_image
+from noise.noise_grid import load_noise_grid
 
 RUN_TABLE_NAME = "runs.csv"
 SINGLE_LANDING_TABLE_NAME = "single_landing_runs.csv"
@@ -49,9 +44,6 @@ CELL_AVERAGES = {
     "energy cell mean": BaselineNoiseMap.ROUND_4_ROAD_ENERGY,
 }
 PIXEL_REFERENCE = "pixel-level reference"
-MAPPED_RUN = {"number_of_drones": 1250, "stocking": "closest", "terminal_phases": True, "seed": 1}
-MAP_LEVEL_RANGE_DB = (40.0, 75.0)
-MAP_INCREASE_RANGE_DB = (0.0, 6.0)
 
 
 def compare_fine_with_coarse(fine_runs: pd.DataFrame, coarse_runs: pd.DataFrame) -> pd.DataFrame:
@@ -114,29 +106,6 @@ def compare_cell_averages_with_pixels(store: ResultStore, fine_runs: pd.DataFram
     ]
     grouped = pd.concat(tables, ignore_index=True).groupby([*CONFIGURATION_KEYS, "baseline"], sort=False)
     return grouped[["mean_noise_increase_db", "newly_exposed_population_55db"]].mean().reset_index()
-
-
-def plot_fine_maps(store: ResultStore, fine_runs: pd.DataFrame, figure_path):
-    run = fine_runs.loc[(fine_runs[list(MAPPED_RUN)] == pd.Series(MAPPED_RUN)).all(axis=1)].iloc[0]
-    grid, cell_table = load_noise_grid(FINE_CELL_SIZE_M), load_cell_table(FINE_BASELINE_NOISE_MAP, FINE_CELL_SIZE_M)
-    drone_levels_db = load_drone_levels(store, run["run_key"])
-    increase_db = combine_levels_db(drone_levels_db, cell_table.baseline_levels_db) - cell_table.baseline_levels_db
-    panels = [
-        ("Round 4 baseline, 100 m cells", cell_table.baseline_levels_db, "viridis", MAP_LEVEL_RANGE_DB, "level (dB)"),
-        ("Drone noise alone", drone_levels_db, "viridis", MAP_LEVEL_RANGE_DB, "level (dB)"),
-        ("Increase over the baseline", increase_db, "magma", MAP_INCREASE_RANGE_DB, "increase (dB)"),
-    ]
-    figure, axes = plt.subplots(1, 3, figsize=(18, 5))
-    for axis, (title, values, colour_map, (lowest, highest), label) in zip(axes, panels):
-        image = axis.imshow(to_grid_image(grid, values), origin="lower", cmap=colour_map, vmin=lowest, vmax=highest)
-        axis.set_title(title, fontsize=10)
-        axis.set_xticks([])
-        axis.set_yticks([])
-        figure.colorbar(image, ax=axis, shrink=0.8, label=label)
-    figure.suptitle("1,250 drones, best stocking, terminal phases, seed 1: 100 m cells, 10 s step")
-    figure.tight_layout()
-    figure.savefig(figure_path, dpi=150)
-    plt.close(figure)
 
 
 def summarise_single_landing(fine_runs: pd.DataFrame, single_landing_runs: pd.DataFrame) -> dict[str, pd.DataFrame]:
