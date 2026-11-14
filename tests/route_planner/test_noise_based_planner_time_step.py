@@ -37,3 +37,21 @@ def test_route_points_are_one_time_step_of_flight_apart():
     gaps_m = [math.hypot(a.northing - b.northing, a.easting - b.easting) for a, b in zip(route[1:-1], route[2:-1])]
     assert len(route) == math.ceil(route_length_m / spacing_m) + 1
     assert max(gaps_m) <= spacing_m + 1e-6
+
+
+class OnePointNavigator:
+    """A navigator whose grid has both ends in one cell."""
+
+    def get_optimal_route_coordinates(self, start, end):
+        return None
+
+
+def test_a_delivery_within_one_navigation_cell_is_flown_straight():
+    """Without a grid route the drone still has to reach the customer: the route is start, end."""
+    start = Coordinate(northing=GRID_SOUTH_M, easting=GRID_WEST_M)
+    end = Coordinate(northing=GRID_SOUTH_M + 20.0, easting=GRID_WEST_M + 28.0)
+
+    with use_simulation_config(configure_run(FINE_TIME_STEP_S, SLOW_SPEED_MPS)):
+        route = NoiseBasedPlanner(dataset_path=None, navigator=OnePointNavigator()).plan_route(start, end)
+
+    assert route == [start, end]

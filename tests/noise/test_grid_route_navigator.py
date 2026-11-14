@@ -76,10 +76,31 @@ def test_with_edges_of_zero_cost_routes_are_still_as_cheap_as_the_published_ones
                 )
 
 
-def test_a_route_between_two_customers_is_refused():
-    """Trees exist for warehouses only; the simulation never asks for another kind of route."""
-    navigator, _, _ = build_navigators(alpha=0.25, seed=5)
-    first, second = random_customers(seed=11, number_of_customers=2)
+def test_any_start_can_be_a_depot():
+    """Depots are not known in advance (the revision has other depot layouts): a route from a place that is
+    not yet a depot grows a tree there, and the way back is the reverse of the way out."""
+    navigator, _, graph = build_navigators(alpha=0.25, seed=5)
+    weight = make_mixed_distance_noise_weight(graph, 0.25, higher_noise_is_better=False)
+    new_depot, customer = random_customers(seed=11, number_of_customers=2)
 
-    with pytest.raises(ValueError):
-        navigator.get_optimal_route_coordinates(first, second)
+    eastings, northings = navigator.get_optimal_route_coordinates(new_depot, customer)
+    back_eastings, back_northings = navigator.get_optimal_route_coordinates(customer, new_depot)
+
+    assert sum_route_cost(graph, weight, eastings, northings) > 0.0
+    assert np.array_equal(back_eastings, eastings[::-1]) and np.array_equal(back_northings, northings[::-1])
+
+
+def test_a_customer_in_the_cell_of_its_depot_has_no_grid_route():
+    """Both ends snap to the same cell, so the grid offers one point; the planner then flies straight
+    instead of treating the delivery as a trip of zero length."""
+    navigator, _, _ = build_navigators(alpha=0.25, seed=5)
+    depot = WAREHOUSE_LOCATIONS[0]
+    depot_cell = navigator.find_nearest_cell(depot)
+    neighbour = Coordinate(
+        northing=float(navigator.grid.northings[depot_cell]) + 20.0, easting=float(navigator.grid.eastings[depot_cell]) + 28.0
+    )
+    centre = Coordinate(northing=float(navigator.grid.northings[depot_cell]), easting=float(navigator.grid.eastings[depot_cell]))
+
+    assert navigator.find_nearest_cell(neighbour) == depot_cell
+    assert navigator.get_optimal_route_coordinates(centre, neighbour) is None
+    assert navigator.get_optimal_route_coordinates(neighbour, centre) is None
