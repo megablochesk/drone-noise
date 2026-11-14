@@ -2,17 +2,16 @@
 
 Usage (from src/): python -m experiments.revision.build_artifact_manifest
 """
-import hashlib
 import json
 from pathlib import Path
 
 import pandas as pd
 
+from common.checksum import calculate_sha256
 from common.path_configs import PATH_CONFIGS
 from experiments.revision.phase_outputs import PROVENANCE_SUFFIX, write_phase_table
 
 MANIFEST_NAME = "MANIFEST.csv"
-HASH_BLOCK_BYTES = 1 << 20
 RUN_ROW_SUFFIX = ".json"
 RUN_KEY_SEPARATOR = "_"
 # The command that produced each committed run table, and therefore every run listed in it.
@@ -29,14 +28,6 @@ RUN_TABLE_COMMANDS = {
 }
 ADAPTIVE_TABLE_PATTERN = "phase6/replication_runs_fleet*_seeds*.csv"
 ADAPTIVE_COMMAND = "python -m experiments.revision.run_phase6_adaptive_block (fleet and seeds as in the table name)"
-
-
-def calculate_sha256(file_path: Path) -> str:
-    digest = hashlib.sha256()
-    with open(file_path, "rb") as file:
-        while block := file.read(HASH_BLOCK_BYTES):
-            digest.update(block)
-    return digest.hexdigest()
 
 
 def read_sidecar_provenance(file_path: Path) -> dict | None:
