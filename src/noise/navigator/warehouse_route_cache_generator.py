@@ -24,8 +24,9 @@ class WarehouseRouteCacheGenerator(BaseNavigator):
         max_workers: int | None = None,
         ensure_weight_attr: bool = True,
         weight_builder: WeightBuilder | None = None,
+        graph=None,
     ):
-        super().__init__()
+        super().__init__(graph)
 
         if cache_path is None:
             cache_path = PATH_CONFIGS.warehouse_paths_cache()
