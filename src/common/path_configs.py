@@ -19,6 +19,8 @@ class PathsConfiguration:
     order_dir: str = f"{data_dir}/order/"
     base_noise_dir: str = f"{data_dir}/base_noise"
     noise_graph_navigation_dir: str = f"{data_dir}/noise_graph_navigation"
+    round4_road_noise_dir: str = f"{base_noise_dir}/round4_road_laeq16h"
+    round4_road_noise_raster_path: str = f"{round4_road_noise_dir}/road_noise_laeq16h_round4_greater_london_10m.tif"
     experiment_results_dir: str = "recourses/experiment_results"
     revision_results_dir: str = "../results"
     revision_artifacts_dir: str = f"{revision_results_dir}/artifacts"

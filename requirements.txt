@@ -1,6 +1,7 @@
 branca==0.6.0
 fastparquet~=2024.11.0
 folium==0.14.0
+GDAL~=3.6.2
 geopandas~=1.1.1
 matplotlib~=3.10.5
 memory-profiler~=0.61.0
@@ -14,6 +15,7 @@ Pillow==11.0.0
 psutil~=7.0.0
 pyproj==3.6.1
 pytest~=9.1.1
+requests~=2.32.4
 scikit-learn~=1.7.1
 scipy~=1.16.0
 seaborn==0.13.2
