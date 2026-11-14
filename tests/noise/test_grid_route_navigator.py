@@ -25,6 +25,18 @@ def build_navigators(alpha: float, seed: int):
     return GridRouteNavigator(grid, calculate_mixed_edge_costs(grid, alpha), WAREHOUSE_LOCATIONS), published, graph
 
 
+def list_trips_between_cells(navigator) -> list[tuple[Coordinate, Coordinate]]:
+    """Out and back between every warehouse and 25 customers, leaving out customers in the warehouse's own
+    cell: there the published router returns one point and the grid navigator none (tested below)."""
+    return [
+        trip
+        for warehouse in WAREHOUSE_LOCATIONS
+        for customer in random_customers(seed=11, number_of_customers=25)
+        if navigator.find_nearest_cell(warehouse) != navigator.find_nearest_cell(customer)
+        for trip in [(warehouse, customer), (customer, warehouse)]
+    ]
+
+
 def random_customers(seed: int, number_of_customers: int) -> list[Coordinate]:
     generator = random.Random(seed)
     return [
@@ -40,12 +52,12 @@ def random_customers(seed: int, number_of_customers: int) -> list[Coordinate]:
 def test_routes_to_and_from_every_warehouse_equal_the_published_router(alpha):
     navigator, published, _ = build_navigators(alpha, seed=5)
 
-    for warehouse in WAREHOUSE_LOCATIONS:
-        for customer in random_customers(seed=11, number_of_customers=25):
-            for start, end in [(warehouse, customer), (customer, warehouse)]:
-                eastings, northings = navigator.get_optimal_route_coordinates(start, end)
-                published_eastings, published_northings = published.get_optimal_route_coordinates(start, end)
-                assert np.array_equal(eastings, published_eastings) and np.array_equal(northings, published_northings)
+    trips = list_trips_between_cells(navigator)
+    assert len(trips) > 600
+    for start, end in trips:
+        eastings, northings = navigator.get_optimal_route_coordinates(start, end)
+        published_eastings, published_northings = published.get_optimal_route_coordinates(start, end)
+        assert np.array_equal(eastings, published_eastings) and np.array_equal(northings, published_northings)
 
 
 def sum_route_cost(graph, weight, eastings: np.ndarray, northings: np.ndarray) -> float:
@@ -64,16 +76,14 @@ def test_with_edges_of_zero_cost_routes_are_still_as_cheap_as_the_published_ones
     navigator, published, graph = build_navigators(alpha=1.0, seed=5)
     weight = make_mixed_distance_noise_weight(graph, 1.0, higher_noise_is_better=False)
 
-    for warehouse in WAREHOUSE_LOCATIONS:
-        for customer in random_customers(seed=11, number_of_customers=25):
-            for start, end in [(warehouse, customer), (customer, warehouse)]:
-                eastings, northings = navigator.get_optimal_route_coordinates(start, end)
-                published_eastings, published_northings = published.get_optimal_route_coordinates(start, end)
-                assert (eastings[0], northings[0]) == (published_eastings[0], published_northings[0])
-                assert (eastings[-1], northings[-1]) == (published_eastings[-1], published_northings[-1])
-                assert sum_route_cost(graph, weight, eastings, northings) == pytest.approx(
-                    sum_route_cost(graph, weight, published_eastings, published_northings), abs=1e-9
-                )
+    for start, end in list_trips_between_cells(navigator):
+        eastings, northings = navigator.get_optimal_route_coordinates(start, end)
+        published_eastings, published_northings = published.get_optimal_route_coordinates(start, end)
+        assert (eastings[0], northings[0]) == (published_eastings[0], published_northings[0])
+        assert (eastings[-1], northings[-1]) == (published_eastings[-1], published_northings[-1])
+        assert sum_route_cost(graph, weight, eastings, northings) == pytest.approx(
+            sum_route_cost(graph, weight, published_eastings, published_northings), abs=1e-9
+        )
 
 
 def test_any_start_can_be_a_depot():
