@@ -8,14 +8,19 @@ from common.runtime_configs import get_simulation_config
 from noise.navigator import get_navigator
 from route_planner.route_planner import RoutePlanner
 
-MODEL_TIME_STEP = model_config.time.step_s
-DRONE_SPEED = model_config.drone.speed_mps
+PUBLISHED_TIME_STEP_S = model_config.time.step_s
+PUBLISHED_SPEED_MPS = model_config.drone.speed_mps
 
 
 class NoiseBasedPlanner(RoutePlanner):
-    def __init__(self, dataset_path):
+    time_step_s = PUBLISHED_TIME_STEP_S
+    speed_mps = PUBLISHED_SPEED_MPS
+
+    def __init__(self, dataset_path, navigator=None):
         runtime_config = get_simulation_config()
-        self.navigator = get_navigator(
+        self.time_step_s = runtime_config.model.time.step_s
+        self.speed_mps = runtime_config.model.drone.speed_mps
+        self.navigator = navigator or get_navigator(
             mode=runtime_config.navigator_type,
             dataset_path=dataset_path,
             compute_on_miss=getattr(runtime_config, "compute_on_miss", False),
@@ -29,7 +34,7 @@ class NoiseBasedPlanner(RoutePlanner):
         if route is None:
             return [start, end]
 
-        sampled = to_coordinates(*resample_coordinates_by_time(*route, speed=DRONE_SPEED, dt=MODEL_TIME_STEP))
+        sampled = to_coordinates(*resample_coordinates_by_time(*route, speed=self.speed_mps, dt=self.time_step_s))
         sampled[0] = start
         sampled[-1] = end
         return sampled
