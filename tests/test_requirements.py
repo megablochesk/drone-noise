@@ -9,7 +9,7 @@ from packaging.requirements import Requirement
 REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
 REQUIREMENTS_PATH = REPOSITORY_ROOT / "requirements.txt"
 SOURCE_DIRECTORIES = [REPOSITORY_ROOT / "src", REPOSITORY_ROOT / "tests"]
-DISTRIBUTION_BY_IMPORT_NAME = {"sklearn": "scikit-learn", "mpl_toolkits": "matplotlib", "PIL": "pillow"}
+DISTRIBUTION_BY_IMPORT_NAME = {"sklearn": "scikit-learn", "mpl_toolkits": "matplotlib", "PIL": "pillow", "osgeo": "gdal"}
 
 
 def normalise_distribution_name(name: str) -> str:
