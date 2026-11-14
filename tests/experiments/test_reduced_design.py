@@ -1,15 +1,19 @@
 """Designs of Phases 9-12 (brief: fleet {500, 1250} x terminal phases on x 3 seeds) and their comparison tables."""
+from dataclasses import replace
+
 import pandas as pd
 import pytest
 
-from common.enum import OrderDatasetType
+from common.enum import BaselineNoiseMap, OrderDatasetType
 from experiments.revision.reduced_design import (
     BASELINE_VARIANT,
+    PHASE_CHANGES,
     build_phase_variants,
     compare_variants_with_baseline,
     rank_stockings,
 )
 from experiments.revision.run_specification import DemandModel, FleetAllocation
+from experiments.revision.summarise_reduced_design_phase import PHASE_TITLES
 
 
 def count_runs(variants: dict) -> int:
@@ -21,6 +25,7 @@ def count_runs(variants: dict) -> int:
     ("phase10", 6, 6 * 3 * 2 * 3),
     ("phase11", 1, 1 * 3 * 2 * 3),
     ("phase12", 1, 1 * 3 * 2 * 3),
+    ("round4_baseline", 1, 1 * 3 * 2 * 3),
 ])
 def test_phase_designs_have_the_runs_the_brief_asks_for(phase, expected_variants, expected_runs):
     """Brief: Phase 9 has 4 new layouts with 5 random draws (8 layouts) for best and random stocking;
@@ -56,6 +61,19 @@ def test_phases_eleven_and_twelve_change_allocation_and_demand():
     assert {specification.fleet_allocation for specification in proportional} == {FleetAllocation.PROPORTIONAL_TO_ORDERS}
     assert {specification.demand_model for specification in uniform} == {DemandModel.AREA}
     assert {specification.stocking for specification in uniform} == set(OrderDatasetType)
+
+
+def test_round_four_variant_changes_the_baseline_map_only():
+    """The same runs as the unchanged design, measured against the Round 4 road noise map."""
+    variants = build_phase_variants("round4_baseline")
+    round4, baseline = variants["round4_road_laeq16h"], variants[BASELINE_VARIANT]
+    assert {specification.baseline_noise_map for specification in round4} == {BaselineNoiseMap.ROUND_4_ROAD}
+    assert {specification.baseline_noise_map for specification in baseline} == {BaselineNoiseMap.PUBLISHED}
+    assert [replace(specification, baseline_noise_map=BaselineNoiseMap.PUBLISHED) for specification in round4] == baseline
+
+
+def test_every_phase_has_a_figure_title():
+    assert set(PHASE_TITLES) == set(PHASE_CHANGES)
 
 
 def test_phase_nine_uses_best_and_random_stocking_only():
