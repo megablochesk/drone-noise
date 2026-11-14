@@ -60,17 +60,18 @@ def count_deliveries(config: SimulationConfig) -> int:
 
 
 def test_published_delivery_lands_twice_at_the_customer():
-    """Characterisation of the default: out (16 steps), a second climb and descent (0, 50, 100, 50, 0), back."""
+    """Characterisation of the default: out (16 steps), a second climb and descent (0, 50, 100, 50, 0), back.
+    The last step of the round trip, on the ground at the warehouse, frees the drone, so it is not traced."""
     altitudes = [altitude for _, altitude in trace_first_round_trip(build_config(land_once_at_customer=False))]
-    assert altitudes[:37] == CRUISE_LEG_ALTITUDES_M + [0.0, 50.0, 100.0, 50.0, 0.0] + CRUISE_LEG_ALTITUDES_M
+    assert altitudes == (CRUISE_LEG_ALTITUDES_M + [0.0, 50.0, 100.0, 50.0, 0.0] + CRUISE_LEG_ALTITUDES_M)[:-1]
 
 
 def test_delivery_with_one_landing_spends_one_step_on_the_ground_at_the_customer():
     trace = trace_first_round_trip(build_config(land_once_at_customer=True))
     altitudes = [altitude for _, altitude in trace]
-    assert altitudes[:33] == CRUISE_LEG_ALTITUDES_M + [0.0] + CRUISE_LEG_ALTITUDES_M
+    assert altitudes == (CRUISE_LEG_ALTITUDES_M + [0.0] + CRUISE_LEG_ALTITUDES_M)[:-1]
     assert [location for location, _ in trace[14:19]] == [CUSTOMER] * 5
-    assert trace[32][0] == WAREHOUSE
+    assert trace[-1] == (WAREHOUSE, 50.0)
 
 
 def test_one_landing_costs_four_landing_delays_and_two_landings_cost_six():
