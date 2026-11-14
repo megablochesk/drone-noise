@@ -5,6 +5,11 @@ import pandas as pd
 from tqdm import tqdm
 
 from census_analysis.msoa_cache import CachedMSOA
+from census_analysis.msoa_data import load_msoa_data
+from census_analysis.population_data_processor.cell_matrix_population_calculator import (
+    split_group_counts_by_overlapping_area,
+)
+from noise.grid_generator import get_valid_cells
 
 
 def calculate_cell_matrix_property(cells, cell_process_method):
@@ -48,3 +53,23 @@ def calculate_cell_property(area_geom, msoa_cache: CachedMSOA) -> Dict[int, floa
                 totals[code] += value * intersection_fraction
 
     return totals
+
+
+def calculate_cell_matrix_groups(group_pivot: pd.DataFrame, cell_size: int) -> pd.DataFrame:
+    """Residents of every cell by group, for a table of group counts per MSOA (rows) and group code (columns).
+
+    All cells are split in one pass over a spatial index; the cell-by-cell calculation above gives the same
+    values but takes hours on a fine grid.
+    """
+    msoa_index = load_msoa_data().msoa_index
+    msoa_codes = [msoa_code for msoa_code in group_pivot.index if msoa_code in msoa_index]
+    cells = get_valid_cells(cell_size)
+
+    cell_group_counts = split_group_counts_by_overlapping_area(
+        [cell["geometry"] for cell in cells], [msoa_index[msoa_code] for msoa_code in msoa_codes],
+        group_pivot.loc[msoa_codes].to_numpy(dtype=float),
+    )
+    cell_matrix = pd.DataFrame(cells)
+    for position, group_code in enumerate(group_pivot.columns):
+        cell_matrix[int(group_code)] = cell_group_counts[:, position]
+    return cell_matrix

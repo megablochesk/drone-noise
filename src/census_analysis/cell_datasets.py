@@ -8,7 +8,7 @@ from census_analysis.age_data_processor.age_cell_matrix_calculator import calcul
 from census_analysis.ethnicity_data_processor.ethnicity_cell_matrix_calculator import calculate_cell_matrix_ethnicity
 from census_analysis.population_data_processor.cell_matrix_population_calculator import calculate_cell_matrix_population
 from common.file_utils import load_dataframe_from_pickle, path_exists, save_dataframe_to_pickle
-from common.path_configs import CELL_AGE_PATH, CELL_ETHNICITY_PATH, PATH_CONFIGS
+from common.path_configs import PATH_CONFIGS
 from noise.grid_generator import CELL_SIZE
 
 
@@ -32,11 +32,21 @@ def load_cell_population(cell_size_m: int = CELL_SIZE) -> pd.DataFrame:
     return load_cell_population_once(cell_size_m)
 
 
-@lru_cache(maxsize=1)
-def load_cell_age() -> pd.DataFrame:
-    return load_or_compute_dataset(CELL_AGE_PATH, calculate_cell_matrix_age)
+@lru_cache(maxsize=None)
+def load_cell_age_once(cell_size_m: int) -> pd.DataFrame:
+    return load_or_compute_dataset(PATH_CONFIGS.cell_age_path(cell_size_m), lambda: calculate_cell_matrix_age(cell_size_m))
 
 
-@lru_cache(maxsize=1)
-def load_cell_ethnicity() -> pd.DataFrame:
-    return load_or_compute_dataset(CELL_ETHNICITY_PATH, calculate_cell_matrix_ethnicity)
+def load_cell_age(cell_size_m: int = CELL_SIZE) -> pd.DataFrame:
+    return load_cell_age_once(cell_size_m)
+
+
+@lru_cache(maxsize=None)
+def load_cell_ethnicity_once(cell_size_m: int) -> pd.DataFrame:
+    return load_or_compute_dataset(
+        PATH_CONFIGS.cell_ethnicity_path(cell_size_m), lambda: calculate_cell_matrix_ethnicity(cell_size_m)
+    )
+
+
+def load_cell_ethnicity(cell_size_m: int = CELL_SIZE) -> pd.DataFrame:
+    return load_cell_ethnicity_once(cell_size_m)

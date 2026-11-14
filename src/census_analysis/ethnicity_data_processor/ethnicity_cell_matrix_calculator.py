@@ -4,11 +4,15 @@ from functools import partial
 
 import pandas as pd
 
-from census_analysis.cell_matrix_calculator_utils import calculate_cell_matrix_property, calculate_cell_property
+from census_analysis.cell_matrix_calculator_utils import (
+    calculate_cell_matrix_groups,
+    calculate_cell_matrix_property,
+    calculate_cell_property,
+)
 from census_analysis.dataset_loader import load_ethnicity_dataset_df
 from census_analysis.msoa_cache import CachedMSOA, prepare_msoa_caches
 from census_analysis.msoa_data import load_msoa_data
-from noise.grid_generator import get_valid_cells
+from noise.grid_generator import CELL_SIZE, get_valid_cells
 
 ETHNICITY_CODE_ATTRIBUTE = "ethnicity_code_to_name"
 
@@ -18,8 +22,14 @@ MSOA_CODE_COL = "Middle layer Super Output Areas Code"
 VALUE_COL = "Observation"
 
 
-def calculate_cell_matrix_ethnicity() -> pd.DataFrame:
+def calculate_cell_matrix_ethnicity(cell_size: int = CELL_SIZE) -> pd.DataFrame:
+    """The published cell size keeps the published cell-by-cell calculation, which the stored table came from."""
     ethnicity_pivot, code_to_name = _build_ethnicity_pivot()
+    if cell_size != CELL_SIZE:
+        fine_cell_matrix = calculate_cell_matrix_groups(ethnicity_pivot, cell_size)
+        fine_cell_matrix.attrs[ETHNICITY_CODE_ATTRIBUTE] = code_to_name
+        return fine_cell_matrix
+
     prepared = prepare_msoa_caches(ethnicity_pivot, load_msoa_data().msoa_index)
 
     cells = get_valid_cells()

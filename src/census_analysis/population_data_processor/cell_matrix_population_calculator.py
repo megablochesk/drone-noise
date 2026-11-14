@@ -23,16 +23,32 @@ def calculate_overlap_areas(cells: np.ndarray, regions: np.ndarray) -> np.ndarra
     return overlap_areas
 
 
-def split_population_by_overlapping_area(cell_geometries, region_polygons, region_populations: np.ndarray) -> np.ndarray:
-    """Population of every rectangular cell: each region's population times the share of the region's area
-    inside the cell. A spatial index finds the cell-region pairs that overlap."""
+def find_region_shares_in_cells(cell_geometries, region_polygons) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """For every overlapping cell-region pair: the cell, the region, and the share of the region's area in the
+    cell. A spatial index finds the pairs."""
     cells = np.array(cell_geometries, dtype=object)
     regions = np.array(region_polygons, dtype=object)
     region_indices, cell_indices = STRtree(cells).query(regions, predicate="intersects")
 
     overlap_areas = calculate_overlap_areas(cells[cell_indices], regions[region_indices])
-    populations_in_overlaps = region_populations[region_indices] * overlap_areas / shapely.area(regions)[region_indices]
-    return np.bincount(cell_indices, weights=populations_in_overlaps, minlength=len(cells))
+    return cell_indices, region_indices, overlap_areas / shapely.area(regions)[region_indices]
+
+
+def split_population_by_overlapping_area(cell_geometries, region_polygons, region_populations: np.ndarray) -> np.ndarray:
+    """Population of every rectangular cell: each region's population times the share of the region's area
+    inside the cell."""
+    cell_indices, region_indices, region_shares = find_region_shares_in_cells(cell_geometries, region_polygons)
+    return np.bincount(
+        cell_indices, weights=region_populations[region_indices] * region_shares, minlength=len(cell_geometries)
+    )
+
+
+def split_group_counts_by_overlapping_area(cell_geometries, region_polygons, region_group_counts: np.ndarray) -> np.ndarray:
+    """The same split for several groups at once: rows of the input are regions, rows of the result are cells."""
+    cell_indices, region_indices, region_shares = find_region_shares_in_cells(cell_geometries, region_polygons)
+    cell_group_counts = np.zeros((len(cell_geometries), region_group_counts.shape[1]))
+    np.add.at(cell_group_counts, cell_indices, region_group_counts[region_indices] * region_shares[:, np.newaxis])
+    return cell_group_counts
 
 
 def calculate_cell_matrix_population(cell_size=CELL_SIZE):
