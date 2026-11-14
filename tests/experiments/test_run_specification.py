@@ -2,7 +2,7 @@ from dataclasses import replace
 
 import pytest
 
-from common.enum import NoiseCalculation, OrderDatasetType
+from common.enum import BaselineNoiseMap, NoiseCalculation, OrderDatasetType
 from common.model_configs import model_config
 from experiments.revision.run_specification import (
     DemandModel,
@@ -27,6 +27,7 @@ ALTERNATIVE_FIELD_VALUES = {
     "depot_layout": "single_hub",
     "fleet_allocation": FleetAllocation.PROPORTIONAL_TO_ORDERS,
     "noise_calculation": NoiseCalculation.PER_STEP_LEVELS,
+    "baseline_noise_map": BaselineNoiseMap.ROUND_4_ROAD,
     "speed_mps": 30,
     "flight_altitude_m": 60.0,
     "noise_at_source_db": 95.6,
