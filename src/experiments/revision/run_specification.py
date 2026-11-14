@@ -50,6 +50,7 @@ class RunSpecification:
     minimum_slant_distance_m: float = model_config.drone.minimum_slant_distance_m
     time_step_s: int = model_config.time.step_s
     noise_cell_m: int = model_config.grid.noise_cell_m
+    land_once_at_customer: bool = False
 
 
 def to_plain_value(value):
@@ -101,6 +102,7 @@ def build_simulation_config(
         orders_to_process=orders_to_process,
         number_of_drones=specification.number_of_drones,
         drone_landing=specification.terminal_phases,
+        land_once_at_customer=specification.land_once_at_customer,
         navigator_type=NavigationType.STRAIGHT,
         noise_calculation=specification.noise_calculation,
         baseline_noise_map=specification.baseline_noise_map,

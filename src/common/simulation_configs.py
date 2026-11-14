@@ -17,6 +17,7 @@ class SimulationConfig:
     number_of_drones: int = 1250
 
     drone_landing: bool = False
+    land_once_at_customer: bool = False
 
     navigator_type: NavigationType = NavigationType.STRAIGHT
     noise_calculation: NoiseCalculation = NoiseCalculation.PER_STEP_LEVELS

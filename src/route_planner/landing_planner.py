@@ -1,5 +1,7 @@
 from common.runtime_configs import get_simulation_config
 
+GROUND_ALTITUDE_M = 0.0
+
 
 class LandingPlanner:
     def __init__(self):
@@ -7,12 +9,16 @@ class LandingPlanner:
         model = simulation_config.model
 
         self.use_drone_landing = simulation_config.drone_landing
+        self.lands_once_at_customer = self.use_drone_landing and simulation_config.land_once_at_customer
         self.number_of_landing_steps = model.landing_steps
         self.flight_altitude_m = model.drone.flight_altitude_m
         self.intermediate_altitudes_ascending = model.intermediate_altitudes_ascending
         self.intermediate_altitudes_descending = model.intermediate_altitudes_descending
 
     def add_landing_sequence(self, route, start, end):
+        if self.is_zero_distance_route(route) and self.lands_once_at_customer:
+            return [start]
+
         if self.is_zero_distance_route(route) and self.use_drone_landing:
             count = 1 + 2 * self.number_of_landing_steps
             return [start] * count
@@ -23,6 +29,9 @@ class LandingPlanner:
         return route
 
     def assign_altitudes(self, route):
+        if self.is_zero_distance_route(route) and self.lands_once_at_customer:
+            return [GROUND_ALTITUDE_M]
+
         if self.is_zero_distance_route(route):
             return [self.flight_altitude_m]
 
