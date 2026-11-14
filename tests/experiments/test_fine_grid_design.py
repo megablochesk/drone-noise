@@ -42,3 +42,29 @@ def test_task_number_selects_one_specification_of_the_design():
 def test_task_number_outside_the_design_is_an_error(task_index):
     with pytest.raises(IndexError, match="36 specifications"):
         select_task_specification(build_fine_grid_specifications(seeds=[1, 2]), task_index)
+
+
+def test_every_design_is_reachable_by_name():
+    """The same names select a design on one machine and in a cluster job array."""
+    from experiments.revision.fine_grid_design import (
+        DESIGN_BUILDERS,
+        build_design_specifications,
+        build_noise_aware_specifications,
+        build_paper_figure_specifications,
+        build_single_landing_specifications,
+        build_slant_floor_specifications,
+    )
+
+    assert list(DESIGN_BUILDERS) == ["pilot", "single-landing", "slant-floor", "noise-aware", "paper-figures"]
+    assert build_design_specifications("pilot", [1, 2]) == build_fine_grid_specifications([1, 2])
+    assert build_design_specifications("single-landing", [3]) == build_single_landing_specifications([3])
+    assert build_design_specifications("slant-floor", [3]) == build_slant_floor_specifications([3])
+    assert build_design_specifications("noise-aware", [3]) == build_noise_aware_specifications([3])
+    assert build_design_specifications("paper-figures", [3]) == build_paper_figure_specifications([3])
+
+
+def test_an_unknown_design_is_refused_with_the_known_names():
+    from experiments.revision.fine_grid_design import build_design_specifications
+
+    with pytest.raises(ValueError, match="pilot, single-landing"):
+        build_design_specifications("everything", [1])
