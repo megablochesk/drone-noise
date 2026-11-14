@@ -28,7 +28,7 @@ def test_each_group_is_split_by_the_share_of_the_region_in_the_cell():
 def sum_fine_cells_by_published_cell(fine, group_codes):
     return fine.assign(
         row=fine["row"] // FINE_CELLS_PER_PUBLISHED_CELL_SIDE, col=fine["col"] // FINE_CELLS_PER_PUBLISHED_CELL_SIDE
-    ).groupby(["row", "col"])[group_codes].sum().reset_index()
+    ).groupby(["row", "col"])[group_codes].sum().rename(columns=lambda code: f"{code}_fine").reset_index()
 
 
 @pytest.mark.slow
@@ -41,7 +41,7 @@ def test_fine_cells_add_up_to_their_published_cell_for_every_group(load_dataset)
         row=fine["row"] // FINE_CELLS_PER_PUBLISHED_CELL_SIDE, col=fine["col"] // FINE_CELLS_PER_PUBLISHED_CELL_SIDE
     ).groupby(["row", "col"]).size().rename("number_of_fine_cells").reset_index()
     merged = published.merge(
-        sum_fine_cells_by_published_cell(fine, group_codes), on=["row", "col"], suffixes=("", "_fine"), validate="1:1"
+        sum_fine_cells_by_published_cell(fine, group_codes), on=["row", "col"], validate="1:1"
     ).merge(number_of_fine_cells, on=["row", "col"], validate="1:1")
     complete = merged[merged["number_of_fine_cells"] == FINE_CELLS_PER_PUBLISHED_CELL_SIDE ** 2]
 
