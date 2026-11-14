@@ -25,14 +25,29 @@ def find_lowest_index_parents(
     return parents
 
 
+def build_adjacency(number_of_nodes: int, edge_starts: np.ndarray, edge_ends: np.ndarray, edge_weights: np.ndarray):
+    """Both directions of every edge, and the sparse matrix of them."""
+    starts = np.concatenate([edge_starts, edge_ends])
+    ends = np.concatenate([edge_ends, edge_starts])
+    weights = np.concatenate([edge_weights, edge_weights]).astype(np.float64)
+    return starts, ends, weights, csr_matrix((weights, (starts, ends)), shape=(number_of_nodes, number_of_nodes))
+
+
 def calculate_shortest_path_tree(
         number_of_nodes: int, edge_starts: np.ndarray, edge_ends: np.ndarray, edge_weights: np.ndarray, source: int
 ) -> tuple[np.ndarray, np.ndarray]:
     """Parent and distance of every node; unreachable nodes have NO_PARENT and an infinite distance."""
-    starts = np.concatenate([edge_starts, edge_ends])
-    ends = np.concatenate([edge_ends, edge_starts])
-    weights = np.concatenate([edge_weights, edge_weights]).astype(np.float64)
-
-    adjacency = csr_matrix((weights, (starts, ends)), shape=(number_of_nodes, number_of_nodes))
+    starts, ends, weights, adjacency = build_adjacency(number_of_nodes, edge_starts, edge_ends, edge_weights)
     distances = dijkstra(adjacency, directed=True, indices=source)
     return find_lowest_index_parents(number_of_nodes, starts, ends, weights, distances, source), distances
+
+
+def calculate_search_tree(
+        number_of_nodes: int, edge_starts: np.ndarray, edge_ends: np.ndarray, edge_weights: np.ndarray, source: int
+) -> np.ndarray:
+    """Parents as the search itself found them: a tree even where edges of zero cost make the lowest-index rule loop."""
+    _, _, _, adjacency = build_adjacency(number_of_nodes, edge_starts, edge_ends, edge_weights)
+    _, predecessors = dijkstra(adjacency, directed=True, indices=source, return_predecessors=True)
+    parents = np.where(predecessors < 0, NO_PARENT, predecessors).astype(np.int64)
+    parents[source] = source
+    return parents
