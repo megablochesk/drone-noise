@@ -22,7 +22,16 @@ from common.path_configs import (
 
 PUBLISHED_NUMBER_OF_ORDERS = 100_000
 MIXED_STOCKING_RANDOM_SHARES_PERCENT = tuple(range(100, 0, -10))
-SOURCE_NOT_RECORDED = "source not recorded in the repository"
+DEFRA_NOISE_MAPS = (
+    "Defra strategic noise mapping, 2017 noise maps (https://www.gov.uk/government/publications/strategic-noise-mapping-2019): "
+    "10 m cells in bands from 55 dB, 40 dB where unmapped, aggregated to grid cells; the aggregation script is not in this repository"
+)
+ONS_CENSUS = "Office for National Statistics, Census 2021"
+ONS_POPULATION = (
+    f"{ONS_CENSUS} population (the paper cites the output area population estimates, mid-2021) on MSOA 2021 polygons "
+    "downloaded from a public source; the exact polygon source and the conversion are not recorded"
+)
+PUBLIC_DOWNLOAD = "downloaded from a public source on the internet; the exact source is not recorded"
 SINGLE_STOCKING_GENERATOR = "orders.order_generator.generate_datasets(100_000), unseeded: a rerun gives other orders"
 MIXED_STOCKING_GENERATOR = (
     "orders.order_generator.generate_mixed_stocking_datasets(100_000), unseeded: a rerun gives other orders"
@@ -51,28 +60,28 @@ class DataFile:
 EXTERNAL_FILES = (
     DataFile(
         "study boundary", PATH_CONFIGS.london_boundaries_path, DataOrigin.EXTERNAL,
-        "Greater London boundary polygons; cells and depots outside it are dropped", SOURCE_NOT_RECORDED,
+        "Greater London boundary polygons; cells and depots outside it are dropped", PUBLIC_DOWNLOAD,
     ),
     DataFile(
         "msoa population", PATH_CONFIGS.msoa_population_path, DataOrigin.EXTERNAL,
         "MSOA 2021 polygons in British National Grid with a 'population' property; weights of the order destinations",
-        SOURCE_NOT_RECORDED,
+        ONS_POPULATION,
     ),
     DataFile(
         "baseline noise", BASE_NOISE_PATH, DataOrigin.EXTERNAL,
-        "baseline environmental noise level of every 500 m cell (row, col, noise_level)", SOURCE_NOT_RECORDED,
+        "baseline environmental noise level of every 500 m cell (row, col, noise_level)", DEFRA_NOISE_MAPS,
     ),
     DataFile(
         "navigation baseline noise", NAVIGATION_BASE_NOISE_PATH, DataOrigin.EXTERNAL,
-        "baseline noise on the 100 m navigation grid; noise-based navigation only", SOURCE_NOT_RECORDED,
+        "baseline noise on the 100 m navigation grid; noise-based navigation only", DEFRA_NOISE_MAPS,
     ),
     DataFile(
         "census age", PATH_CONFIGS.age_dataset_path, DataOrigin.EXTERNAL,
-        "Census 2021 residents by single year of age and MSOA", SOURCE_NOT_RECORDED,
+        "residents by single year of age and MSOA", f"{ONS_CENSUS}, table of age by MSOA",
     ),
     DataFile(
         "census ethnicity", PATH_CONFIGS.ethnicity_dataset_path, DataOrigin.EXTERNAL,
-        "Census 2021 residents by ethnic group and MSOA", SOURCE_NOT_RECORDED,
+        "residents by ethnic group and MSOA", f"{ONS_CENSUS}, table of ethnic group by MSOA",
     ),
 )
 
