@@ -1,8 +1,13 @@
 from __future__ import annotations
 
-from common.enum import NavigationType
+from common.enum import BaselineNoiseMap, NavigationType
+from common.model_configs import model_config
+from common.runtime_configs import get_simulation_config
 from noise.navigator.cached_routes_navigator import CachedRoutesNavigator
 from noise.navigator.cost_function_generator import WeightSpec, make_mixed_distance_noise_weight
+from noise.navigator.grid_route_navigator import GridRouteNavigator
+from noise.navigator.navigation_grid import calculate_mixed_edge_costs
+from noise.navigator.navigation_grid_loader import load_navigation_grid
 from noise.navigator.navigator_base import BaseNavigator
 from noise.navigator.warehouse_route_cache_generator import WarehouseRouteCacheGenerator
 
@@ -47,6 +52,24 @@ def _cache_put(key: tuple, nav: BaseNavigator) -> BaseNavigator:
     return nav
 
 
+def _read_baseline_noise_map() -> BaselineNoiseMap:
+    config = get_simulation_config()
+    return config.baseline_noise_map if config is not None else BaselineNoiseMap.PUBLISHED
+
+
+def _get_grid_navigator(mode: NavigationType, baseline_noise_map: BaselineNoiseMap) -> GridRouteNavigator:
+    """Routes on the array grid of the map; trees are built in memory, so none can belong to another map."""
+    key = ("grid", mode.name, baseline_noise_map.value)
+    cached = _cache_get(key)
+    if cached is not None:
+        return cached
+
+    grid = load_navigation_grid(baseline_noise_map)
+    edge_costs = calculate_mixed_edge_costs(grid, _mixed_alpha_for_mode(mode))
+    warehouse_locations = list(model_config.warehouses.bng_coordinates.values())
+    return _cache_put(key, GridRouteNavigator(grid, edge_costs, warehouse_locations))
+
+
 def get_navigator(
     mode: NavigationType,
     dataset_path: str | None = None,
@@ -54,6 +77,11 @@ def get_navigator(
     weight_id: str | None = None,
     compute_on_miss: bool = False,
 ) -> BaseNavigator:
+    # The published map keeps the published graph and its stored trees, so published routes stay cell-for-cell
+    # the same at every alpha; other maps use the array grid.
+    if _is_mixed_mode(mode) and _read_baseline_noise_map() is not BaselineNoiseMap.PUBLISHED:
+        return _get_grid_navigator(mode, _read_baseline_noise_map())
+
     if _is_mixed_mode(mode):
         alpha = _mixed_alpha_for_mode(mode)
 
