@@ -1,6 +1,7 @@
 """The catalogue of data files the model reads: complete, consistent, and able to generate what it claims."""
 import pytest
 
+from common.enum import BoundaryDatum
 from common.path_configs import (
     BASE_NOISE_PATH,
     CELL_AGE_PATH,
@@ -37,6 +38,11 @@ PATHS_OF_OTHER_ANALYSES = [
     PATH_CONFIGS.round4_base_noise_path(100),
     PATH_CONFIGS.cell_population_path(100),
 ]
+PATHS_OF_THE_FINE_GRID_DESIGN = [
+    PATH_CONFIGS.cell_population_path(100, BoundaryDatum.OSGB36),
+    PATH_CONFIGS.cell_age_path(100, BoundaryDatum.OSGB36),
+    PATH_CONFIGS.cell_ethnicity_path(100, BoundaryDatum.OSGB36),
+]
 
 
 def test_names_and_paths_are_unique():
@@ -44,7 +50,9 @@ def test_names_and_paths_are_unique():
     assert len({data_file.relative_path for data_file in DATA_CATALOGUE}) == len(DATA_CATALOGUE)
 
 
-@pytest.mark.parametrize("path", PATHS_THE_STRAIGHT_LINE_MODEL_READS + PATHS_OF_OTHER_ANALYSES)
+@pytest.mark.parametrize(
+    "path", PATHS_THE_STRAIGHT_LINE_MODEL_READS + PATHS_OF_OTHER_ANALYSES + PATHS_OF_THE_FINE_GRID_DESIGN
+)
 def test_file_the_code_reads_is_in_the_catalogue(path):
     assert path in {data_file.relative_path for data_file in DATA_CATALOGUE}
 
