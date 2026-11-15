@@ -63,15 +63,17 @@ python -m experiments.revision.run_fine_grid_pilot --seeds 1 2 3 --workers 3
 python -m experiments.revision.summarise_fine_grid
 ```
 
-On a cluster, one run per array task (`cluster/fine_grid_array.sbatch`, untested; a task takes about ten
-minutes for the largest fleet and about 1 GB on a laptop core):
+On a Slurm cluster, one run per array task: `cluster/README.md` is the runbook (transfer, environment, order
+pools, a smoke test, the arrays, resubmitting missing tasks, collecting). In short, with the conda environment
+active and from the repository root:
 
 ```bash
-python -m pytest                                                        # once, before submitting
-sbatch --array=0-1799%400 --export=ALL,SEEDS="$(seq -s ' ' 1 100)" cluster/fine_grid_array.sbatch
+python -m pytest                                    # once, before submitting; the tasks do not run it
+cluster/submit_design.sh paper-figures 1 100        # chained arrays of at most 1,000 tasks
+cluster/submit_design.sh paper-figures 1 100 --missing   # afterwards: only the runs not stored
 ```
 
-Each seed needs its order pool, about 10 s per pool:
+Each seed needs its order pool, 1-2 minutes and about 12 MB per pool on a laptop core:
 `python -m experiments.revision.generate_order_pools --seeds 1 2 3 --pool-size 650000`.
 
 ### Results kept for figures
