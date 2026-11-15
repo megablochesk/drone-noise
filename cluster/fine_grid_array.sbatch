@@ -1,22 +1,20 @@
 #!/bin/bash
-# Fine-grid design as a Slurm job array, one run per task. NOT TESTED on a cluster: partition name, module
-# and environment lines are assumptions to adapt (CREATE HPC: partition "cpu", 48 h limit per the scheduler
-# policy). Before submitting, from the repository root: python -m pytest   (the tasks do not run the suite).
+# One run of a fine-grid design per task of a Slurm job array. Submit with cluster/submit_design.sh, which splits
+# a design into arrays of valid size; cluster/README.md is the runbook. Not yet run on a cluster: the lines under
+# "CONFIRM ON THE CLUSTER" are assumptions, and sbatch options on the command line or in SBATCH_* variables
+# (SBATCH_PARTITION, SBATCH_ACCOUNT, SBATCH_TIMELIMIT) override them without editing this tracked file.
 #
-# Submit the pilot design for seeds 1-100 (18 tasks per seed, 1,800 tasks, at most 400 at a time):
-#   sbatch --array=0-1799%400 --export=ALL,SEEDS="$(seq -s ' ' 1 100)" cluster/fine_grid_array.sbatch
-# Submit the design behind the paper's figures (108 tasks per seed; one submission per block of seeds keeps
-# the array below the scheduler's limit on array size):
-#   sbatch --array=0-1079%400 --export=ALL,DESIGN=paper-figures,SEEDS="$(seq -s ' ' 1 10)" cluster/fine_grid_array.sbatch
-# The number of tasks of a design: python -m experiments.revision.run_fine_grid_task --seeds ... --design ... --count
-# Afterwards, on a machine that sees the result store, write the run table and draw:
-#   python -m experiments.revision.run_fine_grid_pilot --seeds ... --design paper-figures \
-#       --table-name paper_figure_runs.csv --collect-only
-#   python -m experiments.revision.paper_figures
-# Measured on a laptop core: about 10 minutes for the largest fleet and about 1 GB per task.
-# The destination pool of every seed must exist first (python -m experiments.revision.generate_order_pools);
-# the tasks only read pools. Logs go to slurm-*.out in the repository root, which .gitignore lists: the
-# tasks refuse to run from a working tree with other untracked or changed files.
+# Each task runs, from src/:
+#   python -m experiments.revision.run_fine_grid_task --seeds $SEEDS --design $DESIGN --task $SLURM_ARRAY_TASK_ID
+# The task refuses a working tree with uncommitted or untracked files, records the commit in its row, and ends
+# successfully at once when its run is already stored. It does not run the test suite: run python -m pytest once
+# before submitting. The python on PATH at submission runs the task (sbatch passes the submitting shell's
+# environment), so activate the conda environment before sbatch.
+#
+# Resources: the slowest stored fine-grid run took 21 minutes on a laptop core and about 1 GB of memory.
+# Logs: slurm-<job>_<task>.out in the repository root, which .gitignore lists.
+#
+# CONFIRM ON THE CLUSTER: partition name, time limit (the smoke tasks' wall_time_s show the margin), memory.
 #SBATCH --job-name=drone-noise-fine-grid
 #SBATCH --partition=cpu
 #SBATCH --ntasks=1
@@ -26,8 +24,27 @@
 #SBATCH --output=slurm-%A_%a.out
 
 set -euo pipefail
-export NUMBA_NUM_THREADS=1
+
+fail() {
+    echo "fine_grid_array.sbatch: $*" >&2
+    exit 1
+}
+
+[ -n "${SLURM_SUBMIT_DIR:-}" ] || fail "SLURM_SUBMIT_DIR is not set: submit this script with sbatch"
+[ -f "${SLURM_SUBMIT_DIR}/cluster/fine_grid_array.sbatch" ] \
+    || fail "submit from the repository root (the job was submitted from ${SLURM_SUBMIT_DIR})"
+[ -n "${SLURM_ARRAY_TASK_ID:-}" ] || fail "SLURM_ARRAY_TASK_ID is not set: submit as a job array (--array)"
+[ -n "${SEEDS:-}" ] || fail "SEEDS is not set: submit with --export=ALL,DESIGN=...,SEEDS=\"1 2 3\""
+[ -n "${DESIGN:-}" ] || fail "DESIGN is not set: submit with --export=ALL,DESIGN=...,SEEDS=\"1 2 3\""
+
+export NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export DRONE_NOISE_MATPLOTLIB_BACKEND=Agg
+# Hundreds of tasks read one repository: git status must not take the index lock to refresh it.
+export GIT_OPTIONAL_LOCKS=0
 
 cd "${SLURM_SUBMIT_DIR}/src"
-python -m experiments.revision.run_fine_grid_task --seeds ${SEEDS} --design "${DESIGN:-pilot}" --task "${SLURM_ARRAY_TASK_ID}"
+python -c "import numba, fastparquet, geopandas" \
+    || fail "python on PATH ($(command -v python || echo none)) lacks the model's packages: activate the conda environment before sbatch"
+echo "host $(hostname) python $(command -v python) commit $(git rev-parse --short HEAD) design ${DESIGN} seeds ${SEEDS} task ${SLURM_ARRAY_TASK_ID}"
+# The seeds are separate arguments, so SEEDS stays unquoted.
+python -m experiments.revision.run_fine_grid_task --seeds ${SEEDS} --design "${DESIGN}" --task "${SLURM_ARRAY_TASK_ID}"
