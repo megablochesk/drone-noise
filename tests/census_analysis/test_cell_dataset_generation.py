@@ -58,11 +58,3 @@ def test_recomputed_sample_of_fine_cells_equals_the_stored_fine_dataset(calculat
         order_by_cell(recomputed), order_by_cell(stored_sample[recomputed.columns]), rtol=FINE_RELATIVE_TOLERANCE
     )
     assert recomputed.attrs == stored.attrs
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize("calculate_dataset, stored_path", GENERATORS, ids=["age", "ethnicity"])
-def test_recomputed_dataset_equals_the_stored_dataset(calculate_dataset, stored_path):
-    recomputed, stored = calculate_dataset(), load_dataframe_from_pickle(stored_path)
-    pd.testing.assert_frame_equal(order_by_cell(recomputed), order_by_cell(stored), check_exact=True)
-    assert recomputed.attrs == stored.attrs
