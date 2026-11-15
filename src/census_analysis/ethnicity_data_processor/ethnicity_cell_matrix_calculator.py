@@ -24,18 +24,22 @@ VALUE_COL = "Observation"
 
 
 def calculate_cell_matrix_ethnicity(
-        cell_size: int = CELL_SIZE, boundary_datum: BoundaryDatum = PUBLISHED_BOUNDARY_DATUM
+        cell_size: int = CELL_SIZE, boundary_datum: BoundaryDatum = PUBLISHED_BOUNDARY_DATUM,
+        cells: list[dict] | None = None,
 ) -> pd.DataFrame:
-    """The published grid keeps the published cell-by-cell calculation, which the stored table came from."""
+    """The published grid keeps the published cell-by-cell calculation, which the stored table came from.
+
+    `cells` are the grid cells to compute, every cell of the grid by default.
+    """
     ethnicity_pivot, code_to_name = _build_ethnicity_pivot()
     if (cell_size, boundary_datum) != (CELL_SIZE, PUBLISHED_BOUNDARY_DATUM):
-        fine_cell_matrix = calculate_cell_matrix_groups(ethnicity_pivot, cell_size, boundary_datum)
+        fine_cell_matrix = calculate_cell_matrix_groups(ethnicity_pivot, cell_size, boundary_datum, cells)
         fine_cell_matrix.attrs[ETHNICITY_CODE_ATTRIBUTE] = code_to_name
         return fine_cell_matrix
 
     prepared = prepare_msoa_caches(ethnicity_pivot, load_msoa_data().msoa_index)
 
-    cells = get_valid_cells()
+    cells = get_valid_cells() if cells is None else cells
     process_cell = partial(_annotate_cell_with_ethnicity, prepared=prepared)
 
     df = calculate_cell_matrix_property(cells, process_cell)

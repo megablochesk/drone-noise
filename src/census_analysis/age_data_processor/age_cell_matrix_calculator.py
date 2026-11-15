@@ -33,18 +33,22 @@ AGE_BAND_DEFS: Dict[int, Tuple[int, int, str]] = {
 
 
 def calculate_cell_matrix_age(
-        cell_size: int = CELL_SIZE, boundary_datum: BoundaryDatum = PUBLISHED_BOUNDARY_DATUM
+        cell_size: int = CELL_SIZE, boundary_datum: BoundaryDatum = PUBLISHED_BOUNDARY_DATUM,
+        cells: list[dict] | None = None,
 ) -> pd.DataFrame:
-    """The published grid keeps the published cell-by-cell calculation, which the stored table came from."""
+    """The published grid keeps the published cell-by-cell calculation, which the stored table came from.
+
+    `cells` are the grid cells to compute, every cell of the grid by default.
+    """
     age_pivot, band_code_to_name = _build_age_pivot()
     if (cell_size, boundary_datum) != (CELL_SIZE, PUBLISHED_BOUNDARY_DATUM):
-        fine_cell_matrix = calculate_cell_matrix_groups(age_pivot, cell_size, boundary_datum)
+        fine_cell_matrix = calculate_cell_matrix_groups(age_pivot, cell_size, boundary_datum, cells)
         fine_cell_matrix.attrs[AGE_CODE_ATTRIBUTE] = band_code_to_name
         return fine_cell_matrix
 
     prepared = prepare_msoa_caches(age_pivot, load_msoa_data().msoa_index)
 
-    cells = get_valid_cells()
+    cells = get_valid_cells() if cells is None else cells
     process_cell = partial(_annotate_cell_with_age, prepared=prepared)
 
     df = calculate_cell_matrix_property(cells, process_cell)

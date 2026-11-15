@@ -57,16 +57,19 @@ def calculate_cell_property(area_geom, msoa_cache: CachedMSOA) -> Dict[int, floa
 
 
 def calculate_cell_matrix_groups(
-        group_pivot: pd.DataFrame, cell_size: int, boundary_datum: BoundaryDatum = PUBLISHED_BOUNDARY_DATUM
+        group_pivot: pd.DataFrame, cell_size: int, boundary_datum: BoundaryDatum = PUBLISHED_BOUNDARY_DATUM,
+        cells: list[dict] | None = None,
 ) -> pd.DataFrame:
     """Residents of every cell by group, for a table of group counts per MSOA (rows) and group code (columns).
+
+    `cells` are the grid cells to compute, every cell of the grid by default.
 
     All cells are split in one pass over a spatial index; the cell-by-cell calculation above gives the same
     values but takes hours on a fine grid.
     """
     msoa_index = load_msoa_data().msoa_index
     msoa_codes = [msoa_code for msoa_code in group_pivot.index if msoa_code in msoa_index]
-    cells = get_valid_cells(cell_size, boundary_datum)
+    cells = get_valid_cells(cell_size, boundary_datum) if cells is None else cells
 
     cell_group_counts = split_group_counts_by_overlapping_area(
         [cell["geometry"] for cell in cells], [msoa_index[msoa_code] for msoa_code in msoa_codes],
