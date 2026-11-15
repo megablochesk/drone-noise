@@ -5,7 +5,7 @@ import json
 from dataclasses import MISSING, dataclass, fields, replace
 from enum import Enum
 
-from common.enum import BaselineNoiseMap, NavigationType, NoiseCalculation, OrderDatasetType
+from common.enum import BaselineNoiseMap, BoundaryDatum, NavigationType, NoiseCalculation, OrderDatasetType
 from common.model_configs import ModelConfig, model_config
 from common.simulation_configs import SimulationConfig
 
@@ -19,6 +19,7 @@ PUBLISHED_LANDING_DELAY_S = 60
 PUBLISHED_MINIMUM_SLANT_DISTANCE_M = 0.0
 PUBLISHED_TIME_STEP_S = 30
 PUBLISHED_NOISE_CELL_M = 500
+PUBLISHED_BOUNDARY_DATUM = BoundaryDatum.WGS84
 NUMBER_TYPES = {"int": int, "float": float}
 
 
@@ -62,6 +63,7 @@ class RunSpecification:
     noise_cell_m: int = PUBLISHED_NOISE_CELL_M
     land_once_at_customer: bool = False
     navigation: NavigationType = NavigationType.STRAIGHT
+    boundary_datum: BoundaryDatum = PUBLISHED_BOUNDARY_DATUM
 
 
 def to_plain_value(value):
@@ -117,7 +119,9 @@ def build_model_config(specification: RunSpecification) -> ModelConfig:
     )
     return replace(
         model_config, drone=drone, time=replace(model_config.time, step_s=specification.time_step_s),
-        grid=replace(model_config.grid, noise_cell_m=specification.noise_cell_m),
+        grid=replace(
+            model_config.grid, noise_cell_m=specification.noise_cell_m, boundary_datum=specification.boundary_datum
+        ),
     )
 
 

@@ -31,6 +31,12 @@ class BaselineNoiseMap(Enum):
     ROUND_4_ROAD_ENERGY = "round4_road_laeq16h_energy"  # the same map; cell level of the mean sound energy
 
 
+class BoundaryDatum(Enum):
+    """The datum the latitudes and longitudes of the study boundary file are read on."""
+    WGS84 = "wgs84"    # the reading of the published model
+    OSGB36 = "osgb36"  # the datum the file is written on
+
+
 class LevelAveraging(Enum):
     ARITHMETIC = "arithmetic"  # mean of the decibel values, as the published baseline was aggregated
     ENERGY = "energy"          # level of the mean sound energy
