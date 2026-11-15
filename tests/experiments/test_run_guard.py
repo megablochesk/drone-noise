@@ -1,7 +1,10 @@
+import shutil
 import subprocess
+from pathlib import Path
 
 import pytest
 
+from datasets.data_catalogue import DATA_CATALOGUE
 from experiments.revision.run_guard import (
     DirtyWorkingTreeError,
     FailingTestSuiteError,
@@ -95,3 +98,41 @@ def test_file_created_while_the_suite_runs_is_refused(repository):
     run_git(repository, "commit", "--quiet", "-m", "add a test that writes")
     with pytest.raises(DirtyWorkingTreeError, match="left_behind.txt"):
         ensure_ready_to_run(repository)
+
+
+REPOSITORY_GITIGNORE = Path(__file__).resolve().parents[2] / ".gitignore"
+FILES_A_CLUSTER_CHECKOUT_HOLDS_BESIDE_THE_CODE = (
+    *(f"src/{data_file.relative_path}" for data_file in DATA_CATALOGUE),
+    "src/recourses/data/noise_graph_navigation/warehouse_paths_cache__mixed__a_0_25__dist_distance__noise_noise__hnib_0.pkl",
+    "results/artifacts/runs/0123456789abcdef.json",
+    "results/artifacts/runs/0123456789abcdef_drone_levels.npz",
+    "results/artifacts/runs/0123456789abcdef_trips.parquet",
+    "results/artifacts/grids/0123456789abcdef.npz",
+    "results/artifacts/order_pools/destinations_population_seed31_n650000.parquet",
+    "slurm-123456_17.out",
+    "src/experiments/revision/__pycache__/run_fine_grid_task.cpython-312.pyc",
+)
+
+
+@pytest.fixture
+def fresh_clone(tmp_path):
+    """A repository that has only the tracked ignore rules: a clone has no .git/info/exclude of this machine."""
+    run_git(tmp_path, "init", "--quiet")
+    run_git(tmp_path, "config", "user.email", "tester@example.org")
+    run_git(tmp_path, "config", "user.name", "Tester")
+    run_git(tmp_path, "config", "core.excludesFile", "/dev/null")
+    shutil.copy(REPOSITORY_GITIGNORE, tmp_path / ".gitignore")
+    run_git(tmp_path, "add", ".gitignore")
+    run_git(tmp_path, "commit", "--quiet", "-m", "initial")
+    return tmp_path
+
+
+def test_a_clone_with_input_data_results_and_job_logs_counts_as_clean(fresh_clone):
+    """Cluster tasks refuse a dirty tree, so the input files copied in, the runs they store and their Slurm logs
+    must all be ignored by the rules that travel with the repository."""
+    for relative_path in FILES_A_CLUSTER_CHECKOUT_HOLDS_BESIDE_THE_CODE:
+        path = fresh_clone / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("content\n")
+
+    ensure_clean_working_tree(fresh_clone)
