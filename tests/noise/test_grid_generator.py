@@ -2,12 +2,15 @@
 
 A cell belongs to the grid if it intersects the boundary polygon; touching an edge or a corner counts.
 """
+from pathlib import Path
+
 import numpy as np
 import pytest
 import shapely
 from shapely.geometry import MultiPolygon, Polygon, box
 
 from census_analysis.msoa_data import load_msoa_data
+from experiments.revision.result_store import ResultStore, load_stored_grid
 from common.enum import BoundaryDatum
 from common.file_utils import load_dataframe_from_pickle
 from common.path_configs import CELL_POPULATION_PATH, PATH_CONFIGS
@@ -26,6 +29,9 @@ CENSUS_EXTENT_TOLERANCE_M = 10.0
 # The published reading sits about 110 m east and 55 m south of the census extent.
 PUBLISHED_READING_SMALLEST_OFFSET_M = 50.0
 FINE_CELL_SIZE_M = 100
+# The 500 m grid stored with the published-design runs of the revision (results/artifacts/grids).
+STORED_RESULTS_DIRECTORY = Path(__file__).resolve().parents[2] / "results" / "artifacts"
+STORED_PUBLISHED_GRID_FINGERPRINT = "1ab3b518f3d05324"
 
 
 def build_square_cells() -> list[dict]:
@@ -81,6 +87,22 @@ def test_grid_cells_are_the_cells_of_the_published_population_table():
     grid = load_noise_grid()
     assert set(zip(grid.rows.tolist(), grid.columns.tolist())) == \
            set(zip(population_cells["row"].tolist(), population_cells["col"].tolist()))
+
+
+def cells_of_stored_published_grid() -> list[tuple[int, int, float, float]]:
+    grid = load_stored_grid(ResultStore(STORED_RESULTS_DIRECTORY), STORED_PUBLISHED_GRID_FINGERPRINT)
+    return list(zip(
+        grid.rows.tolist(), grid.columns.tolist(), grid.centroid_northings.tolist(), grid.centroid_eastings.tolist()
+    ))
+
+
+def cells_with_centroids(cells) -> list[tuple[int, int, float, float]]:
+    return [(cell.row, cell.column, cell.centroid.northing, cell.centroid.easting) for cell in cells]
+
+
+def test_study_grid_matches_the_stored_published_grid_cell_by_cell():
+    """Same cells, order and centroids as the stored grid, which the slow test below ties to the published code."""
+    assert cells_with_centroids(build_cell_matrix()) == cells_of_stored_published_grid()
 
 
 @pytest.mark.slow
