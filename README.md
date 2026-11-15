@@ -45,8 +45,12 @@ by `python -m experiments.revision.generate_order_pools` and are a deterministic
 ## Revision design: Round 4 baseline, 100 m cells, 10 s step
 
 Run parameters live in `RunSpecification` (`src/experiments/revision/run_specification.py`); every default
-reproduces the published model. The revision design changes three of them: `baseline_noise_map` (Round 4 road
-noise), `noise_cell_m` (100) and `time_step_s` (10). `land_once_at_customer` removes the second climb and
+reproduces the published model. The revision design changes four of them: `baseline_noise_map` (Round 4 road
+noise), `noise_cell_m` (100), `time_step_s` (10) and `boundary_datum` (`OSGB36`). The boundary file holds OSGB36
+latitudes and longitudes; the published model reads them as WGS84 (`boundary_datum` `WGS84`, the default), which
+puts the study area about 110 m east and 55 m south of the census extent. The cell origin is the same under both
+readings; the census tables of the OSGB36 grid are files of their own (`cell_population_100_osgb36.pkl` and
+the like). `land_once_at_customer` removes the second climb and
 descent that the published model flies at the customer; `navigation` selects noise-aware routing on the run's
 baseline map (default straight-line). `run_fine_grid_pilot` and `run_fine_grid_task` take `--design` (`pilot`,
 `single-landing`, `slant-floor`, `noise-aware`, `paper-figures`); `python -m experiments.revision.paper_figures` redraws the
