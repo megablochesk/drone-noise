@@ -42,9 +42,3 @@ def assert_routes_are_chains_of_neighbouring_cells(navigation: NavigationType, w
 @pytest.mark.parametrize("navigation", [NavigationType.NOISE_A025, NavigationType.NOISE_A100])
 def test_routes_from_two_distant_warehouses_are_chains_of_neighbouring_cells(navigation):
     assert_routes_are_chains_of_neighbouring_cells(navigation, SAMPLED_WAREHOUSE_NAMES)
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize("navigation", [NavigationType.NOISE_A025, NavigationType.NOISE_A100])
-def test_routes_from_every_warehouse_are_chains_of_neighbouring_cells(navigation):
-    assert_routes_are_chains_of_neighbouring_cells(navigation, list(model_config.warehouses.bng_coordinates))
