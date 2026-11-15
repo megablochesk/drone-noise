@@ -1,8 +1,12 @@
-from dataclasses import replace
+import json
+import typing
+from dataclasses import fields, replace
+from enum import Enum
+from pathlib import Path
 
 import pytest
 
-from common.enum import BaselineNoiseMap, NavigationType, NoiseCalculation, OrderDatasetType
+from common.enum import BaselineNoiseMap, BoundaryDatum, NavigationType, NoiseCalculation, OrderDatasetType
 from common.model_configs import model_config
 from experiments.revision.run_specification import (
     DemandModel,
@@ -38,7 +42,10 @@ ALTERNATIVE_FIELD_VALUES = {
     "noise_cell_m": 100,
     "land_once_at_customer": True,
     "navigation": NavigationType.NOISE_A025,
+    "boundary_datum": BoundaryDatum.OSGB36,
 }
+STORED_ARTIFACTS_DIRECTORY = Path("../results/artifacts")
+NUMBER_OF_STORED_RUNS = 747
 
 
 def test_alternative_values_cover_every_field():
@@ -152,3 +159,40 @@ def test_a_number_written_as_integer_or_decimal_gives_one_key():
 def test_a_fractional_value_for_a_whole_number_field_is_refused():
     with pytest.raises(ValueError, match="time_step_s"):
         build_run_key(replace(BASE_SPECIFICATION, time_step_s=10.5))
+
+
+def test_the_boundary_is_read_on_the_published_datum_unless_the_specification_says_otherwise():
+    """The published model reads the boundary file as WGS84; a run can read it on its own datum, OSGB36."""
+    assert BASE_SPECIFICATION.boundary_datum is BoundaryDatum.WGS84
+    assert build_model_config(BASE_SPECIFICATION).grid.boundary_datum is BoundaryDatum.WGS84
+    osgb36_run = replace(BASE_SPECIFICATION, boundary_datum=BoundaryDatum.OSGB36)
+    assert build_model_config(osgb36_run).grid.boundary_datum is BoundaryDatum.OSGB36
+    assert specification_to_record(osgb36_run)["boundary_datum"] == "osgb36"
+
+
+def read_field_value(field_type, value):
+    """A stored value as the field declares it: enums by value or, for bare-number enums, by name."""
+    if isinstance(field_type, type) and issubclass(field_type, Enum):
+        return field_type[value] if value in field_type.__members__ else field_type(value)
+    return value
+
+
+def specification_of_stored_row(row: dict) -> RunSpecification:
+    field_types = typing.get_type_hints(RunSpecification)
+    return RunSpecification(**{
+        field.name: read_field_value(field_types[field.name], row[field.name])
+        for field in fields(RunSpecification) if field.name in row
+    })
+
+
+def test_every_stored_run_keeps_its_key():
+    """Every row in the result store, rebuilt from the fields it records, gives the key it is stored under."""
+    rows = [json.loads(path.read_text()) for path in sorted(STORED_ARTIFACTS_DIRECTORY.rglob("*.json"))]
+    stored_runs = [row for row in rows if "run_key" in row]
+
+    changed_keys = [
+        row["run_key"] for row in stored_runs if build_run_key(specification_of_stored_row(row)) != row["run_key"]
+    ]
+
+    assert len(stored_runs) == NUMBER_OF_STORED_RUNS
+    assert changed_keys == []
