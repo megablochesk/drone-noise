@@ -75,8 +75,10 @@ NAVIGATION_FIGURES = (
     ("fig13_mean_noise_increase_by_navigation", "mean_noise_increase_db", style.NOISE_INCREASE_LABEL),
     ("fig14_newly_exposed_by_navigation", "newly_exposed_population_55db", "Newly Exposed Population"),
 )
-ROUTE_START_LONGITUDE_LATITUDE = (-0.310795, 51.369156)
-ROUTE_END_LONGITUDE_LATITUDE = (0.247855, 51.609507)
+# Figure 11's delivery: from depot DBR1 (Barking) across central London to a customer in Hillingdon, west London,
+# 40 km away, where the straight line and the route of every alpha are told apart along most of their length.
+ROUTE_START_DEPOT = "DBR1"
+ROUTE_END_LONGITUDE_LATITUDE = (-0.415156, 51.536100)
 INDIAN_GROUP_NAME = "Indian"
 PERCENT = 100.0
 HALF_CELL = 0.5
@@ -211,7 +213,7 @@ def draw_route_figure(save) -> pd.DataFrame:
     """Figure 11; returns the route lengths."""
     navigation_grid = load_navigation_grid(FINE_BASELINE_NOISE_MAP)
     routes = find_example_routes(
-        navigation_grid, convert_to_coordinate(ROUTE_START_LONGITUDE_LATITUDE), convert_to_coordinate(ROUTE_END_LONGITUDE_LATITUDE)
+        navigation_grid, model_config.warehouses.bng_coordinates[ROUTE_START_DEPOT], convert_to_coordinate(ROUTE_END_LONGITUDE_LATITUDE)
     )
     image = build_grid_image(navigation_grid.rows, navigation_grid.columns, navigation_grid.noise_levels_db)
     save(draw.plot_route_example(image, convert_to_image_coordinates(routes, navigation_grid.cell_size_m)), "fig11_example_routes")
