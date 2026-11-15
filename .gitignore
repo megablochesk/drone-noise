@@ -57,6 +57,11 @@ analysis/
 /src/simulation/avg_noises.png
 /src/recourses/data/MSOA_population_dataset_filtered.geojson
 
+# Input data (DATA_MANIFEST.csv, python -m datasets.prepare_data) and the caches built beside it
+src/recourses/
+# Figures drawn locally from the published results
+src/figures/
+
 # Revision experiments: large or regenerable artefacts (listed in results/MANIFEST.csv)
 results/artifacts/
 
