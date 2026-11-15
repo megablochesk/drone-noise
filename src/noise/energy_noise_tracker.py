@@ -21,7 +21,7 @@ class EnergyNoiseTracker:
         self.noise_at_source_db = drone.noise_at_source_db
         self.minimum_slant_distance_m = drone.minimum_slant_distance_m
 
-        self.grid = load_noise_grid(model.grid.noise_cell_m)
+        self.grid = load_noise_grid(model.grid.noise_cell_m, model.grid.boundary_datum)
         self.number_of_time_steps = 0
 
         self._northings = array("d")

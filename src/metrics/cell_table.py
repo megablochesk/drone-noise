@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 
 from census_analysis.cell_datasets import load_cell_population
-from common.enum import BaselineNoiseMap
+from common.enum import BaselineNoiseMap, BoundaryDatum
+from common.model_configs import PUBLISHED_BOUNDARY_DATUM
 from noise.noise_data_processor import PUBLISHED_CELL_SIZE_M, load_base_noise_data
 from noise.noise_grid import NoiseGrid, load_noise_grid
 
@@ -28,17 +29,20 @@ def align_to_grid(grid: NoiseGrid, values: pd.DataFrame, value_column: str) -> n
 
 
 @lru_cache(maxsize=None)
-def build_cell_table_once(baseline_noise_map: BaselineNoiseMap, cell_size_m: int) -> CellTable:
-    grid = load_noise_grid(cell_size_m)
+def build_cell_table_once(
+        baseline_noise_map: BaselineNoiseMap, cell_size_m: int, boundary_datum: BoundaryDatum
+) -> CellTable:
+    grid = load_noise_grid(cell_size_m, boundary_datum)
     return CellTable(
         rows=grid.rows,
         columns=grid.columns,
         baseline_levels_db=align_to_grid(grid, load_base_noise_data(baseline_noise_map, cell_size_m), "noise_level"),
-        population=align_to_grid(grid, load_cell_population(cell_size_m), "population"),
+        population=align_to_grid(grid, load_cell_population(cell_size_m, boundary_datum), "population"),
     )
 
 
 def load_cell_table(
-        baseline_noise_map: BaselineNoiseMap = BaselineNoiseMap.PUBLISHED, cell_size_m: int = PUBLISHED_CELL_SIZE_M
+        baseline_noise_map: BaselineNoiseMap = BaselineNoiseMap.PUBLISHED, cell_size_m: int = PUBLISHED_CELL_SIZE_M,
+        boundary_datum: BoundaryDatum = PUBLISHED_BOUNDARY_DATUM,
 ) -> CellTable:
-    return build_cell_table_once(baseline_noise_map, cell_size_m)
+    return build_cell_table_once(baseline_noise_map, cell_size_m, boundary_datum)

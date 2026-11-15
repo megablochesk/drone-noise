@@ -9,7 +9,8 @@ from census_analysis.msoa_data import load_msoa_data
 from census_analysis.population_data_processor.cell_matrix_population_calculator import (
     split_group_counts_by_overlapping_area,
 )
-from noise.grid_generator import get_valid_cells
+from common.enum import BoundaryDatum
+from noise.grid_generator import PUBLISHED_BOUNDARY_DATUM, get_valid_cells
 
 
 def calculate_cell_matrix_property(cells, cell_process_method):
@@ -55,7 +56,9 @@ def calculate_cell_property(area_geom, msoa_cache: CachedMSOA) -> Dict[int, floa
     return totals
 
 
-def calculate_cell_matrix_groups(group_pivot: pd.DataFrame, cell_size: int) -> pd.DataFrame:
+def calculate_cell_matrix_groups(
+        group_pivot: pd.DataFrame, cell_size: int, boundary_datum: BoundaryDatum = PUBLISHED_BOUNDARY_DATUM
+) -> pd.DataFrame:
     """Residents of every cell by group, for a table of group counts per MSOA (rows) and group code (columns).
 
     All cells are split in one pass over a spatial index; the cell-by-cell calculation above gives the same
@@ -63,7 +66,7 @@ def calculate_cell_matrix_groups(group_pivot: pd.DataFrame, cell_size: int) -> p
     """
     msoa_index = load_msoa_data().msoa_index
     msoa_codes = [msoa_code for msoa_code in group_pivot.index if msoa_code in msoa_index]
-    cells = get_valid_cells(cell_size)
+    cells = get_valid_cells(cell_size, boundary_datum)
 
     cell_group_counts = split_group_counts_by_overlapping_area(
         [cell["geometry"] for cell in cells], [msoa_index[msoa_code] for msoa_code in msoa_codes],

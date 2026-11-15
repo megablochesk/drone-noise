@@ -1,4 +1,5 @@
 from common.enum import NoiseCalculation
+from common.model_configs import PUBLISHED_BOUNDARY_DATUM
 from common.runtime_configs import get_simulation_config
 from noise.energy_noise_tracker import EnergyNoiseTracker
 from noise.noise_data_processor import (
@@ -19,6 +20,11 @@ class NoiseMonitor:
 
         if not self.uses_energy_sum and self.cell_size_m != PUBLISHED_CELL_SIZE_M:
             raise ValueError("A noise cell size other than the published one is only supported by the energy-sum noise calculation")
+
+        if not self.uses_energy_sum and simulation_config.model.grid.boundary_datum is not PUBLISHED_BOUNDARY_DATUM:
+            raise ValueError(
+                "A boundary datum other than the published one is only supported by the energy-sum noise calculation"
+            )
 
         if not self.uses_energy_sum and simulation_config.model.drone.minimum_slant_distance_m > 0:
             raise ValueError("A minimum slant distance is only supported by the energy-sum noise calculation")

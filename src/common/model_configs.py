@@ -7,6 +7,8 @@ from typing import List
 from common.enum import BoundaryDatum
 from common.warehouse_configs import Warehouses
 
+PUBLISHED_BOUNDARY_DATUM = BoundaryDatum.WGS84
+
 
 @dataclass(frozen=True)
 class MapBoundaries:
@@ -37,7 +39,7 @@ class TimeConfig:
 class GridConfig:
     noise_cell_m: int = 500
     nav_cell_m: int = 100
-    boundary_datum: BoundaryDatum = BoundaryDatum.WGS84
+    boundary_datum: BoundaryDatum = PUBLISHED_BOUNDARY_DATUM
 
 @dataclass(frozen=True)
 class ModelConfig:

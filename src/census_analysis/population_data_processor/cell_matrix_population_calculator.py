@@ -4,7 +4,8 @@ import shapely
 from shapely import STRtree
 
 from census_analysis.msoa_data import load_msoa_data
-from noise.grid_generator import CELL_SIZE, get_valid_cells
+from common.enum import BoundaryDatum
+from noise.grid_generator import CELL_SIZE, PUBLISHED_BOUNDARY_DATUM, get_valid_cells
 
 
 def calculate_overlap_areas(cells: np.ndarray, regions: np.ndarray) -> np.ndarray:
@@ -51,8 +52,8 @@ def split_group_counts_by_overlapping_area(cell_geometries, region_polygons, reg
     return cell_group_counts
 
 
-def calculate_cell_matrix_population(cell_size=CELL_SIZE):
-    cells = get_valid_cells(cell_size)
+def calculate_cell_matrix_population(cell_size=CELL_SIZE, boundary_datum: BoundaryDatum = PUBLISHED_BOUNDARY_DATUM):
+    cells = get_valid_cells(cell_size, boundary_datum)
     msoa_data = load_msoa_data()
     msoa_codes = list(msoa_data.msoa_index)
 

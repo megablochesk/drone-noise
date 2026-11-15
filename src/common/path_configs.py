@@ -2,11 +2,17 @@ import os
 from dataclasses import dataclass
 from typing import Mapping
 
+from common.enum import BoundaryDatum
 from common.file_utils import ensure_suffix
-from common.model_configs import model_config
+from common.model_configs import PUBLISHED_BOUNDARY_DATUM, model_config
 
 MATPLOTLIB_BACKEND_ENVIRONMENT_VARIABLE = "DRONE_NOISE_MATPLOTLIB_BACKEND"
 INTERACTIVE_MATPLOTLIB_BACKEND = "Qt5Agg"
+
+
+def name_boundary_datum(boundary_datum: BoundaryDatum) -> str:
+    """File name part of a boundary reading: none for the published reading, the datum for any other."""
+    return "" if boundary_datum is PUBLISHED_BOUNDARY_DATUM else f"_{boundary_datum.value}"
 
 
 def resolve_matplotlib_backend(environment: Mapping[str, str]) -> str:
@@ -58,16 +64,20 @@ class PathsConfiguration:
         return f"{self.noise_graph_navigation_dir}/warehouse_paths_cache.pkl"
 
     @staticmethod
-    def cell_population_path(noise_cell_size_meters: int) -> str:
-        return f"recourses/data/cell_population_{noise_cell_size_meters}.pkl"
+    def cell_population_path(
+            noise_cell_size_meters: int, boundary_datum: BoundaryDatum = PUBLISHED_BOUNDARY_DATUM
+    ) -> str:
+        return f"recourses/data/cell_population_{noise_cell_size_meters}{name_boundary_datum(boundary_datum)}.pkl"
 
     @staticmethod
-    def cell_ethnicity_path(noise_cell_size_meters: int) -> str:
-        return f"recourses/data/cell_ethnicity_{noise_cell_size_meters}.pkl"
+    def cell_ethnicity_path(
+            noise_cell_size_meters: int, boundary_datum: BoundaryDatum = PUBLISHED_BOUNDARY_DATUM
+    ) -> str:
+        return f"recourses/data/cell_ethnicity_{noise_cell_size_meters}{name_boundary_datum(boundary_datum)}.pkl"
 
     @staticmethod
-    def cell_age_path(noise_cell_size_meters: int) -> str:
-        return f"recourses/data/cell_age_{noise_cell_size_meters}.pkl"
+    def cell_age_path(noise_cell_size_meters: int, boundary_datum: BoundaryDatum = PUBLISHED_BOUNDARY_DATUM) -> str:
+        return f"recourses/data/cell_age_{noise_cell_size_meters}{name_boundary_datum(boundary_datum)}.pkl"
 
 
 PATH_CONFIGS = PathsConfiguration()

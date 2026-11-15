@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 
 from common.coordinate import Coordinate
-from common.enum import BaselineNoiseMap
+from common.enum import BaselineNoiseMap, BoundaryDatum
 from common.path_configs import get_single_type_order_dataset_pattern
 from common.runtime_configs import use_simulation_config
 from depots.depot_layouts import resolve_depot_layout
@@ -107,8 +107,8 @@ def run_simulation(specification: RunSpecification, demand: PlannedDemand) -> Si
     return simulator
 
 
-def extract_drone_levels(simulator: Simulator, cell_size_m: int) -> np.ndarray:
-    return align_to_grid(load_noise_grid(cell_size_m), simulator.noise_monitor.impact, "average_noise")
+def extract_drone_levels(simulator: Simulator, cell_size_m: int, boundary_datum: BoundaryDatum) -> np.ndarray:
+    return align_to_grid(load_noise_grid(cell_size_m, boundary_datum), simulator.noise_monitor.impact, "average_noise")
 
 
 def summarise_warehouses(
@@ -131,8 +131,10 @@ def summarise_warehouses(
     }
 
 
-def summarise_exposure(drone_levels_db: np.ndarray, baseline_noise_map: BaselineNoiseMap, cell_size_m: int) -> dict:
-    cell_table = load_cell_table(baseline_noise_map, cell_size_m)
+def summarise_exposure(
+        drone_levels_db: np.ndarray, baseline_noise_map: BaselineNoiseMap, cell_size_m: int, boundary_datum: BoundaryDatum
+) -> dict:
+    cell_table = load_cell_table(baseline_noise_map, cell_size_m, boundary_datum)
     return {
         "mean_noise_increase_db": calculate_mean_noise_increase_db(drone_levels_db, cell_table.baseline_levels_db),
         "newly_exposed_population_55db": calculate_newly_exposed_population(
@@ -167,7 +169,9 @@ def build_result_row(
         "git_hash": git_hash,
         "wall_time_s": wall_time_s,
         **summarise_operations(statistics, per_warehouse),
-        **summarise_exposure(drone_levels_db, specification.baseline_noise_map, specification.noise_cell_m),
+        **summarise_exposure(
+            drone_levels_db, specification.baseline_noise_map, specification.noise_cell_m, specification.boundary_datum
+        ),
         "per_warehouse": per_warehouse,
     }
 
@@ -178,11 +182,12 @@ def execute_run(specification: RunSpecification, store: ResultStore, git_hash: s
     demand = plan_demand(specification, store, depots)
     simulator = run_simulation(specification, demand)
     statistics = summarise_run(simulator)
-    drone_levels_db = extract_drone_levels(simulator, specification.noise_cell_m)
+    drone_levels_db = extract_drone_levels(simulator, specification.noise_cell_m, specification.boundary_datum)
     per_warehouse = summarise_warehouses(statistics, demand, depots)
 
     wall_time_s = time.perf_counter() - started_at_s
     row = build_result_row(specification, git_hash, wall_time_s, statistics, drone_levels_db, per_warehouse)
-    row[GRID_FINGERPRINT_COLUMN] = save_grid(store, load_noise_grid(specification.noise_cell_m))
+    grid = load_noise_grid(specification.noise_cell_m, specification.boundary_datum)
+    row[GRID_FINGERPRINT_COLUMN] = save_grid(store, grid)
     save_result(store, row["run_key"], row, drone_levels_db, statistics.trip_distances_m)
     return row
