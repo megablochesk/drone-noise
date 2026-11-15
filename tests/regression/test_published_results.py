@@ -2,7 +2,7 @@
 
 Expected values are the numbers printed in the submitted manuscript (10 h, 100,000-order datasets),
 supplied in the revision brief; none of them is produced by the code under test in this session. Expected
-maps are the result pickles saved in April 2026 for the manuscript figures. The first 15 simulated minutes of
+maps are the result pickles saved in April 2026 for the manuscript figures. The first 10 simulated minutes of
 the same runs are checked in the fast suite (test_published_slices.py).
 """
 import pandas as pd

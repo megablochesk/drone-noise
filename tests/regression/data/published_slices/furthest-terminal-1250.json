@@ -1,15 +1,15 @@
 {
-  "git_hash": "d5d3341459f9262a2eb47b30b7a23854bd6683f8",
-  "simulation_end_s": 36900,
+  "git_hash": "a2bb565d11e025321ecddac24f26d73a3a45879a",
+  "simulation_end_s": 36600,
   "published_runner": {
     "delivered_orders": 0,
-    "mean_noise_increase_db": 2.272274245756952,
-    "newly_exposed_population": 95914.27662013362
+    "mean_noise_increase_db": 2.251820970448732,
+    "newly_exposed_population": 81508.29751914606
   },
   "energy_sum_runner": {
     "delivered_orders": 0,
-    "mean_noise_increase_db": 2.2722742457569516,
-    "newly_exposed_population": 95914.27662013362,
+    "mean_noise_increase_db": 2.2518209704487315,
+    "newly_exposed_population": 81508.29751914606,
     "assigned_orders": 1250
   }
 }

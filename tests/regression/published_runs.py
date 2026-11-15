@@ -19,7 +19,7 @@ from experiments.revision.run_specification import PUBLISHED_SIMULATION_END_S
 NUMBER_OF_ORDERS = 100_000
 EXPOSURE_THRESHOLD_DB = 55
 SECONDS_PER_MINUTE = 60
-SLICE_DURATION_S = 15 * SECONDS_PER_MINUTE
+SLICE_DURATION_S = 10 * SECONDS_PER_MINUTE
 SLICE_SIMULATION_END_S = model_config.time.start_s + SLICE_DURATION_S
 MAP_KEY = ["row", "col"]
 MAP_COLUMNS = ["average_noise", "combined_noise", "noise_difference"]

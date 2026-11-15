@@ -1,4 +1,4 @@
-"""The published configurations over their first 15 simulated minutes reproduce the stored reference slices.
+"""The published configurations over their first 10 simulated minutes reproduce the stored reference slices.
 
 The slices are written by generate_published_slices.py through the runners that the full-day tests check
 against the manuscript (test_published_results.py, test_published_noise_aware_result.py), at a commit where

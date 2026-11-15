@@ -1,9 +1,9 @@
 {
-  "git_hash": "d5d3341459f9262a2eb47b30b7a23854bd6683f8",
-  "simulation_end_s": 36900,
+  "git_hash": "a2bb565d11e025321ecddac24f26d73a3a45879a",
+  "simulation_end_s": 36600,
   "published_runner": {
     "delivered_orders": 0,
-    "mean_noise_increase_db": 0.33958059846388944,
+    "mean_noise_increase_db": 0.3432522940659315,
     "newly_exposed_population": 990.113282844027
   }
 }

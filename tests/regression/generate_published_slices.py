@@ -1,6 +1,6 @@
 """Writes the reference slices of the short-period regression tests (tests/regression/data/published_slices).
 
-Each published configuration is run for its first 15 simulated minutes through the runners that the full-day
+Each published configuration is run for its first 10 simulated minutes through the runners that the full-day
 tests check against the manuscript; the headline values and the per-cell map are stored. Run it only at a
 commit where `python -m pytest -m slow tests/regression` passes, so the slices stand for the published results.
 
