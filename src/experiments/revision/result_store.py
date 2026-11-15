@@ -3,6 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import tempfile
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -17,6 +19,7 @@ RUN_ROW_SUFFIX = ".json"
 GRIDS_DIRECTORY_NAME = "grids"
 GRID_FINGERPRINT_LENGTH = 16
 GRID_FINGERPRINT_COLUMN = "grid_fingerprint"
+TEMPORARY_SUFFIX = ".tmp"
 
 
 @dataclass(frozen=True)
@@ -50,17 +53,47 @@ def select_pending(store: ResultStore, run_keys: list[str]) -> list[str]:
     return [run_key for run_key in run_keys if not has_result(store, run_key)]
 
 
+def flush_to_disk(path: Path):
+    with open(path, "rb") as file:
+        os.fsync(file.fileno())
+
+
+def write_atomically(path: Path, write_file: Callable[[Path], None]):
+    """Writes through a temporary file in the same folder that no other writer can name, then renames it into
+    place: readers see the whole file or none, and concurrent writers on a shared filesystem never mix bytes."""
+    descriptor, temporary_name = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=TEMPORARY_SUFFIX)
+    os.close(descriptor)
+    temporary_path = Path(temporary_name)
+    try:
+        write_file(temporary_path)
+        flush_to_disk(temporary_path)
+        os.replace(temporary_path, path)
+    except BaseException:
+        temporary_path.unlink(missing_ok=True)
+        raise
+
+
 def write_json_atomically(content: dict, path: Path):
-    temporary_path = path.with_suffix(".json.tmp")
-    temporary_path.write_text(json.dumps(content, indent=2))
-    os.replace(temporary_path, path)
+    write_atomically(path, lambda temporary_path: temporary_path.write_text(json.dumps(content, indent=2)))
+
+
+def write_arrays_atomically(path: Path, **arrays: np.ndarray):
+    """An open file keeps numpy from appending .npz to the temporary name."""
+    def write_archive(temporary_path: Path):
+        with open(temporary_path, "wb") as file:
+            np.savez_compressed(file, **arrays)
+
+    write_atomically(path, write_archive)
 
 
 def save_result(store: ResultStore, run_key: str, row: dict, drone_levels_db: np.ndarray, trip_distances_m: np.ndarray):
     store.runs_directory.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(store.drone_levels_path(run_key), drone_levels_db=drone_levels_db)
-    pd.DataFrame({"trip_distance_m": trip_distances_m}).to_parquet(
-        store.trips_path(run_key), engine=PARQUET_ENGINE, index=False
+    write_arrays_atomically(store.drone_levels_path(run_key), drone_levels_db=drone_levels_db)
+    write_atomically(
+        store.trips_path(run_key),
+        lambda temporary_path: pd.DataFrame({"trip_distance_m": trip_distances_m}).to_parquet(
+            temporary_path, engine=PARQUET_ENGINE, index=False
+        ),
     )
     # The row marks the run as finished, so it goes last.
     write_json_atomically(row, store.row_path(run_key))
@@ -96,12 +129,10 @@ def save_grid(store: ResultStore, grid: NoiseGrid) -> str:
     grid_path = store.grid_path(fingerprint)
     if not grid_path.exists():
         grid_path.parent.mkdir(parents=True, exist_ok=True)
-        temporary_path = grid_path.with_suffix(f".{os.getpid()}.tmp.npz")
-        np.savez_compressed(
-            temporary_path, rows=grid.rows, columns=grid.columns, centroid_northings=grid.centroid_northings,
+        write_arrays_atomically(
+            grid_path, rows=grid.rows, columns=grid.columns, centroid_northings=grid.centroid_northings,
             centroid_eastings=grid.centroid_eastings,
         )
-        os.replace(temporary_path, grid_path)
     return fingerprint
 
 
