@@ -1,5 +1,6 @@
 """The design decided for the revision: Round 4 baseline, 100 m noise cells, 10 s time step; and the entry
 point that runs one of its specifications, for a job array on a cluster."""
+import json
 import os
 import subprocess
 import sys
@@ -77,14 +78,16 @@ def test_an_unknown_design_is_refused_with_the_known_names():
         build_design_specifications("everything", [1])
 
 
-def stored_run_keys() -> set[str]:
-    return {path.stem for path in Path("../results/artifacts/runs").glob("*.json")}
+def read_boundary_datums_of_stored_runs(keys: set[str]) -> set[str]:
+    stored_paths = (Path("../results/artifacts/runs") / f"{key}.json" for key in keys)
+    return {json.loads(path.read_text())["boundary_datum"] for path in stored_paths if path.exists()}
 
 
 @pytest.mark.parametrize("design_name", ["pilot", "single-landing", "slant-floor", "noise-aware", "paper-figures"])
 def test_every_design_reads_the_boundary_on_osgb36_and_adds_runs_beside_the_stored_ones(design_name):
     """The fine grid reads the boundary file on the datum it is written on. Its runs get keys of their own, so the
-    stored runs of the published reading stay where they are and the new runs are added."""
+    stored runs of the published reading stay where they are: no run stored under a key of the design reads the
+    boundary on another datum."""
     from experiments.revision.fine_grid_design import FINE_BOUNDARY_DATUM, build_design_specifications
 
     specifications = build_design_specifications(design_name, [1, 2, 3])
@@ -97,7 +100,7 @@ def test_every_design_reads_the_boundary_on_osgb36_and_adds_runs_beside_the_stor
     assert {specification.boundary_datum for specification in specifications} == {BoundaryDatum.OSGB36}
     assert len(keys) == len(published_reading_keys) == len(specifications)
     assert keys.isdisjoint(published_reading_keys)
-    assert keys.isdisjoint(stored_run_keys())
+    assert read_boundary_datums_of_stored_runs(keys) <= {BoundaryDatum.OSGB36.value}
 
 
 SEEDS_OF_THE_CLUSTER_EXPERIMENT = list(range(1, 101))
