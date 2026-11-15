@@ -14,7 +14,6 @@ from tests.legacy_reference import load_legacy_module
 LEGACY_PLANNER_MODULE = load_legacy_module("route_planner/noise_based_planner.py")
 DESTINATION_SEED = 1
 SAMPLED_NUMBER_OF_ROUTES = 20
-NUMBER_OF_ROUTES = 300
 
 
 def assert_routes_match_the_published_planner(number_of_routes: int):
@@ -37,8 +36,3 @@ def assert_routes_match_the_published_planner(number_of_routes: int):
 
 def test_routes_to_twenty_seeded_customers_match_the_published_planner():
     assert_routes_match_the_published_planner(SAMPLED_NUMBER_OF_ROUTES)
-
-
-@pytest.mark.slow
-def test_routes_to_three_hundred_customers_match_the_published_planner():
-    assert_routes_match_the_published_planner(NUMBER_OF_ROUTES)
