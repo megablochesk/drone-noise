@@ -105,6 +105,14 @@ python -m experiments.revision.build_artifact_manifest     # size, checksum, com
 From the repository root:
 
 ```bash
-python -m pytest            # fast suite
-python -m pytest -m slow    # slow checks: full-size runs, real-data grids, routes and census tables (needs all data)
+python -m pytest            # fast suite (needs all data)
+python -m pytest -m slow    # slow checks: the published results over the whole day (needs all data)
 ```
+
+The fast suite checks the published runs over their first 15 simulated minutes against stored reference
+slices (`tests/regression/data/published_slices`), and the real navigation graph, Round 4 grid and census
+tables on fixed samples of depots, customers and cells. The slow suite keeps what only a full-size run can
+show: the four published straight-line results and the published noise-aware result over the whole day, the
+warehouse route trees on the real graph against the stored cache, and the published grid code against the
+stored grid. When a change moves the slices while the slow regression tests still pass, regenerate the slices
+at that commit: `python tests/regression/generate_published_slices.py`.
