@@ -1,4 +1,6 @@
 """A stored map is only meaningful on the grid it was computed on, so the store keeps that grid with the run."""
+import os
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -83,3 +85,25 @@ def test_a_grid_of_another_size_than_the_map_is_refused(tmp_path):
 
     with pytest.raises(ValueError, match="5 cells"):
         record_grid_of_stored_run(store, "run1", GRID)
+
+
+SHARED_PROCESS_NUMBER = 4242
+
+
+def test_a_grid_file_another_node_is_writing_is_left_alone(tmp_path, monkeypatch):
+    """Process numbers repeat across the nodes of a cluster, so two tasks storing the same grid must not share
+    a temporary file because they share a process number."""
+    store = ResultStore(tmp_path)
+    fingerprint = calculate_grid_fingerprint(GRID)
+    other_nodes_file = store.grid_path(fingerprint).with_suffix(f".{SHARED_PROCESS_NUMBER}.tmp.npz")
+    other_nodes_file.parent.mkdir(parents=True)
+    other_nodes_file.write_bytes(b"half written")
+    monkeypatch.setattr(os, "getpid", lambda: SHARED_PROCESS_NUMBER)
+
+    save_grid(store, GRID)
+
+    assert other_nodes_file.read_bytes() == b"half written"
+    np.testing.assert_array_equal(load_stored_grid(store, fingerprint).rows, GRID.rows)
+    assert {path.name for path in other_nodes_file.parent.iterdir()} == {
+        other_nodes_file.name, store.grid_path(fingerprint).name,
+    }

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -58,3 +60,50 @@ def test_collecting_a_missing_result_fails(tmp_path):
     """A phase table must never silently drop a run."""
     with pytest.raises(FileNotFoundError):
         collect_rows(ResultStore(tmp_path), ["missing"])
+
+
+def list_files(directory) -> set[str]:
+    return {path.name for path in directory.iterdir()}
+
+
+def test_a_row_another_writer_is_filling_is_left_alone(tmp_path):
+    """Tasks of a job array share the store: the temporary file of another writer is neither overwritten nor
+    moved into place, and a finished save leaves no temporary file of its own."""
+    store = ResultStore(tmp_path)
+    store.runs_directory.mkdir(parents=True)
+    other_writers_file = store.row_path("abc").with_suffix(".json.tmp")
+    other_writers_file.write_text("half written")
+
+    save_result(store, "abc", ROW, DRONE_LEVELS_DB, TRIP_DISTANCES_M)
+
+    assert other_writers_file.read_text() == "half written"
+    assert load_row(store, "abc") == ROW
+    assert list_files(store.runs_directory) == {
+        other_writers_file.name, store.row_path("abc").name, store.drone_levels_path("abc").name,
+        store.trips_path("abc").name,
+    }
+
+
+@pytest.mark.parametrize(
+    ("failing_writer", "product_path"),
+    [("numpy.savez_compressed", ResultStore.drone_levels_path), ("pandas.DataFrame.to_parquet", ResultStore.trips_path)],
+)
+def test_a_save_that_fails_midway_leaves_no_partial_file(tmp_path, monkeypatch, failing_writer, product_path):
+    """A task killed or failing while it writes must not leave a partial map or trip log that reads as stored."""
+    def write_part_then_fail(*arguments, **keyword_arguments):
+        target = next(argument for argument in arguments if not isinstance(argument, (np.ndarray, pd.DataFrame)))
+        if hasattr(target, "write"):
+            target.write(b"partial")
+        else:
+            Path(target).write_bytes(b"partial")
+        raise OSError("disk quota exceeded")
+
+    monkeypatch.setattr(failing_writer, write_part_then_fail)
+    store = ResultStore(tmp_path)
+
+    with pytest.raises(OSError, match="quota"):
+        save_result(store, "abc", ROW, DRONE_LEVELS_DB, TRIP_DISTANCES_M)
+
+    assert not product_path(store, "abc").exists()
+    assert not has_result(store, "abc")
+    assert list_files(store.runs_directory) <= {store.drone_levels_path("abc").name, store.trips_path("abc").name}
