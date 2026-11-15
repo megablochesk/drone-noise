@@ -6,6 +6,7 @@ None of these files is under version control. Paths are relative to src/, like a
 from dataclasses import dataclass
 from enum import Enum
 
+from common.enum import BoundaryDatum
 from common.path_configs import (
     BASE_NOISE_PATH,
     CELL_AGE_PATH,
@@ -25,6 +26,9 @@ from common.path_configs import (
 PUBLISHED_NUMBER_OF_ORDERS = 100_000
 FINE_CELL_SIZE_M = 100
 PUBLISHED_CELL_SIZE_M = 500
+FINE_GRID_BOUNDARY_DATUM = BoundaryDatum.OSGB36
+PUBLISHED_READING = "boundary read as WGS84, as the published model reads it"
+OSGB36_READING = "boundary read on OSGB36, the datum of the boundary file; the cells of the fine-grid designs"
 MIXED_STOCKING_RANDOM_SHARES_PERCENT = tuple(range(100, 0, -10))
 DEFRA_NOISE_MAPS = (
     "Defra strategic noise mapping, 2017 noise maps (https://www.gov.uk/government/publications/strategic-noise-mapping-2019): "
@@ -136,7 +140,7 @@ PUBLISHED_FILES = (
 DERIVED_FILES = (
     DataFile(
         "cell population 100 m", PATH_CONFIGS.cell_population_path(FINE_CELL_SIZE_M), DataOrigin.DERIVED,
-        "residents of every 100 m cell, MSOA populations split by overlapping area",
+        f"residents of every 100 m cell, MSOA populations split by overlapping area; {PUBLISHED_READING}",
         "census_analysis.cell_datasets.load_cell_population(100)",
         generator="datasets.fine_grid_files:write_fine_cell_population_file", requires=("study boundary", "msoa population"),
     ),
@@ -148,14 +152,38 @@ DERIVED_FILES = (
     ),
     DataFile(
         "cell age 100 m", PATH_CONFIGS.cell_age_path(FINE_CELL_SIZE_M), DataOrigin.DERIVED,
-        "residents of every 100 m cell by age band", "census_analysis.cell_datasets.load_cell_age(100)",
+        f"residents of every 100 m cell by age band; {PUBLISHED_READING}",
+        "census_analysis.cell_datasets.load_cell_age(100)",
         generator="datasets.fine_grid_files:write_fine_cell_age_file",
         requires=("study boundary", "msoa population", "census age"),
     ),
     DataFile(
         "cell ethnicity 100 m", PATH_CONFIGS.cell_ethnicity_path(FINE_CELL_SIZE_M), DataOrigin.DERIVED,
-        "residents of every 100 m cell by ethnic group", "census_analysis.cell_datasets.load_cell_ethnicity(100)",
+        f"residents of every 100 m cell by ethnic group; {PUBLISHED_READING}",
+        "census_analysis.cell_datasets.load_cell_ethnicity(100)",
         generator="datasets.fine_grid_files:write_fine_cell_ethnicity_file",
+        requires=("study boundary", "msoa population", "census ethnicity"),
+    ),
+    DataFile(
+        "cell population 100 m osgb36", PATH_CONFIGS.cell_population_path(FINE_CELL_SIZE_M, FINE_GRID_BOUNDARY_DATUM),
+        DataOrigin.DERIVED,
+        f"residents of every 100 m cell, MSOA populations split by overlapping area; {OSGB36_READING}",
+        "census_analysis.cell_datasets.load_cell_population(100, BoundaryDatum.OSGB36)",
+        generator="datasets.fine_grid_files:write_osgb36_fine_cell_population_file",
+        requires=("study boundary", "msoa population"),
+    ),
+    DataFile(
+        "cell age 100 m osgb36", PATH_CONFIGS.cell_age_path(FINE_CELL_SIZE_M, FINE_GRID_BOUNDARY_DATUM),
+        DataOrigin.DERIVED, f"residents of every 100 m cell by age band; {OSGB36_READING}",
+        "census_analysis.cell_datasets.load_cell_age(100, BoundaryDatum.OSGB36)",
+        generator="datasets.fine_grid_files:write_osgb36_fine_cell_age_file",
+        requires=("study boundary", "msoa population", "census age"),
+    ),
+    DataFile(
+        "cell ethnicity 100 m osgb36", PATH_CONFIGS.cell_ethnicity_path(FINE_CELL_SIZE_M, FINE_GRID_BOUNDARY_DATUM),
+        DataOrigin.DERIVED, f"residents of every 100 m cell by ethnic group; {OSGB36_READING}",
+        "census_analysis.cell_datasets.load_cell_ethnicity(100, BoundaryDatum.OSGB36)",
+        generator="datasets.fine_grid_files:write_osgb36_fine_cell_ethnicity_file",
         requires=("study boundary", "msoa population", "census ethnicity"),
     ),
     DataFile(
