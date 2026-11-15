@@ -107,14 +107,35 @@ python -m experiments.revision.build_artifact_manifest     # size, checksum, com
 From the repository root:
 
 ```bash
-python -m pytest            # fast suite (needs all data)
-python -m pytest -m slow    # slow checks: the published results over the whole day (needs all data)
+python -m pytest                     # fast suite, about 2 minutes (needs all data)
+python -m pytest -m slow             # slow suite, about 1 minute: the published results over the whole day
+python -m pytest -m published_runner # published per-step runner at 1,250 drones, about 5 minutes
 ```
 
 The fast suite checks the published runs over their first 10 simulated minutes against stored reference
 slices (`tests/regression/data/published_slices`), and the real navigation graph, Round 4 grid and census
 tables on fixed samples of depots, customers and cells. The slow suite keeps what only a full-size run can
-show: the four published straight-line results and the published noise-aware result over the whole day, the
-warehouse route trees on the real graph against the stored cache, and the published grid code against the
-stored grid. When a change moves the slices while the slow regression tests still pass, regenerate the slices
-at that commit: `python tests/regression/generate_published_slices.py`.
+show: the four published straight-line results over the whole day on the energy-sum runner that every
+revision result uses (manuscript headline numbers and the per-cell map saved for the manuscript figures, to
+1e-9 dB), the published per-step runner over the whole day on the 100-drone configuration (headline and
+per-cell map), the published noise-aware result, the warehouse route trees on the real graph against the
+stored cache, and the published grid code against the stored grid.
+
+The `published_runner` tests run the published per-step runner over the whole day on the three 1,250-drone
+configurations and check that it prints the manuscript numbers and the saved per-cell maps. Neither default
+nor `-m slow` selects them. Run them before every submission, and after any change to the code that only the
+published per-step runner executes:
+
+- the per-step noise stage: `src/noise/noise_tracker.py`, `src/noise/noise_math_utils.py`, and the per-step
+  functions of `src/noise/noise_data_processor.py`, `src/noise/grid_generator.py` and
+  `src/simulation/noise_monitor.py`;
+- the published experiment runner: `src/experiments/experiment_executor.py`,
+  `src/experiments/config_generator.py`, `src/common/simulation_configs.py`;
+- the navigator and planner selection it goes through: `src/route_planner/route_planner.py`,
+  `src/route_planner/noise_based_planner.py`, `src/noise/navigator/`;
+- the published exposure count: `src/visualiser/legacy_results.py`.
+
+The simulation core that both runners share (`src/simulation/`, `src/drones/`, `src/route_planner/`,
+`src/orders/order_loader.py`, `src/common/model_configs.py`) is checked over the whole day by the slow suite
+through the energy-sum runner. When a change moves the slices while the slow and `published_runner` tests still
+pass, regenerate the slices at that commit: `python tests/regression/generate_published_slices.py`.

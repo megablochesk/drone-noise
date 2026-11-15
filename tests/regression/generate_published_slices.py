@@ -2,7 +2,8 @@
 
 Each published configuration is run for its first 10 simulated minutes through the runners that the full-day
 tests check against the manuscript; the headline values and the per-cell map are stored. Run it only at a
-commit where `python -m pytest -m slow tests/regression` passes, so the slices stand for the published results.
+commit where `python -m pytest -m slow tests/regression` and `python -m pytest -m published_runner` pass, so the
+slices stand for the published results.
 
 Usage (from the repository root): python tests/regression/generate_published_slices.py
 """
