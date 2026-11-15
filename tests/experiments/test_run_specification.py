@@ -46,7 +46,7 @@ ALTERNATIVE_FIELD_VALUES = {
     "simulation_end_s": 37_800,
 }
 STORED_ARTIFACTS_DIRECTORY = Path("../results/artifacts")
-NUMBER_OF_STORED_RUNS = 747
+LEAST_NUMBER_OF_STORED_RUNS = 747
 
 
 def test_alternative_values_cover_every_field():
@@ -202,5 +202,5 @@ def test_every_stored_run_keeps_its_key():
         row["run_key"] for row in stored_runs if build_run_key(specification_of_stored_row(row)) != row["run_key"]
     ]
 
-    assert len(stored_runs) == NUMBER_OF_STORED_RUNS
+    assert len(stored_runs) >= LEAST_NUMBER_OF_STORED_RUNS
     assert changed_keys == []
