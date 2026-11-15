@@ -31,7 +31,6 @@ def sum_fine_cells_by_published_cell(fine, group_codes):
     ).groupby(["row", "col"])[group_codes].sum().rename(columns=lambda code: f"{code}_fine").reset_index()
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize("load_dataset", [load_cell_age, load_cell_ethnicity], ids=["age", "ethnicity"])
 def test_fine_cells_add_up_to_their_published_cell_for_every_group(load_dataset):
     """As for the population: where all 25 fine cells of a 500 m cell are grid cells, their sum is its value."""
