@@ -4,12 +4,18 @@ Expected values are the numbers printed in the submitted manuscript (10 h, 100,0
 supplied in the revision brief; none of them is produced by the code under test in this session. Expected
 maps are the result pickles saved in April 2026 for the manuscript figures. The first 10 simulated minutes of
 the same runs are checked in the fast suite (test_published_slices.py).
+
+The energy-sum runner, which every revision result uses, is checked on all four configurations in the slow
+suite. The published per-step runner takes seconds on the 100-drone configuration and minutes on each
+1,250-drone one, so the slow suite runs it on the 100-drone configuration and the 1,250-drone ones carry the
+`published_runner` marker (python -m pytest -m published_runner).
 """
 import pandas as pd
 import pytest
 
 from tests.regression.published_runs import (
     PUBLISHED_RESULTS,
+    PublishedConfiguration,
     PublishedResult,
     describe as describe_configuration,
     newly_exposed_population,
@@ -24,17 +30,24 @@ SAVED_PUBLISHED_RESULT_FILES = {False: "drone_number_change", True: "drone_landi
 # Both noise stages sum the same energy, in a different order; over the full day the per-cell maps differ by
 # less than 1e-13 dB.
 PER_CELL_TOLERANCE_DB = 1e-9
+ROUTINE_PUBLISHED_RUNNER_CONFIGURATION = PublishedConfiguration("closest", False, 100)
 
 
 def describe(published: PublishedResult) -> str:
     return describe_configuration(published.configuration)
 
 
+def published_runner_marker(published: PublishedResult) -> pytest.MarkDecorator:
+    if published.configuration == ROUTINE_PUBLISHED_RUNNER_CONFIGURATION:
+        return pytest.mark.slow
+    return pytest.mark.published_runner
+
+
 ENERGY_SUM_RUNNER_CASES = [
     pytest.param(published, id=describe(published), marks=pytest.mark.slow) for published in PUBLISHED_RESULTS
 ]
 PUBLISHED_RUNNER_CASES = [
-    pytest.param(published, id=describe(published), marks=pytest.mark.slow)
+    pytest.param(published, id=describe(published), marks=published_runner_marker(published))
     for published in PUBLISHED_RESULTS
 ]
 
