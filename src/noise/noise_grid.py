@@ -3,7 +3,8 @@ from functools import lru_cache
 
 import numpy as np
 
-from noise.grid_generator import CELL_SIZE, build_cell_matrix
+from common.enum import BoundaryDatum
+from noise.grid_generator import CELL_SIZE, PUBLISHED_BOUNDARY_DATUM, build_cell_matrix
 
 
 @dataclass(frozen=True)
@@ -16,8 +17,8 @@ class NoiseGrid:
 
 
 @lru_cache(maxsize=None)
-def build_noise_grid_once(cell_size_m: int) -> NoiseGrid:
-    cells = build_cell_matrix(cell_size_m)
+def build_noise_grid_once(cell_size_m: int, boundary_datum: BoundaryDatum) -> NoiseGrid:
+    cells = build_cell_matrix(cell_size_m, boundary_datum)
     return NoiseGrid(
         rows=np.array([cell.row for cell in cells], dtype=np.int64),
         columns=np.array([cell.column for cell in cells], dtype=np.int64),
@@ -26,8 +27,10 @@ def build_noise_grid_once(cell_size_m: int) -> NoiseGrid:
     )
 
 
-def load_noise_grid(cell_size_m: int = CELL_SIZE) -> NoiseGrid:
-    return build_noise_grid_once(cell_size_m)
+def load_noise_grid(
+        cell_size_m: int = CELL_SIZE, boundary_datum: BoundaryDatum = PUBLISHED_BOUNDARY_DATUM
+) -> NoiseGrid:
+    return build_noise_grid_once(cell_size_m, boundary_datum)
 
 
 def to_grid_image(grid: NoiseGrid, values: np.ndarray) -> np.ndarray:
