@@ -16,7 +16,12 @@ from common.enum import BaselineNoiseMap
 from common.path_configs import PATH_CONFIGS
 from datasets.round4_baseline import BASELINE_FLOOR_DB, read_raster_levels
 from experiments.revision.batch_runner import REPOSITORY_ROOT, default_result_store
-from experiments.revision.fine_grid_design import FINE_BASELINE_NOISE_MAP, FINE_CELL_SIZE_M, PHASE_NAME
+from experiments.revision.fine_grid_design import (
+    FINE_BASELINE_NOISE_MAP,
+    FINE_BOUNDARY_DATUM,
+    FINE_CELL_SIZE_M,
+    PHASE_NAME,
+)
 from experiments.revision.phase8_tables import (
     HEADLINE_NOISE_METRIC,
     RELATIVE_METRICS,
@@ -81,7 +86,8 @@ def measure_coarse_runs_against_round4(store: ResultStore, seeds: list[int]) -> 
 
 def load_filled_pixels():
     """Round 4 pixels with the floor filled in, and the fine cell each pixel centre lies in."""
-    raster, grid = read_raster_levels(Path(PATH_CONFIGS.round4_road_noise_raster_path)), load_noise_grid(FINE_CELL_SIZE_M)
+    raster = read_raster_levels(Path(PATH_CONFIGS.round4_road_noise_raster_path))
+    grid = load_noise_grid(FINE_CELL_SIZE_M, FINE_BOUNDARY_DATUM)
     cell_of_pixel = map_pixels_to_cells(
         (raster.easting_edges_m[:-1] + raster.easting_edges_m[1:]) / 2.0,
         (raster.northing_edges_m[:-1] + raster.northing_edges_m[1:]) / 2.0,
@@ -92,8 +98,11 @@ def load_filled_pixels():
 
 
 def measure_run_under_every_baseline(drone_levels_db: np.ndarray, pixel_levels_db, cell_of_pixel) -> pd.DataFrame:
-    baselines = {name: load_cell_table(noise_map, FINE_CELL_SIZE_M).baseline_levels_db for name, noise_map in CELL_AVERAGES.items()}
-    population = load_cell_table(FINE_BASELINE_NOISE_MAP, FINE_CELL_SIZE_M).population
+    baselines = {
+        name: load_cell_table(noise_map, FINE_CELL_SIZE_M, FINE_BOUNDARY_DATUM).baseline_levels_db
+        for name, noise_map in CELL_AVERAGES.items()
+    }
+    population = load_cell_table(FINE_BASELINE_NOISE_MAP, FINE_CELL_SIZE_M, FINE_BOUNDARY_DATUM).population
     cell_averaged = summarise_exposure_under_baselines(drone_levels_db, baselines, population)
     reference = summarise_pixel_level_exposure(drone_levels_db, population, pixel_levels_db, cell_of_pixel, HEADLINE_THRESHOLD_DB)
     return pd.concat([pd.DataFrame([{"baseline": PIXEL_REFERENCE, **reference}]), cell_averaged], ignore_index=True)

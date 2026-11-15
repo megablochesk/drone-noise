@@ -19,7 +19,7 @@ from depots.depot_layouts import (
     load_study_boundary,
     resolve_depot_layout,
 )
-from experiments.revision.fine_grid_design import FINE_BASELINE_NOISE_MAP, FINE_CELL_SIZE_M
+from experiments.revision.fine_grid_design import FINE_BASELINE_NOISE_MAP, FINE_BOUNDARY_DATUM, FINE_CELL_SIZE_M
 from experiments.revision.plot_style import (
     FLIGHT_PROFILE_LABELS,
     FLIGHT_PROFILE_LINE_STYLES,
@@ -256,7 +256,8 @@ def plot_baseline_maps(grid: NoiseGrid, published_db: np.ndarray, round4_db: np.
 
 def plot_fine_maps(store: ResultStore, fine_runs: pd.DataFrame, figure_path):
     run = fine_runs.loc[(fine_runs[list(MAPPED_RUN)] == pd.Series(MAPPED_RUN)).all(axis=1)].iloc[0]
-    grid, cell_table = load_noise_grid(FINE_CELL_SIZE_M), load_cell_table(FINE_BASELINE_NOISE_MAP, FINE_CELL_SIZE_M)
+    grid = load_noise_grid(FINE_CELL_SIZE_M, FINE_BOUNDARY_DATUM)
+    cell_table = load_cell_table(FINE_BASELINE_NOISE_MAP, FINE_CELL_SIZE_M, FINE_BOUNDARY_DATUM)
     drone_levels_db = load_drone_levels(store, run["run_key"])
     increase_db = combine_levels_db(drone_levels_db, cell_table.baseline_levels_db) - cell_table.baseline_levels_db
     panels = [

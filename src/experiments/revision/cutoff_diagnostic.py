@@ -87,7 +87,9 @@ def diagnose_cutoffs(specification: RunSpecification) -> pd.DataFrame:
         tracker.grid.centroid_northings, tracker.grid.centroid_eastings, tracker.samples,
         tracker.number_of_time_steps, tracker.noise_at_source_db, list(MAXIMUM_SLANT_DISTANCES_M),
     )
-    cell_table = load_cell_table(specification.baseline_noise_map, specification.noise_cell_m)
+    cell_table = load_cell_table(
+        specification.baseline_noise_map, specification.noise_cell_m, specification.boundary_datum
+    )
     return summarise_cutoff_errors(levels_by_cutoff, cell_table.baseline_levels_db, cell_table.population)
 
 

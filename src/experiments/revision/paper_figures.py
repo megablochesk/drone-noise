@@ -23,7 +23,12 @@ from census_analysis.ethnic_group_codes import abbreviate_ethnic_groups
 from common.coordinate import Coordinate
 from common.model_configs import model_config
 from experiments.revision.batch_runner import REPOSITORY_ROOT, default_result_store
-from experiments.revision.fine_grid_design import FINE_BASELINE_NOISE_MAP, FINE_CELL_SIZE_M, PHASE_NAME
+from experiments.revision.fine_grid_design import (
+    FINE_BASELINE_NOISE_MAP,
+    FINE_BOUNDARY_DATUM,
+    FINE_CELL_SIZE_M,
+    PHASE_NAME,
+)
 from experiments.revision.phase_outputs import phase_directory, write_phase_table
 from experiments.revision.result_store import ResultStore, ensure_runs_are_on_grid, load_drone_levels
 from experiments.revision.run_executor import HEADLINE_EXPOSURE_THRESHOLD_DB
@@ -181,7 +186,7 @@ def draw_group_figures(
         newly_exposed_by_seed: list[np.ndarray], grid: NoiseGrid, ethnicity_counts: dict, ethnicity_names: dict, save,
 ) -> pd.DataFrame:
     """Figures 17-20; returns the numbers behind them."""
-    age_table = load_cell_age(FINE_CELL_SIZE_M)
+    age_table = load_cell_age(FINE_CELL_SIZE_M, FINE_BOUNDARY_DATUM)
     age_counts, age_names = read_group_counts(grid, age_table), age_table.attrs["age_code_to_name"]
     ethnicity = average_group_exposure([
         summarise_group_exposure(newly_exposed, ethnicity_counts, ethnicity_names) for newly_exposed in newly_exposed_by_seed
@@ -235,10 +240,10 @@ def main():
     if arguments.preview_directory is not None:
         arguments.preview_directory.mkdir(parents=True, exist_ok=True)
     runs = pd.read_csv(tables_directory / RUN_TABLE_NAME)
-    grid = load_noise_grid(FINE_CELL_SIZE_M)
+    grid = load_noise_grid(FINE_CELL_SIZE_M, FINE_BOUNDARY_DATUM)
     ensure_runs_are_on_grid(runs, grid)
-    cell_table = load_cell_table(FINE_BASELINE_NOISE_MAP, FINE_CELL_SIZE_M)
-    ethnicity_table = load_cell_ethnicity(FINE_CELL_SIZE_M)
+    cell_table = load_cell_table(FINE_BASELINE_NOISE_MAP, FINE_CELL_SIZE_M, FINE_BOUNDARY_DATUM)
+    ethnicity_table = load_cell_ethnicity(FINE_CELL_SIZE_M, FINE_BOUNDARY_DATUM)
     ethnicity_names = shorten_ethnicity_names(ethnicity_table.attrs["ethnicity_code_to_name"])
     ethnicity_counts = read_group_counts(grid, ethnicity_table)
     example_levels_by_seed = load_levels_of_every_seed(store, runs, EXAMPLE_STOCKING, style.STRAIGHT)
@@ -246,7 +251,7 @@ def main():
         find_newly_exposed_cells(levels_db, cell_table.baseline_levels_db, HEADLINE_EXPOSURE_THRESHOLD_DB)
         for levels_db in example_levels_by_seed
     ]
-    population = align_to_grid(grid, load_cell_population(FINE_CELL_SIZE_M), "population")
+    population = align_to_grid(grid, load_cell_population(FINE_CELL_SIZE_M, FINE_BOUNDARY_DATUM), "population")
 
     draw_fleet_figures(runs, save)
     draw_map_figures(store, grid, runs, cell_table.baseline_levels_db, average_levels_db(example_levels_by_seed), save)
