@@ -43,6 +43,7 @@ ALTERNATIVE_FIELD_VALUES = {
     "land_once_at_customer": True,
     "navigation": NavigationType.NOISE_A025,
     "boundary_datum": BoundaryDatum.OSGB36,
+    "simulation_end_s": 37_800,
 }
 STORED_ARTIFACTS_DIRECTORY = Path("../results/artifacts")
 NUMBER_OF_STORED_RUNS = 747
@@ -128,7 +129,14 @@ def test_defaults_are_the_published_values_written_out():
     assert (defaults["speed_mps"], defaults["flight_altitude_m"], defaults["noise_at_source_db"]) == (27, 100.0, 90.0)
     assert (defaults["landing_delay_s"], defaults["minimum_slant_distance_m"]) == (60, 0.0)
     assert (defaults["time_step_s"], defaults["noise_cell_m"]) == (30, 500)
+    assert defaults["simulation_end_s"] == 72_000
     assert build_model_config(BASE_SPECIFICATION) == model_config
+
+
+def test_a_shorter_simulated_period_ends_the_day_early_and_keeps_its_start():
+    """A run can stop before 20:00, here at 10:30; it still starts at 10:00 with the published 30 s step."""
+    model = build_model_config(replace(BASE_SPECIFICATION, simulation_end_s=37_800))
+    assert (model.time.start_s, model.time.end_s, model.time.step_s) == (36_000, 37_800, 30)
 
 
 def test_a_run_keeps_its_values_when_the_model_configuration_changes(monkeypatch):

@@ -18,6 +18,7 @@ PUBLISHED_NOISE_AT_SOURCE_DB = 90.0
 PUBLISHED_LANDING_DELAY_S = 60
 PUBLISHED_MINIMUM_SLANT_DISTANCE_M = 0.0
 PUBLISHED_TIME_STEP_S = 30
+PUBLISHED_SIMULATION_END_S = 72_000
 PUBLISHED_NOISE_CELL_M = 500
 PUBLISHED_BOUNDARY_DATUM = BoundaryDatum.WGS84
 NUMBER_TYPES = {"int": int, "float": float}
@@ -64,6 +65,7 @@ class RunSpecification:
     land_once_at_customer: bool = False
     navigation: NavigationType = NavigationType.STRAIGHT
     boundary_datum: BoundaryDatum = PUBLISHED_BOUNDARY_DATUM
+    simulation_end_s: int = PUBLISHED_SIMULATION_END_S
 
 
 def to_plain_value(value):
@@ -117,8 +119,9 @@ def build_model_config(specification: RunSpecification) -> ModelConfig:
         landing_delay_s=specification.landing_delay_s,
         minimum_slant_distance_m=specification.minimum_slant_distance_m,
     )
+    time = replace(model_config.time, step_s=specification.time_step_s, end_s=specification.simulation_end_s)
     return replace(
-        model_config, drone=drone, time=replace(model_config.time, step_s=specification.time_step_s),
+        model_config, drone=drone, time=time,
         grid=replace(
             model_config.grid, noise_cell_m=specification.noise_cell_m, boundary_datum=specification.boundary_datum
         ),
