@@ -106,10 +106,10 @@ def test_study_grid_matches_the_stored_published_grid_cell_by_cell():
 
 
 @pytest.mark.slow
-def test_study_grid_matches_the_published_grid_cell_by_cell():
-    current, legacy = build_cell_matrix(), LEGACY_GRID_MODULE.build_cell_matrix()
-    assert [(cell.row, cell.column, cell.centroid) for cell in current] == \
-           [(cell.row, cell.column, cell.centroid) for cell in legacy]
+def test_published_grid_code_gives_the_stored_grid_and_the_study_grid_cell_by_cell():
+    legacy = cells_with_centroids(LEGACY_GRID_MODULE.build_cell_matrix())
+    assert legacy == cells_of_stored_published_grid()
+    assert legacy == cells_with_centroids(build_cell_matrix())
 
 
 def offsets_from_census_extent_m(boundary) -> np.ndarray:
