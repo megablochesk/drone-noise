@@ -18,16 +18,25 @@ from tests.regression.published_runs import (
     run_published_configuration_on_the_energy_path,
 )
 
-pytestmark = pytest.mark.slow
-
 NOISE_TOLERANCE_DB = 0.01
 POPULATION_RELATIVE_TOLERANCE = 0.005
 SAVED_PUBLISHED_RESULT_FILES = {False: "drone_number_change", True: "drone_landing_on"}
+# Both noise stages sum the same energy, in a different order; over the full day the per-cell maps differ by
+# less than 1e-13 dB.
 PER_CELL_TOLERANCE_DB = 1e-9
 
 
 def describe(published: PublishedResult) -> str:
     return describe_configuration(published.configuration)
+
+
+ENERGY_SUM_RUNNER_CASES = [
+    pytest.param(published, id=describe(published), marks=pytest.mark.slow) for published in PUBLISHED_RESULTS
+]
+PUBLISHED_RUNNER_CASES = [
+    pytest.param(published, id=describe(published), marks=pytest.mark.slow)
+    for published in PUBLISHED_RESULTS
+]
 
 
 def load_saved_published_run(published: PublishedResult) -> pd.Series:
@@ -54,20 +63,31 @@ def assert_headline_is_published(
         assert exposed_population == pytest.approx(published.newly_exposed_population, rel=POPULATION_RELATIVE_TOLERANCE)
 
 
-@pytest.mark.parametrize("published", PUBLISHED_RESULTS, ids=describe)
-def test_published_result_and_map_are_reproduced_by_both_runners(published: PublishedResult):
-    """The published runner gives the manuscript numbers and the saved per-cell map; the revision runner with
-    the energy-sum noise stage gives the manuscript numbers too (Phase 4 acceptance)."""
+def assert_map_is_the_saved_map(current_map: pd.DataFrame, published: PublishedResult):
+    saved_map = per_cell_map(load_saved_published_run(published))
+    assert current_map.index.equals(saved_map.index)
+    assert (current_map - saved_map).abs().max().max() < PER_CELL_TOLERANCE_DB
+
+
+@pytest.mark.parametrize("published", PUBLISHED_RUNNER_CASES)
+def test_published_runner_reproduces_the_published_result_and_map(published: PublishedResult):
     run = run_published_configuration(published.configuration)
     assert_headline_is_published(
         published, run["delivered_orders_number"], run["avg_noise_diff"], newly_exposed_population(run)
     )
+    assert_map_is_the_saved_map(per_cell_map(run), published)
 
-    current_map, saved_map = per_cell_map(run), per_cell_map(load_saved_published_run(published))
-    assert current_map.index.equals(saved_map.index)
-    assert (current_map - saved_map).abs().max().max() < PER_CELL_TOLERANCE_DB
 
-    row = run_published_configuration_on_the_energy_path(published.configuration)
+@pytest.mark.parametrize("published", ENERGY_SUM_RUNNER_CASES)
+def test_energy_sum_runner_reproduces_the_published_result_and_map(published: PublishedResult):
+    """Phase 4 acceptance, with the saved per-cell map of the published runner."""
+    run = run_published_configuration_on_the_energy_path(published.configuration)
     assert_headline_is_published(
-        published, row["delivered_orders"], row["mean_noise_increase_db"], row["newly_exposed_population_55db"]
+        published, run.row["delivered_orders"], run.row["mean_noise_increase_db"],
+        run.row["newly_exposed_population_55db"],
     )
+
+    # The per-step noise stage records a step without drones as 0 dB and the energy sum adds nothing for it,
+    # so the two maps are the same only on a day in which every step has drones.
+    assert run.row["time_steps_without_drones"] == 0
+    assert_map_is_the_saved_map(run.per_cell_map, published)

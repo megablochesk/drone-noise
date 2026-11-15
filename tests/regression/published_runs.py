@@ -35,6 +35,12 @@ class PublishedConfiguration:
 
 
 @dataclass(frozen=True)
+class EnergySumRun:
+    row: dict
+    per_cell_map: pd.DataFrame
+
+
+@dataclass(frozen=True)
 class PublishedResult:
     configuration: PublishedConfiguration
     delivered_orders: int
@@ -102,11 +108,35 @@ def per_cell_map(run: pd.Series) -> pd.DataFrame:
     return run["noise_impact_df"].set_index(MAP_KEY).sort_index()[MAP_COLUMNS]
 
 
+def build_energy_sum_per_cell_map(store, row: dict, specification) -> pd.DataFrame:
+    """The published map's columns from the stored drone-only levels, on the stored grid, with the baseline map
+    the noise stage combines them with."""
+    from experiments.revision.result_store import GRID_FINGERPRINT_COLUMN, load_drone_levels, load_stored_grid
+    from metrics.cell_table import align_to_grid
+    from metrics.exposure_metrics import combine_levels_db
+    from noise.noise_data_processor import load_base_noise_data
+
+    grid = load_stored_grid(store, row[GRID_FINGERPRINT_COLUMN])
+    baseline_levels_db = align_to_grid(
+        grid, load_base_noise_data(specification.baseline_noise_map, specification.noise_cell_m), "noise_level"
+    )
+    drone_levels_db = load_drone_levels(store, row["run_key"])
+    combined_levels_db = combine_levels_db(drone_levels_db, baseline_levels_db)
+    return pd.DataFrame({
+        "row": grid.rows,
+        "col": grid.columns,
+        "average_noise": drone_levels_db,
+        "combined_noise": combined_levels_db,
+        "noise_difference": combined_levels_db - baseline_levels_db,
+    }).set_index(MAP_KEY).sort_index()[MAP_COLUMNS]
+
+
 @lru_cache(maxsize=None)
 def run_published_configuration_on_the_energy_path(
         configuration: PublishedConfiguration, simulation_end_s: int = PUBLISHED_SIMULATION_END_S
-) -> dict:
-    """The revision runner with the energy-sum noise stage, on the published order dataset."""
+) -> EnergySumRun:
+    """The revision runner with the energy-sum noise stage, on the published order dataset: its result row and
+    the per-cell map rebuilt from what it stores."""
     from experiments.revision.result_store import ResultStore
     from experiments.revision.run_executor import execute_run
     from experiments.revision.run_specification import OrderSource, RunSpecification
@@ -117,7 +147,9 @@ def run_published_configuration_on_the_energy_path(
         navigation=configuration.navigation, simulation_end_s=simulation_end_s,
     )
     with tempfile.TemporaryDirectory() as store_directory:
-        return execute_run(specification, ResultStore(Path(store_directory)), git_hash="regression-test")
+        store = ResultStore(Path(store_directory))
+        row = execute_run(specification, store, git_hash="regression-test")
+        return EnergySumRun(row, build_energy_sum_per_cell_map(store, row, specification))
 
 
 def summarise_published_runner(configuration: PublishedConfiguration, simulation_end_s: int) -> dict:
@@ -130,7 +162,7 @@ def summarise_published_runner(configuration: PublishedConfiguration, simulation
 
 
 def summarise_energy_sum_runner(configuration: PublishedConfiguration, simulation_end_s: int) -> dict:
-    row = run_published_configuration_on_the_energy_path(configuration, simulation_end_s)
+    row = run_published_configuration_on_the_energy_path(configuration, simulation_end_s).row
     return {
         "delivered_orders": int(row["delivered_orders"]),
         "mean_noise_increase_db": float(row["mean_noise_increase_db"]),
