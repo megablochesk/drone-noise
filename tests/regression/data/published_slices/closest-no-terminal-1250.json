@@ -1,0 +1,15 @@
+{
+  "git_hash": "d5d3341459f9262a2eb47b30b7a23854bd6683f8",
+  "simulation_end_s": 36900,
+  "published_runner": {
+    "delivered_orders": 2073,
+    "mean_noise_increase_db": 2.565255961949008,
+    "newly_exposed_population": 57221.690260457064
+  },
+  "energy_sum_runner": {
+    "delivered_orders": 2073,
+    "mean_noise_increase_db": 2.565255961949007,
+    "newly_exposed_population": 57221.690260457064,
+    "assigned_orders": 3222
+  }
+}
